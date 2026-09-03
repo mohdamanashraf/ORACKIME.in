@@ -7,6 +7,9 @@
   <title>ORACLIME — Support Team Login</title>
 
   <link rel="stylesheet" href="assets/style.css">
+
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
 <body>
@@ -52,14 +55,14 @@
             <div class="field">
 
               <label for="supportUsername">
-                Username or Email
+                Email
               </label>
 
               <input
                 id="supportUsername"
                 name="username"
-                type="text"
-                placeholder="Enter your username or email"
+                type="email"
+                placeholder="Enter your support email"
                 autocomplete="username"
                 required
               >
@@ -86,6 +89,7 @@
 
 
             <button
+              id="signInButton"
               type="submit"
               class="btn primary"
               style="width:100%;margin-top:6px;"
@@ -156,34 +160,209 @@
 
   <script>
 
+    /*
+      ============================================
+      ORACLIME SUPABASE CONFIGURATION
+      ============================================
+
+      IMPORTANT:
+      - Use your Supabase Project URL
+      - Use your Supabase Publishable/Anon key
+      - NEVER put the service_role/secret key here
+    */
+
+    const SUPABASE_URL =
+      "https://dmygjpkzuewnpxsispcm.supabase.co";
+
+    const SUPABASE_ANON_KEY =
+      "sb_publishable_mQskIlYXBc4v8bXwF1FxmA_HLgigkqi";
+
+
+    const supabaseClient =
+      window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_ANON_KEY
+      );
+
+
     const supportLoginForm =
       document.getElementById("supportLoginForm");
 
     const supportLoginMessage =
       document.getElementById("supportLoginMessage");
 
+    const signInButton =
+      document.getElementById("signInButton");
 
-    supportLoginForm.addEventListener("submit", function(event) {
 
-      event.preventDefault();
+    function showMessage(message, type) {
 
-      /*
-        Temporary frontend placeholder.
+      supportLoginMessage.className =
+        "notice " + type;
 
-        Real authentication will be connected to
-        Supabase Auth in the next step.
-
-        Never store real passwords in this HTML file.
-      */
-
-      supportLoginMessage.className = "notice error";
-
-      supportLoginMessage.style.display = "block";
+      supportLoginMessage.style.display =
+        "block";
 
       supportLoginMessage.textContent =
-        "Support authentication is not connected yet. Secure authentication will be added next.";
+        message;
+    }
 
-    });
+
+    supportLoginForm.addEventListener(
+      "submit",
+      async function(event) {
+
+        event.preventDefault();
+
+        const email =
+          document.getElementById("supportUsername")
+            .value
+            .trim();
+
+        const password =
+          document.getElementById("supportPassword")
+            .value;
+
+
+        signInButton.disabled = true;
+
+        signInButton.textContent = "Signing In...";
+
+        supportLoginMessage.style.display = "none";
+
+
+        try {
+
+          /*
+            STEP 1
+            Authenticate through Supabase Auth
+          */
+
+          const {
+            data,
+            error
+          } = await supabaseClient.auth.signInWithPassword({
+            email: email,
+            password: password
+          });
+
+
+          if (error) {
+            throw error;
+          }
+
+
+          if (!data.user) {
+            throw new Error(
+              "Authentication failed."
+            );
+          }
+
+
+          /*
+            STEP 2
+            Find the authenticated user
+            inside ORACLIME app_users
+          */
+
+          const {
+            data: appUser,
+            error: profileError
+          } = await supabaseClient
+            .from("app_users")
+            .select("id, full_name, email, role, status")
+            .eq("id", data.user.id)
+            .single();
+
+
+          if (profileError || !appUser) {
+
+            await supabaseClient.auth.signOut();
+
+            throw new Error(
+              "Your account is not registered in ORACLIME."
+            );
+          }
+
+
+          /*
+            STEP 3
+            Verify that this is actually
+            a SUPPORT account.
+          */
+
+          if (appUser.role !== "SUPPORT") {
+
+            await supabaseClient.auth.signOut();
+
+            throw new Error(
+              "Access denied. This account is not a Support account."
+            );
+          }
+
+
+          /*
+            STEP 4
+            Verify account status
+          */
+
+          if (appUser.status !== "ACTIVE") {
+
+            await supabaseClient.auth.signOut();
+
+            throw new Error(
+              "Your Support account is inactive. Please contact ORACLIME Operations."
+            );
+          }
+
+
+          /*
+            STEP 5
+            Login successful.
+
+            Dashboard will be connected next.
+          */
+
+          showMessage(
+            "Login successful. Opening Support Dashboard...",
+            "success"
+          );
+
+
+          /*
+            TEMPORARY:
+            Dashboard page will be created next.
+          */
+
+          setTimeout(function() {
+
+            window.location.href =
+              "support-dashboard.html";
+
+          }, 800);
+
+
+        } catch (error) {
+
+          console.error(
+            "Support login error:",
+            error
+          );
+
+          showMessage(
+            error.message ||
+            "Unable to sign in. Please try again.",
+            "error"
+          );
+
+          signInButton.disabled = false;
+
+          signInButton.textContent =
+            "Sign In";
+        }
+
+      }
+    );
 
   </script>
 
