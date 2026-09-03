@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+
+  <title>ORACLIME — Support Team Login</title>
+
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+
+<body>
+
+  <!-- Navigation -->
+  <div class="navwrap">
+    <div class="container nav">
+
+      <a class="logo" href="index.html">ORACLIME</a>
+
+      <a class="navcta" href="index.html">
+        Back to Website
+      </a>
+
+    </div>
+  </div>
+
+
+  <!-- Support Login -->
+  <main class="dashboard">
+
+    <div class="container">
+
+      <div style="max-width:480px;margin:40px auto 0;">
+
+        <div class="card">
+
+          <div class="eyebrow">
+            ORACLIME Operations
+          </div>
+
+          <h1 style="margin:10px 0 8px;font-size:38px;line-height:1.1;">
+            Support Team Login
+          </h1>
+
+          <p class="small" style="margin-bottom:28px;">
+            Authorized ORACLIME support team members only.
+          </p>
+
+
+          <form id="supportLoginForm">
+
+            <div class="field">
+
+              <label for="supportUsername">
+                Username or Email
+              </label>
+
+              <input
+                id="supportUsername"
+                name="username"
+                type="text"
+                placeholder="Enter your username or email"
+                autocomplete="username"
+                required
+              >
+
+            </div>
+
+
+            <div class="field">
+
+              <label for="supportPassword">
+                Password
+              </label>
+
+              <input
+                id="supportPassword"
+                name="password"
+                type="password"
+                placeholder="Enter your password"
+                autocomplete="current-password"
+                required
+              >
+
+            </div>
+
+
+            <button
+              type="submit"
+              class="btn primary"
+              style="width:100%;margin-top:6px;"
+            >
+              Sign In
+            </button>
+
+
+            <div
+              id="supportLoginMessage"
+              class="notice"
+            ></div>
+
+          </form>
+
+
+          <div
+            style="
+              margin-top:25px;
+              padding-top:20px;
+              border-top:1px solid var(--line);
+            "
+          >
+
+            <p class="small" style="margin:0;">
+              Support team members use individual accounts.
+              Access and system activity are recorded for operational security.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div style="text-align:center;margin-top:20px;">
+
+          <a
+            href="login.html"
+            class="small"
+          >
+            Partner / Technician Login
+          </a>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+
+  <!-- Footer -->
+  <footer>
+
+    <div class="container">
+
+      <div class="logo">ORACLIME</div>
+
+      <p class="small">
+        Support and operations access for ORACLIME.
+      </p>
+
+    </div>
+
+  </footer>
+
+
+  <script>
+
+    const supportLoginForm =
+      document.getElementById("supportLoginForm");
+
+    const supportLoginMessage =
+      document.getElementById("supportLoginMessage");
+
+
+    supportLoginForm.addEventListener("submit", function(event) {
+
+      event.preventDefault();
+
+      /*
+        Temporary frontend placeholder.
+
+        Real authentication will be connected to
+        Supabase Auth in the next step.
+
+        Never store real passwords in this HTML file.
+      */
+
+      supportLoginMessage.className = "notice error";
+
+      supportLoginMessage.style.display = "block";
+
+      supportLoginMessage.textContent =
+        "Support authentication is not connected yet. Secure authentication will be added next.";
+
+    });
+
+  </script>
+
+</body>
+</html>
