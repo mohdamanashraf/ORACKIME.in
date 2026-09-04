@@ -2709,6 +2709,46 @@
 </div>
 
 <!-- =====================================================
+     LEAD CREATED / SERVICE COMPLETION CODE MODAL
+     ===================================================== -->
+
+<div id="leadCreatedCodeModal" class="modal-overlay" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="leadCreatedCodeTitle">
+    <div class="modal-header">
+      <div>
+        <h2 id="leadCreatedCodeTitle">Lead Created Successfully</h2>
+        <p>Share the Service Completion Code with the customer.</p>
+      </div>
+      <button type="button" class="modal-close" id="closeLeadCreatedCodeModal" aria-label="Close">×</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="card" style="padding:18px; border-color:rgba(53,209,170,.35);">
+        <div class="small">Lead ID</div>
+        <strong id="leadCreatedCodeLeadNumber" style="font-size:20px;">—</strong>
+
+        <div class="small" style="margin-top:16px;">Customer</div>
+        <strong id="leadCreatedCodeCustomer">—</strong>
+
+        <div class="small" style="margin-top:18px;">Service Completion Code</div>
+        <strong id="leadCreatedCodeValue" style="display:block;font-size:34px;letter-spacing:6px;margin-top:6px;">—</strong>
+
+        <div class="small" style="margin-top:10px;">Valid for 24 hours. The code is securely stored as a hash and is shown only to the authenticated Support session that created the lead.</div>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;">
+          <button type="button" class="btn" id="copyLeadCreatedCodeButton">Copy Code</button>
+          <a id="whatsappLeadCreatedCodeButton" class="btn primary" href="#" target="_blank" rel="noopener noreferrer">Open WhatsApp</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn primary" id="doneLeadCreatedCodeButton">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- =====================================================
      FOOTER
      ===================================================== -->
 
@@ -2920,6 +2960,24 @@ const requestCorrectionButton =
   document.getElementById("requestCorrectionButton");
 
 let selectedCompletionLead = null;
+
+const leadCreatedCodeModal =
+  document.getElementById("leadCreatedCodeModal");
+
+const leadCreatedCodeLeadNumber =
+  document.getElementById("leadCreatedCodeLeadNumber");
+
+const leadCreatedCodeCustomer =
+  document.getElementById("leadCreatedCodeCustomer");
+
+const leadCreatedCodeValue =
+  document.getElementById("leadCreatedCodeValue");
+
+const copyLeadCreatedCodeButton =
+  document.getElementById("copyLeadCreatedCodeButton");
+
+const whatsappLeadCreatedCodeButton =
+  document.getElementById("whatsappLeadCreatedCodeButton");
 
 
 
@@ -4676,10 +4734,11 @@ async function createLead(event) {
       state: state
     };
 
-    showNewCompletionCode(
-      cleanCompletionCode,
+    showLeadCreatedCodeModal(
+      leadNumber,
+      customerName,
       cleanMobile,
-      null
+      cleanCompletionCode
     );
 
     showNotice(
@@ -5892,6 +5951,64 @@ async function approveSelectedCompletion() {
 
 }
 
+
+function closeLeadCreatedCodeModal() {
+
+  if (!leadCreatedCodeModal) return;
+
+  leadCreatedCodeModal.classList.remove("open");
+  leadCreatedCodeModal.setAttribute("aria-hidden", "true");
+
+  if (leadCreatedCodeValue) leadCreatedCodeValue.textContent = "—";
+  if (leadCreatedCodeLeadNumber) leadCreatedCodeLeadNumber.textContent = "—";
+  if (leadCreatedCodeCustomer) leadCreatedCodeCustomer.textContent = "—";
+  if (whatsappLeadCreatedCodeButton) whatsappLeadCreatedCodeButton.href = "#";
+}
+
+function showLeadCreatedCodeModal(leadNumber, customerName, mobile, code) {
+
+  if (!leadCreatedCodeModal || !leadCreatedCodeValue) return;
+
+  leadCreatedCodeLeadNumber.textContent = String(leadNumber || "—");
+  leadCreatedCodeCustomer.textContent = String(customerName || "—");
+  leadCreatedCodeValue.textContent = String(code || "—");
+
+  const cleanMobile = String(mobile || "").replace(/\D/g, "");
+  const whatsappNumber = cleanMobile.length === 10 ? "91" + cleanMobile : cleanMobile;
+  const message =
+    "ORACLIME Service Completion Code for " +
+    String(leadNumber || "your service") +
+    ": " + String(code || "") +
+    "\n\nPlease provide this code to the technician after the service is completed.";
+
+  if (whatsappLeadCreatedCodeButton) {
+    whatsappLeadCreatedCodeButton.href = whatsappNumber
+      ? "https://wa.me/" + whatsappNumber + "?text=" + encodeURIComponent(message)
+      : "https://wa.me/?text=" + encodeURIComponent(message);
+  }
+
+  leadCreatedCodeModal.classList.add("open");
+  leadCreatedCodeModal.setAttribute("aria-hidden", "false");
+}
+
+async function copyLeadCreatedCode() {
+
+  const code = leadCreatedCodeValue?.textContent?.trim();
+
+  if (!code || !/^\d{6}$/.test(code)) return;
+
+  try {
+    await navigator.clipboard.writeText(code);
+    if (copyLeadCreatedCodeButton) {
+      copyLeadCreatedCodeButton.textContent = "Copied";
+      setTimeout(function() {
+        if (copyLeadCreatedCodeButton) copyLeadCreatedCodeButton.textContent = "Copy Code";
+      }, 1400);
+    }
+  } catch (error) {
+    window.prompt("Copy the Service Completion Code:", code);
+  }
+}
 
 function showNewCompletionCode(code, mobile, expiresAt) {
 
@@ -7589,6 +7706,24 @@ if (requestCorrectionButton) {
   requestCorrectionButton.addEventListener("click", requestCompletionCorrection);
 }
 
+
+if (document.getElementById("closeLeadCreatedCodeModal")) {
+  document.getElementById("closeLeadCreatedCodeModal").addEventListener("click", closeLeadCreatedCodeModal);
+}
+
+if (document.getElementById("doneLeadCreatedCodeButton")) {
+  document.getElementById("doneLeadCreatedCodeButton").addEventListener("click", closeLeadCreatedCodeModal);
+}
+
+if (copyLeadCreatedCodeButton) {
+  copyLeadCreatedCodeButton.addEventListener("click", copyLeadCreatedCode);
+}
+
+if (leadCreatedCodeModal) {
+  leadCreatedCodeModal.addEventListener("click", function(event) {
+    if (event.target === leadCreatedCodeModal) closeLeadCreatedCodeModal();
+  });
+}
 
 /* =====================================================
    41. LOGOUT
