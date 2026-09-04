@@ -1706,6 +1706,9 @@
               <option value="COMPLETED">
                 Completed
               </option>
+              <option value="CORRECTION_REQUIRED">
+                Correction Required
+              </option>
 
               <option value="RESCHEDULED">
                 Rescheduled
@@ -2602,6 +2605,118 @@
 </div>
 
 <!-- =====================================================
+     REVIEW COMPLETION MODAL
+     ===================================================== -->
+
+<div
+  id="reviewCompletionModal"
+  class="modal-overlay"
+>
+  <div
+    class="modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="reviewCompletionTitle"
+  >
+    <div class="modal-header">
+      <div>
+        <h2 id="reviewCompletionTitle">Review Completion</h2>
+        <p>Verify the submitted service evidence before closing the lead.</p>
+      </div>
+      <button type="button" class="modal-close" id="closeReviewCompletionModal" aria-label="Close">×</button>
+    </div>
+
+    <div class="modal-body">
+      <div id="reviewCompletionMessage" class="dashboard-notice" style="display:none;"></div>
+
+      <div class="assignment-summary" id="reviewCompletionSummary"></div>
+
+      <div class="g2" style="margin-bottom:16px;">
+        <div class="card" style="padding:16px;">
+          <div class="small">Amount Collected</div>
+          <strong id="reviewAmountCollected" style="font-size:22px;">—</strong>
+        </div>
+        <div class="card" style="padding:16px;">
+          <div class="small">Payment Mode</div>
+          <strong id="reviewPaymentMode" style="font-size:18px;">—</strong>
+        </div>
+      </div>
+
+      <div class="card" style="padding:16px; margin-bottom:16px;">
+        <div class="section-title-row" style="margin-bottom:10px;">
+          <h3 style="margin:0;">Completion Verification</h3>
+        </div>
+        <div id="reviewVerification" class="small">Loading...</div>
+      </div>
+
+      <div
+        id="newCompletionCodeCard"
+        class="card"
+        style="padding:16px; margin-bottom:16px; display:none; border-color:rgba(53,209,170,.35);"
+      >
+        <div class="section-title-row" style="margin-bottom:10px;">
+          <h3 style="margin:0;">New Service Completion Code</h3>
+        </div>
+
+        <div class="small" style="margin-bottom:12px;">
+          Give this new 6-digit code to the customer. The previous code has been invalidated.
+        </div>
+
+        <div
+          style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;"
+        >
+          <strong
+            id="newCompletionCodeValue"
+            style="font-size:30px;letter-spacing:5px;"
+          >—</strong>
+
+          <button
+            type="button"
+            class="btn"
+            id="copyCompletionCodeButton"
+          >
+            Copy Code
+          </button>
+
+          <a
+            id="whatsappCompletionCodeButton"
+            class="btn primary"
+            href="#"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Open WhatsApp
+          </a>
+        </div>
+
+        <div
+          id="completionCodeExpiry"
+          class="small"
+          style="margin-top:10px;"
+        ></div>
+      </div>
+
+      <div class="card" style="padding:16px;">
+        <div class="section-title-row" style="margin-bottom:12px;">
+          <h3 style="margin:0;">Submitted Photos</h3>
+        </div>
+        <div id="reviewDocuments" class="g2">
+          <div class="small">Loading submitted documents...</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn" id="requestCorrectionButton">Request Correction</button>
+      <button type="button" class="btn primary" id="approveCompletionButton">Approve &amp; Complete</button>
+    </div>
+  </div>
+</div>
+
+
+
+
+<!-- =====================================================
      FOOTER
      ===================================================== -->
 
@@ -2772,7 +2887,37 @@ const leadModal =
   document.getElementById("leadModal");
 
 const leadForm =
-  document.getElementById("leadForm");
+  document.getElementById("leadForm");    
+const reviewCompletionModal =
+  document.getElementById("reviewCompletionModal");
+const reviewCompletionSummary =
+  document.getElementById("reviewCompletionSummary");
+const reviewAmountCollected =
+  document.getElementById("reviewAmountCollected");
+const reviewPaymentMode =
+  document.getElementById("reviewPaymentMode");
+const reviewVerification =
+  document.getElementById("reviewVerification");
+const reviewDocuments =
+  document.getElementById("reviewDocuments");
+const reviewCompletionMessage =
+  document.getElementById("reviewCompletionMessage");
+const newCompletionCodeCard =
+  document.getElementById("newCompletionCodeCard");
+const newCompletionCodeValue =
+  document.getElementById("newCompletionCodeValue");
+const completionCodeExpiry =
+  document.getElementById("completionCodeExpiry");
+const copyCompletionCodeButton =
+  document.getElementById("copyCompletionCodeButton");
+const whatsappCompletionCodeButton =
+  document.getElementById("whatsappCompletionCodeButton");
+const approveCompletionButton =
+  document.getElementById("approveCompletionButton");
+const requestCorrectionButton =
+  document.getElementById("requestCorrectionButton");
+let selectedCompletionLead = null;
+
 
 
 /* =====================================================
@@ -3312,15 +3457,8 @@ function generateLeadNumber() {
 
 async function loadLeads(force = false) {
 
-  if (!dashboardReady) {
-    return;
-  }
+  if (!dashboardReady) return;
 
-  /*
-    Prevent overlapping Supabase requests.
-    The old dashboard can call loadLeads from navigation,
-    refresh and post-create refresh at nearly the same time.
-  */
   if (leadsLoadInProgress) {
     leadsReloadQueued = true;
     return;
@@ -3338,31 +3476,16 @@ async function loadLeads(force = false) {
 
   try {
 
-    const {
-      data,
-      error
-    } = await supabaseClient
-      .from("leads")
-      .select(`
-        id,
-        lead_number,
-        customer_name,
-        mobile,
-        alternate_mobile,
-        address,
-        city,
-        state,
-        pincode,
-        service_type,
-        preferred_date,
-        preferred_time,
-        notes,
-        status,
-        assigned_technician_id,
-        created_at,
-        updated_at
-      `)
-      .order("created_at", { ascending:false });
+    const { data, error } =
+      await supabaseClient
+        .from("leads")
+        .select(`
+          id, lead_number, customer_name, mobile, alternate_mobile,
+          address, city, state, pincode, service_type,
+          preferred_date, preferred_time, notes, status,
+          assigned_technician_id, created_at, updated_at
+        `)
+        .order("created_at", { ascending:false });
 
     if (error) {
 
@@ -3376,8 +3499,7 @@ async function loadLeads(force = false) {
       }
 
       showNotice(
-        "Leads could not be loaded. " +
-        (error.message || ""),
+        "Leads could not be loaded. " + (error.message || ""),
         "error",
         leadsNotice
       );
@@ -3386,7 +3508,6 @@ async function loadLeads(force = false) {
     }
 
     allLeads = Array.isArray(data) ? data : [];
-
     applyLeadFilters();
 
   } catch (error) {
@@ -3402,17 +3523,11 @@ async function loadLeads(force = false) {
   } finally {
 
     if (loading) loading.style.display = "none";
-
     leadsLoadInProgress = false;
 
     if (leadsReloadQueued) {
-
       leadsReloadQueued = false;
-
-      setTimeout(function() {
-        loadLeads(true);
-      }, 0);
-
+      setTimeout(function() { loadLeads(true); }, 0);
     }
 
   }
@@ -3660,22 +3775,46 @@ function renderLeads() {
             <td>
 
               ${
-                !lead.assigned_technician_id &&
-                ["NEW","RESCHEDULED","RESCHEDULE_REQUESTED"].includes(lead.status)
+                lead.status === "COMPLETION_SUBMITTED"
                   ? `
                     <button
                       type="button"
                       class="btn primary"
-                      data-assign-lead="${escapeHtml(lead.id)}"
+                      data-review-completion="${escapeHtml(lead.id)}"
                     >
-                      Assign
+                      Review Completion
                     </button>
                   `
-                  : `
-                    <span class="small">
-                      ${lead.assigned_technician_id ? "Assigned" : "—"}
-                    </span>
-                  `
+                  : lead.status === "CORRECTION_REQUIRED"
+                    ? `
+                      <button
+                        type="button"
+                        class="btn primary"
+                        data-review-completion="${escapeHtml(lead.id)}"
+                      >
+                        Review Correction
+                      </button>
+                    `
+                    : lead.status === "COMPLETED"
+                      ? `
+                        <span class="small">Completed</span>
+                      `
+                      : !lead.assigned_technician_id &&
+                        ["NEW","RESCHEDULED","RESCHEDULE_REQUESTED"].includes(lead.status)
+                        ? `
+                          <button
+                            type="button"
+                            class="btn primary"
+                            data-assign-lead="${escapeHtml(lead.id)}"
+                          >
+                            Assign
+                          </button>
+                        `
+                        : `
+                          <span class="small">
+                            ${lead.assigned_technician_id ? "Assigned" : "—"}
+                          </span>
+                        `
               }
 
             </td>
@@ -3717,6 +3856,25 @@ function renderLeads() {
 
         }
       );
+
+    });
+
+  tbody
+    .querySelectorAll("[data-review-completion]")
+    .forEach(function(button) {
+
+      button.addEventListener("click", function() {
+
+        const lead =
+          allLeads.find(function(row) {
+            return row.id === button.dataset.reviewCompletion;
+          });
+
+        if (lead) {
+          openReviewCompletionModal(lead);
+        }
+
+      });
 
     });
 
@@ -4097,247 +4255,125 @@ async function createLead(event) {
 
   event.preventDefault();
 
-  const saveButton =
-    document.getElementById("saveLeadButton");
+  const saveButton = document.getElementById("saveLeadButton");
 
-  if (isCreatingLead) {
-    return;
-  }
+  if (isCreatingLead) return;
 
   if (!currentAuthUser || !currentAppUser) {
-
-    showNotice(
-      "Your Support session is not ready.",
-      "error",
-      leadsNotice
-    );
-
+    showNotice("Your Support session is not ready.", "error", leadsNotice);
     return;
   }
 
-  const customerName =
-    document.getElementById("leadCustomerName").value.trim();
+  const customerName = document.getElementById("leadCustomerName").value.trim();
+  const mobile = document.getElementById("leadMobile").value.trim();
+  const alternateMobile = document.getElementById("leadAlternateMobile").value.trim();
+  const serviceType = document.getElementById("leadServiceType").value;
+  const address = document.getElementById("leadAddress").value.trim();
+  const city = document.getElementById("leadCity").value.trim();
+  const state = document.getElementById("leadState").value.trim();
+  const pincode = document.getElementById("leadPincode").value.trim();
+  const preferredDate = document.getElementById("leadPreferredDate").value;
+  const preferredTime = document.getElementById("leadPreferredTime").value.trim();
+  const notes = document.getElementById("leadNotes").value.trim();
 
-  const mobile =
-    document.getElementById("leadMobile").value.trim();
-
-  const alternateMobile =
-    document.getElementById("leadAlternateMobile").value.trim();
-
-  const serviceType =
-    document.getElementById("leadServiceType").value;
-
-  const address =
-    document.getElementById("leadAddress").value.trim();
-
-  const city =
-    document.getElementById("leadCity").value.trim();
-
-  const state =
-    document.getElementById("leadState").value.trim();
-
-  const pincode =
-    document.getElementById("leadPincode").value.trim();
-
-  const preferredDate =
-    document.getElementById("leadPreferredDate").value;
-
-  const preferredTime =
-    document.getElementById("leadPreferredTime").value.trim();
-
-  const notes =
-    document.getElementById("leadNotes").value.trim();
-
-  const cleanMobile =
-    mobile.replace(/\D/g,"");
-
-  const cleanAlternateMobile =
-    alternateMobile.replace(/\D/g,"");
-
-  const cleanPincode =
-    pincode.replace(/\D/g,"");
-
-  const todayString =
-    getTodayLocalDate();
+  const cleanMobile = mobile.replace(/\D/g,"");
+  const cleanAlternateMobile = alternateMobile.replace(/\D/g,"");
+  const cleanPincode = pincode.replace(/\D/g,"");
+  const todayString = getTodayLocalDate();
 
   clearLeadValidation();
 
   let firstInvalidField = null;
 
   if (!customerName) {
-
-    setFieldError(
-      "leadCustomerName",
-      "",
-      "Customer name is required."
-    );
-
-    firstInvalidField =
-      firstInvalidField ||
-      document.getElementById("leadCustomerName");
+    setFieldError("leadCustomerName", "", "Customer name is required.");
+    firstInvalidField = firstInvalidField || document.getElementById("leadCustomerName");
   }
 
   if (!/^\d{10}$/.test(cleanMobile)) {
-
-    setFieldError(
-      "leadMobile",
-      "leadMobileError",
-      "Mobile number must contain exactly 10 digits."
-    );
-
-    firstInvalidField =
-      firstInvalidField ||
-      document.getElementById("leadMobile");
+    setFieldError("leadMobile", "leadMobileError", "Mobile number must contain exactly 10 digits.");
+    firstInvalidField = firstInvalidField || document.getElementById("leadMobile");
   }
 
-  if (
-    alternateMobile &&
-    !/^\d{10}$/.test(cleanAlternateMobile)
-  ) {
-
-    setFieldError(
-      "leadAlternateMobile",
-      "leadAlternateMobileError",
-      "Alternate mobile must contain exactly 10 digits."
-    );
-
-    firstInvalidField =
-      firstInvalidField ||
-      document.getElementById("leadAlternateMobile");
+  if (alternateMobile && !/^\d{10}$/.test(cleanAlternateMobile)) {
+    setFieldError("leadAlternateMobile", "leadAlternateMobileError", "Alternate mobile must contain exactly 10 digits.");
+    firstInvalidField = firstInvalidField || document.getElementById("leadAlternateMobile");
   }
 
-  if (
-    cleanPincode &&
-    !/^\d{6}$/.test(cleanPincode)
-  ) {
-
-    setFieldError(
-      "leadPincode",
-      "leadPincodeError",
-      "Pincode must contain exactly 6 digits."
-    );
-
-    firstInvalidField =
-      firstInvalidField ||
-      document.getElementById("leadPincode");
+  if (cleanPincode && !/^\d{6}$/.test(cleanPincode)) {
+    setFieldError("leadPincode", "leadPincodeError", "Pincode must contain exactly 6 digits.");
+    firstInvalidField = firstInvalidField || document.getElementById("leadPincode");
   }
 
-  if (
-    preferredDate &&
-    preferredDate < todayString
-  ) {
-
-    setFieldError(
-      "leadPreferredDate",
-      "leadPreferredDateError",
-      "Preferred date cannot be earlier than today."
-    );
-
-    firstInvalidField =
-      firstInvalidField ||
-      document.getElementById("leadPreferredDate");
+  if (preferredDate && preferredDate < todayString) {
+    setFieldError("leadPreferredDate", "leadPreferredDateError", "Preferred date cannot be earlier than today.");
+    firstInvalidField = firstInvalidField || document.getElementById("leadPreferredDate");
   }
 
   if (firstInvalidField) {
-
-    showNotice(
-      "Please correct the highlighted fields before creating the lead.",
-      "error",
-      leadsNotice
-    );
-
+    showNotice("Please correct the highlighted fields before creating the lead.", "error", leadsNotice);
     firstInvalidField.focus();
     return;
   }
 
-  const possibleDuplicate =
-    allLeads.find(function(lead) {
-
-      const existingMobile =
-        String(lead.mobile || "").replace(/\D/g,"");
-
-      return existingMobile === cleanMobile;
-
-    });
+  const possibleDuplicate = allLeads.find(function(lead) {
+    return String(lead.mobile || "").replace(/\D/g,"") === cleanMobile;
+  });
 
   if (possibleDuplicate) {
 
-    const confirmed =
-      window.confirm(
-        "A previous lead already exists for this mobile number.\n\n" +
-        "Lead: " +
-        (possibleDuplicate.lead_number || "Existing lead") +
-        "\n\nCreate this new lead anyway?"
-      );
+    const confirmed = window.confirm(
+      "A previous lead already exists for this mobile number.\n\n" +
+      "Lead: " + (possibleDuplicate.lead_number || "Existing lead") +
+      "\n\nCreate this new lead anyway?"
+    );
 
-    if (!confirmed) {
-      return;
-    }
+    if (!confirmed) return;
   }
 
   isCreatingLead = true;
-
   saveButton.disabled = true;
   saveButton.textContent = "Creating...";
 
   try {
 
-    const leadNumber =
-      generateLeadNumber();
+    const leadNumber = generateLeadNumber();
 
-    const {
-      data,
-      error
-    } = await supabaseClient
-      .from("leads")
-      .insert({
-
-        lead_number: leadNumber,
-        partner_id: null,
-        customer_id: null,
-        service_type: serviceType,
-        customer_name: customerName,
-        mobile: cleanMobile,
-        alternate_mobile: cleanAlternateMobile || null,
-        address: address || null,
-        city: city || null,
-        state: state || null,
-        pincode: cleanPincode || null,
-        preferred_date: preferredDate || null,
-        preferred_time: preferredTime || null,
-        notes: notes || null,
-        status: "NEW",
-        assigned_technician_id: null,
-        created_by: currentAuthUser.id,
-        updated_by: currentAuthUser.id
-
-      })
-      .select()
-      .single();
+    const { data, error } =
+      await supabaseClient
+        .from("leads")
+        .insert({
+          lead_number: leadNumber,
+          partner_id: null,
+          customer_id: null,
+          service_type: serviceType,
+          customer_name: customerName,
+          mobile: cleanMobile,
+          alternate_mobile: cleanAlternateMobile || null,
+          address: address || null,
+          city: city || null,
+          state: state || null,
+          pincode: cleanPincode || null,
+          preferred_date: preferredDate || null,
+          preferred_time: preferredTime || null,
+          notes: notes || null,
+          status: "NEW",
+          assigned_technician_id: null,
+          created_by: currentAuthUser.id,
+          updated_by: currentAuthUser.id
+        })
+        .select()
+        .single();
 
     if (error) {
-
-      console.error(
-        "Create lead error:",
-        error
-      );
-
-      throw new Error(
-        error.message ||
-        "Unable to create lead."
-      );
+      console.error("Create lead error:", error);
+      throw new Error(error.message || "Unable to create lead.");
     }
 
     if (!data || !data.id) {
-
-      throw new Error(
-        "Lead was not returned by the database."
-      );
+      throw new Error("Lead was not returned by the database.");
     }
 
-    /*
-      Immediately show the new lead in the current UI.
-    */
     allLeads = [
       data,
       ...allLeads.filter(function(row) {
@@ -4348,36 +4384,25 @@ async function createLead(event) {
     applyLeadFilters();
 
     closeLeadModal();
-
     leadForm.reset();
     clearLeadValidation();
     setLeadDateMinimum();
 
     showNotice(
-      "Lead " +
-      (data.lead_number || leadNumber) +
-      " created successfully.",
+      "Lead " + (data.lead_number || leadNumber) + " created successfully.",
       "success",
       leadsNotice
     );
 
-    /*
-      Then fetch from Supabase again so the screen is
-      authoritative and stays in sync.
-    */
     await loadLeads(true);
     await loadDashboardData();
 
   } catch (error) {
 
-    console.error(
-      "Lead creation exception:",
-      error
-    );
+    console.error("Lead creation exception:", error);
 
     showNotice(
-      error.message ||
-      "Unable to create lead.",
+      error.message || "Unable to create lead.",
       "error",
       leadsNotice
     );
@@ -4385,7 +4410,6 @@ async function createLead(event) {
   } finally {
 
     isCreatingLead = false;
-
     saveButton.disabled = false;
     saveButton.textContent = "Create Lead";
 
@@ -6636,144 +6660,6 @@ if (refreshButton) {
    38. LOGOUT
    ===================================================== */
 
-
-/* =====================================================
-   COMPLETION ACTION NORMALIZER
-   ===================================================== */
-
-function normalizeLeadCompletionActions() {
-
-  /*
-    The old renderer labels the final column "Assigned" for
-    some statuses. We replace that label/action only for
-    completion-related statuses. Other statuses remain untouched.
-  */
-
-  const rows =
-    document.querySelectorAll(
-      "#leadsTableBody tr"
-    );
-
-  rows.forEach(function(row) {
-
-    const leadCell =
-      row.querySelector("td");
-
-    if (!leadCell) {
-      return;
-    }
-
-    const leadText =
-      leadCell.textContent.trim();
-
-    const lead =
-      allLeads.find(function(item) {
-        return (
-          item.lead_number === leadText ||
-          item.id === leadText
-        );
-      });
-
-    if (!lead) {
-      return;
-    }
-
-    const actionCells =
-      row.querySelectorAll("td");
-
-    if (!actionCells.length) {
-      return;
-    }
-
-    const actionCell =
-      actionCells[actionCells.length - 1];
-
-    if (!actionCell) {
-      return;
-    }
-
-    if (lead.status === "COMPLETION_SUBMITTED") {
-
-      actionCell.innerHTML = `
-        <button
-          class="table-action primary"
-          onclick="openCompletionReview('${lead.id}')">
-          Review Completion
-        </button>
-      `;
-
-    } else if (lead.status === "CORRECTION_REQUIRED") {
-
-      actionCell.innerHTML = `
-        <button
-          class="table-action primary"
-          onclick="openCompletionReview('${lead.id}')">
-          Review Correction
-        </button>
-      `;
-
-    } else if (lead.status === "COMPLETED") {
-
-      actionCell.innerHTML = `
-        <span class="status-complete-action">
-          Completed
-        </span>
-      `;
-
-    }
-
-  });
-}
-
-/* Run normalizer after each lead render. */
-const _originalApplyLeadFilters =
-  typeof applyLeadFilters === "function"
-    ? applyLeadFilters
-    : null;
-
-if (_originalApplyLeadFilters) {
-
-  const _applyLeadFiltersFixed =
-    applyLeadFilters;
-
-  applyLeadFilters = function() {
-
-    _applyLeadFiltersFixed.apply(
-      this,
-      arguments
-    );
-
-    setTimeout(
-      normalizeLeadCompletionActions,
-      0
-    );
-
-  };
-
-}
-
-
-
-/* =====================================================
-   LEAD LIST AUTO-REFRESH
-   ===================================================== */
-
-setInterval(function() {
-
-  if (
-    dashboardReady &&
-    leadsSection &&
-    leadsSection.style.display !== "none" &&
-    !isCreatingLead &&
-    !leadsLoadInProgress
-  ) {
-
-    loadLeads(true);
-
-  }
-
-}, 15000);
-
 if (logoutButton) {
 
   logoutButton.addEventListener(
@@ -7015,4 +6901,22 @@ initializeDashboard();
 </script>
 
 </body>
-</html>
+</html>/* =====================================================
+   LEAD LIST AUTO-REFRESH
+   ===================================================== */
+
+setInterval(function() {
+
+  if (
+    dashboardReady &&
+    leadsSection &&
+    leadsSection.style.display !== "none" &&
+    !isCreatingLead &&
+    !leadsLoadInProgress
+  ) {
+    loadLeads(true);
+  }
+
+}, 15000);
+
+
