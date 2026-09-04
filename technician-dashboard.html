@@ -858,8 +858,7 @@ function updateStats(jobs){
 
   const assigned =
     jobs.filter(j =>
-      ["ASSIGNED","ACCEPTED","EN_ROUTE","ARRIVED","IN_PROGRESS",
-       "COMPLETION_SUBMITTED"].includes(j.status)
+      ["ASSIGNED","ACCEPTED","EN_ROUTE","ARRIVED","IN_PROGRESS"].includes(j.status)
     ).length;
 
 
