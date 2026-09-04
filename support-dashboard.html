@@ -2656,6 +2656,11 @@ let dashboardReady = false;
 let allLeads = [];
 let filteredLeads = [];
 
+/* Lead loading / submit guards */
+let leadsLoadInProgress = false;
+let leadsReloadQueued = false;
+let isCreatingLead = false;
+
 let unassignedLeads = [];
 let availableTechnicians = [];
 let selectedAssignmentLead = null;
@@ -3305,42 +3310,35 @@ function generateLeadNumber() {
    16. LOAD LEADS
    ===================================================== */
 
-async function loadLeads() {
+async function loadLeads(force = false) {
 
-  const loading =
-    document.getElementById(
-      "leadsLoading"
-    );
+  if (!dashboardReady) {
+    return;
+  }
 
-  const empty =
-    document.getElementById(
-      "leadsEmpty"
-    );
+  if (leadsLoadInProgress) {
+    leadsReloadQueued = true;
+    return;
+  }
 
-  const tableWrap =
-    document.getElementById(
-      "leadsTableWrap"
-    );
+  leadsLoadInProgress = true;
 
+  const loading = document.getElementById("leadsLoading");
+  const empty = document.getElementById("leadsEmpty");
+  const tableWrap = document.getElementById("leadsTableWrap");
 
-  loading.style.display =
-    "block";
+  if (loading) loading.style.display = "block";
+  if (empty) empty.style.display = "none";
+  if (tableWrap) tableWrap.style.display = "none";
 
-  empty.style.display =
-    "none";
+  try {
 
-  tableWrap.style.display =
-    "none";
-
-
-  const {
-    data,
-    error
-  } =
-    await supabaseClient
+    const {
+      data,
+      error
+    } = await supabaseClient
       .from("leads")
-      .select(
-        `
+      .select(`
         id,
         lead_number,
         customer_name,
@@ -3358,54 +3356,61 @@ async function loadLeads() {
         assigned_technician_id,
         created_at,
         updated_at
-        `
-      )
-      .order(
-        "created_at",
-        {
-          ascending:false
-        }
+      `)
+      .order("created_at", { ascending:false });
+
+    if (error) {
+
+      console.error("Leads error:", error);
+
+      if (empty) {
+        empty.textContent =
+          "Unable to load leads. " +
+          (error.message || "Please check database access.");
+        empty.style.display = "block";
+      }
+
+      showNotice(
+        "Leads could not be loaded. " +
+        (error.message || ""),
+        "error",
+        leadsNotice
       );
 
+      return;
+    }
 
-  loading.style.display =
-    "none";
+    allLeads = Array.isArray(data) ? data : [];
 
+    applyLeadFilters();
 
-  if (error) {
+  } catch (error) {
 
-    console.error(
-      "Leads error:",
-      error
-    );
-
-    allLeads = [];
-    filteredLeads = [];
-
-    empty.textContent =
-      "Unable to load leads. Please check database access.";
-
-    empty.style.display =
-      "block";
+    console.error("Leads load exception:", error);
 
     showNotice(
-      "Leads could not be loaded.",
+      error.message || "Unable to load leads.",
       "error",
       leadsNotice
     );
 
-    return;
+  } finally {
+
+    if (loading) loading.style.display = "none";
+
+    leadsLoadInProgress = false;
+
+    if (leadsReloadQueued) {
+
+      leadsReloadQueued = false;
+
+      setTimeout(function() {
+        loadLeads(true);
+      }, 0);
+
+    }
 
   }
-
-
-  allLeads =
-    Array.isArray(data)
-      ? data
-      : [];
-
-
-  applyLeadFilters();
 
 }
 
@@ -4088,17 +4093,14 @@ async function createLead(event) {
 
   event.preventDefault();
 
-
   const saveButton =
-    document.getElementById(
-      "saveLeadButton"
-    );
+    document.getElementById("saveLeadButton");
 
+  if (isCreatingLead) {
+    return;
+  }
 
-  if (
-    !currentAuthUser ||
-    !currentAppUser
-  ) {
+  if (!currentAuthUser || !currentAppUser) {
 
     showNotice(
       "Your Support session is not ready.",
@@ -4107,75 +4109,40 @@ async function createLead(event) {
     );
 
     return;
-
   }
 
-
   const customerName =
-    document.getElementById(
-      "leadCustomerName"
-    ).value.trim();
-
+    document.getElementById("leadCustomerName").value.trim();
 
   const mobile =
-    document.getElementById(
-      "leadMobile"
-    ).value.trim();
-
+    document.getElementById("leadMobile").value.trim();
 
   const alternateMobile =
-    document.getElementById(
-      "leadAlternateMobile"
-    ).value.trim();
-
+    document.getElementById("leadAlternateMobile").value.trim();
 
   const serviceType =
-    document.getElementById(
-      "leadServiceType"
-    ).value;
-
+    document.getElementById("leadServiceType").value;
 
   const address =
-    document.getElementById(
-      "leadAddress"
-    ).value.trim();
-
+    document.getElementById("leadAddress").value.trim();
 
   const city =
-    document.getElementById(
-      "leadCity"
-    ).value.trim();
-
+    document.getElementById("leadCity").value.trim();
 
   const state =
-    document.getElementById(
-      "leadState"
-    ).value.trim();
-
+    document.getElementById("leadState").value.trim();
 
   const pincode =
-    document.getElementById(
-      "leadPincode"
-    ).value.trim();
-
+    document.getElementById("leadPincode").value.trim();
 
   const preferredDate =
-    document.getElementById(
-      "leadPreferredDate"
-    ).value;
-
+    document.getElementById("leadPreferredDate").value;
 
   const preferredTime =
-    document.getElementById(
-      "leadPreferredTime"
-    ).value.trim();
-
+    document.getElementById("leadPreferredTime").value.trim();
 
   const notes =
-    document.getElementById(
-      "leadNotes"
-    ).value.trim();
-
+    document.getElementById("leadNotes").value.trim();
 
   const cleanMobile =
     mobile.replace(/\D/g,"");
@@ -4257,9 +4224,8 @@ async function createLead(event) {
       document.getElementById("leadPreferredDate");
   }
 
-  if (
-    firstInvalidField
-  ) {
+  if (firstInvalidField) {
+
     showNotice(
       "Please correct the highlighted fields before creating the lead.",
       "error",
@@ -4270,31 +4236,15 @@ async function createLead(event) {
     return;
   }
 
-
-  /*
-    Duplicate warning.
-
-    We do NOT block creation.
-    Support can still intentionally create
-    another service request.
-  */
-
   const possibleDuplicate =
     allLeads.find(function(lead) {
 
       const existingMobile =
-        String(
-          lead.mobile || ""
-        )
-        .replace(/\D/g,"");
+        String(lead.mobile || "").replace(/\D/g,"");
 
-      return (
-        existingMobile ===
-        cleanMobile
-      );
+      return existingMobile === cleanMobile;
 
     });
-
 
   if (possibleDuplicate) {
 
@@ -4302,13 +4252,9 @@ async function createLead(event) {
       window.confirm(
         "A previous lead already exists for this mobile number.\n\n" +
         "Lead: " +
-        (
-          possibleDuplicate.lead_number ||
-          "Existing lead"
-        ) +
+        (possibleDuplicate.lead_number || "Existing lead") +
         "\n\nCreate this new lead anyway?"
       );
-
 
     if (!confirmed) {
       return;
@@ -4316,131 +4262,78 @@ async function createLead(event) {
 
   }
 
-
-  saveButton.disabled =
-    true;
-
-  saveButton.textContent =
-    "Creating...";
-
+  isCreatingLead = true;
+  saveButton.disabled = true;
+  saveButton.textContent = "Creating...";
 
   try {
 
     const leadNumber =
       generateLeadNumber();
 
-
     const {
       data,
       error
-    } =
-      await supabaseClient
-        .from("leads")
-        .insert({
-
-          lead_number:
-            leadNumber,
-
-          partner_id:
-            null,
-
-          customer_id:
-            null,
-
-          service_type:
-            serviceType,
-
-          customer_name:
-            customerName,
-
-          mobile:
-            cleanMobile,
-
-          alternate_mobile:
-            cleanAlternateMobile ||
-            null,
-
-          address:
-            address ||
-            null,
-
-          city:
-            city ||
-            null,
-
-          state:
-            state ||
-            null,
-
-          pincode:
-            cleanPincode ||
-            null,
-
-          preferred_date:
-            preferredDate ||
-            null,
-
-          preferred_time:
-            preferredTime ||
-            null,
-
-          notes:
-            notes ||
-            null,
-
-          status:
-            "NEW",
-
-          assigned_technician_id:
-            null,
-
-          created_by:
-            currentAuthUser.id,
-
-          updated_by:
-            currentAuthUser.id
-
-        })
-        .select()
-        .single();
-
+    } = await supabaseClient
+      .from("leads")
+      .insert({
+        lead_number: leadNumber,
+        partner_id: null,
+        customer_id: null,
+        service_type: serviceType,
+        customer_name: customerName,
+        mobile: cleanMobile,
+        alternate_mobile: cleanAlternateMobile || null,
+        address: address || null,
+        city: city || null,
+        state: state || null,
+        pincode: cleanPincode || null,
+        preferred_date: preferredDate || null,
+        preferred_time: preferredTime || null,
+        notes: notes || null,
+        status: "NEW",
+        assigned_technician_id: null,
+        created_by: currentAuthUser.id,
+        updated_by: currentAuthUser.id
+      })
+      .select()
+      .single();
 
     if (error) {
 
-      console.error(
-        "Create lead error:",
-        error
-      );
+      console.error("Create lead error:", error);
 
-      /*
-        Rare lead number collision.
-        User can retry.
-      */
-
-      if (
-        error.code === "23505"
-      ) {
-
+      if (error.code === "23505") {
         throw new Error(
-          "Lead ID collision occurred. Please click Create Lead again."
+          "Lead ID collision occurred. Please try again."
         );
-
       }
 
-
       throw new Error(
-        error.message ||
-        "Unable to create lead."
+        error.message || "Unable to create lead."
       );
-
     }
 
+    if (!data || !data.id) {
+      throw new Error(
+        "Lead was created but the database did not return the new lead."
+      );
+    }
 
-    console.log(
-      "Lead created:",
-      data
-    );
+    console.log("Lead created:", data);
 
+    /*
+      Immediate UI update: the new lead appears without waiting
+      for another network request.
+    */
+    allLeads = [
+      data,
+      ...allLeads.filter(function(row) {
+        return row.id !== data.id;
+      })
+    ];
+
+    applyLeadFilters();
 
     closeLeadModal();
 
@@ -4448,20 +4341,19 @@ async function createLead(event) {
     clearLeadValidation();
     setLeadDateMinimum();
 
-
     showNotice(
       "Lead " +
-      leadNumber +
+      (data.lead_number || leadNumber) +
       " created successfully.",
       "success",
       leadsNotice
     );
 
-
-    await loadLeads();
-
+    /*
+      Server refresh: makes the list authoritative after creation.
+    */
+    await loadLeads(true);
     await loadDashboardData();
-
 
   } catch (error) {
 
@@ -4469,7 +4361,6 @@ async function createLead(event) {
       "Lead creation exception:",
       error
     );
-
 
     showNotice(
       error.message ||
@@ -4480,11 +4371,9 @@ async function createLead(event) {
 
   } finally {
 
-    saveButton.disabled =
-      false;
-
-    saveButton.textContent =
-      "Create Lead";
+    isCreatingLead = false;
+    saveButton.disabled = false;
+    saveButton.textContent = "Create Lead";
 
   }
 
@@ -6331,7 +6220,7 @@ function activateSection(section) {
 
     hideNotice(dashboardNotice);
 
-    loadLeads();
+    loadLeads(true);
 
     window.scrollTo({
       top:0,
@@ -6733,6 +6622,25 @@ if (refreshButton) {
 /* =====================================================
    38. LOGOUT
    ===================================================== */
+
+/* =====================================================
+   40.5 LEAD LIST AUTO-REFRESH
+   ===================================================== */
+
+setInterval(function() {
+
+  if (
+    dashboardReady &&
+    leadsSection &&
+    leadsSection.style.display !== "none" &&
+    !isCreatingLead &&
+    !leadsLoadInProgress
+  ) {
+    loadLeads(true);
+  }
+
+}, 15000);
+
 
 if (logoutButton) {
 
