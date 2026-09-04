@@ -612,24 +612,6 @@
       margin-bottom: 5px;
     }
 
-    @media (max-width: 650px) {
-      .assignment-card {
-        grid-template-columns: 1fr;
-      }
-
-      .assignment-actions {
-        justify-content: flex-start;
-      }
-    }
-
-
-    .modal-footer {
-      padding: 18px 22px;
-      border-top: 1px solid var(--line);
-      display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-    }
 
     /* TECHNICIANS MODULE */
 
@@ -729,6 +711,25 @@
       .technician-table {
         min-width: 680px;
       }
+    }
+
+    @media (max-width: 650px) {
+      .assignment-card {
+        grid-template-columns: 1fr;
+      }
+
+      .assignment-actions {
+        justify-content: flex-start;
+      }
+    }
+
+
+    .modal-footer {
+      padding: 18px 22px;
+      border-top: 1px solid var(--line);
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
     }
 
     /* LOADING */
@@ -1922,6 +1923,7 @@
     </section>
 
 
+
     <!-- =================================================
          TECHNICIANS SECTION
          ================================================= -->
@@ -2400,115 +2402,6 @@
 </div>
 
 
-<!-- =====================================================
-     REVIEW COMPLETION MODAL
-     ===================================================== -->
-
-<div
-  id="reviewCompletionModal"
-  class="modal-overlay"
->
-  <div
-    class="modal"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="reviewCompletionTitle"
-  >
-    <div class="modal-header">
-      <div>
-        <h2 id="reviewCompletionTitle">Review Completion</h2>
-        <p>Verify the submitted service evidence before closing the lead.</p>
-      </div>
-      <button type="button" class="modal-close" id="closeReviewCompletionModal" aria-label="Close">×</button>
-    </div>
-
-    <div class="modal-body">
-      <div id="reviewCompletionMessage" class="dashboard-notice" style="display:none;"></div>
-
-      <div class="assignment-summary" id="reviewCompletionSummary"></div>
-
-      <div class="g2" style="margin-bottom:16px;">
-        <div class="card" style="padding:16px;">
-          <div class="small">Amount Collected</div>
-          <strong id="reviewAmountCollected" style="font-size:22px;">—</strong>
-        </div>
-        <div class="card" style="padding:16px;">
-          <div class="small">Payment Mode</div>
-          <strong id="reviewPaymentMode" style="font-size:18px;">—</strong>
-        </div>
-      </div>
-
-      <div class="card" style="padding:16px; margin-bottom:16px;">
-        <div class="section-title-row" style="margin-bottom:10px;">
-          <h3 style="margin:0;">Completion Verification</h3>
-        </div>
-        <div id="reviewVerification" class="small">Loading...</div>
-      </div>
-
-      <div
-        id="newCompletionCodeCard"
-        class="card"
-        style="padding:16px; margin-bottom:16px; display:none; border-color:rgba(53,209,170,.35);"
-      >
-        <div class="section-title-row" style="margin-bottom:10px;">
-          <h3 style="margin:0;">New Service Completion Code</h3>
-        </div>
-
-        <div class="small" style="margin-bottom:12px;">
-          Give this new 6-digit code to the customer. The previous code has been invalidated.
-        </div>
-
-        <div
-          style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;"
-        >
-          <strong
-            id="newCompletionCodeValue"
-            style="font-size:30px;letter-spacing:5px;"
-          >—</strong>
-
-          <button
-            type="button"
-            class="btn"
-            id="copyCompletionCodeButton"
-          >
-            Copy Code
-          </button>
-
-          <a
-            id="whatsappCompletionCodeButton"
-            class="btn primary"
-            href="#"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Open WhatsApp
-          </a>
-        </div>
-
-        <div
-          id="completionCodeExpiry"
-          class="small"
-          style="margin-top:10px;"
-        ></div>
-      </div>
-
-      <div class="card" style="padding:16px;">
-        <div class="section-title-row" style="margin-bottom:12px;">
-          <h3 style="margin:0;">Submitted Photos</h3>
-        </div>
-        <div id="reviewDocuments" class="g2">
-          <div class="small">Loading submitted documents...</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="modal-footer">
-      <button type="button" class="btn" id="requestCorrectionButton">Request Correction</button>
-      <button type="button" class="btn primary" id="approveCompletionButton">Approve &amp; Complete</button>
-    </div>
-  </div>
-</div>
-
 
 <!-- =====================================================
      ADD TECHNICIAN MODAL
@@ -2709,46 +2602,6 @@
 </div>
 
 <!-- =====================================================
-     LEAD CREATED / SERVICE COMPLETION CODE MODAL
-     ===================================================== -->
-
-<div id="leadCreatedCodeModal" class="modal-overlay" aria-hidden="true">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="leadCreatedCodeTitle">
-    <div class="modal-header">
-      <div>
-        <h2 id="leadCreatedCodeTitle">Lead Created Successfully</h2>
-        <p>Share the Service Completion Code with the customer.</p>
-      </div>
-      <button type="button" class="modal-close" id="closeLeadCreatedCodeModal" aria-label="Close">×</button>
-    </div>
-
-    <div class="modal-body">
-      <div class="card" style="padding:18px; border-color:rgba(53,209,170,.35);">
-        <div class="small">Lead ID</div>
-        <strong id="leadCreatedCodeLeadNumber" style="font-size:20px;">—</strong>
-
-        <div class="small" style="margin-top:16px;">Customer</div>
-        <strong id="leadCreatedCodeCustomer">—</strong>
-
-        <div class="small" style="margin-top:18px;">Service Completion Code</div>
-        <strong id="leadCreatedCodeValue" style="display:block;font-size:34px;letter-spacing:6px;margin-top:6px;">—</strong>
-
-        <div class="small" style="margin-top:10px;">Valid for 24 hours. The code is securely stored as a hash and is shown only to the authenticated Support session that created the lead.</div>
-
-        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;">
-          <button type="button" class="btn" id="copyLeadCreatedCodeButton">Copy Code</button>
-          <a id="whatsappLeadCreatedCodeButton" class="btn primary" href="#" target="_blank" rel="noopener noreferrer">Open WhatsApp</a>
-        </div>
-      </div>
-    </div>
-
-    <div class="modal-footer">
-      <button type="button" class="btn primary" id="doneLeadCreatedCodeButton">Done</button>
-    </div>
-  </div>
-</div>
-
-<!-- =====================================================
      FOOTER
      ===================================================== -->
 
@@ -2805,9 +2658,9 @@ let filteredLeads = [];
 
 let unassignedLeads = [];
 let availableTechnicians = [];
+let selectedAssignmentLead = null;
 let allTechnicians = [];
 let filteredTechnicians = [];
-let selectedAssignmentLead = null;
 
 
 /* =====================================================
@@ -2868,7 +2721,6 @@ const technicianForm =
 const technicianFormError =
   document.getElementById("technicianFormError");
 
-
 const assignmentsRefreshButton =
   document.getElementById("assignmentsRefreshButton");
 
@@ -2916,70 +2768,6 @@ const leadModal =
 
 const leadForm =
   document.getElementById("leadForm");
-
-const reviewCompletionModal =
-  document.getElementById("reviewCompletionModal");
-
-const reviewCompletionSummary =
-  document.getElementById("reviewCompletionSummary");
-
-const reviewAmountCollected =
-  document.getElementById("reviewAmountCollected");
-
-const reviewPaymentMode =
-  document.getElementById("reviewPaymentMode");
-
-const reviewVerification =
-  document.getElementById("reviewVerification");
-
-const reviewDocuments =
-  document.getElementById("reviewDocuments");
-
-const reviewCompletionMessage =
-  document.getElementById("reviewCompletionMessage");
-
-const newCompletionCodeCard =
-  document.getElementById("newCompletionCodeCard");
-
-const newCompletionCodeValue =
-  document.getElementById("newCompletionCodeValue");
-
-const completionCodeExpiry =
-  document.getElementById("completionCodeExpiry");
-
-const copyCompletionCodeButton =
-  document.getElementById("copyCompletionCodeButton");
-
-const whatsappCompletionCodeButton =
-  document.getElementById("whatsappCompletionCodeButton");
-
-const approveCompletionButton =
-  document.getElementById("approveCompletionButton");
-
-const requestCorrectionButton =
-  document.getElementById("requestCorrectionButton");
-
-let selectedCompletionLead = null;
-let isCreatingLead = false;
-
-const leadCreatedCodeModal =
-  document.getElementById("leadCreatedCodeModal");
-
-const leadCreatedCodeLeadNumber =
-  document.getElementById("leadCreatedCodeLeadNumber");
-
-const leadCreatedCodeCustomer =
-  document.getElementById("leadCreatedCodeCustomer");
-
-const leadCreatedCodeValue =
-  document.getElementById("leadCreatedCodeValue");
-
-const copyLeadCreatedCodeButton =
-  document.getElementById("copyLeadCreatedCodeButton");
-
-const whatsappLeadCreatedCodeButton =
-  document.getElementById("whatsappLeadCreatedCodeButton");
-
 
 
 /* =====================================================
@@ -3863,36 +3651,22 @@ function renderLeads() {
             <td>
 
               ${
-                lead.status === "COMPLETION_SUBMITTED"
+                !lead.assigned_technician_id &&
+                ["NEW","RESCHEDULED","RESCHEDULE_REQUESTED"].includes(lead.status)
                   ? `
                     <button
                       type="button"
                       class="btn primary"
-                      data-review-completion="${escapeHtml(lead.id)}"
+                      data-assign-lead="${escapeHtml(lead.id)}"
                     >
-                      Review Completion
+                      Assign
                     </button>
                   `
-                  : !lead.assigned_technician_id &&
-                    ["NEW","RESCHEDULED","RESCHEDULE_REQUESTED"].includes(lead.status)
-                    ? `
-                      <button
-                        type="button"
-                        class="btn primary"
-                        data-assign-lead="${escapeHtml(lead.id)}"
-                      >
-                        Assign
-                      </button>
-                    `
-                    : lead.status === "COMPLETED"
-                      ? `
-                        <span class="small">Completed</span>
-                      `
-                      : `
-                        <span class="small">
-                          ${lead.assigned_technician_id ? "Assigned" : "—"}
-                        </span>
-                      `
+                  : `
+                    <span class="small">
+                      ${lead.assigned_technician_id ? "Assigned" : "—"}
+                    </span>
+                  `
               }
 
             </td>
@@ -3930,30 +3704,6 @@ function renderLeads() {
             openAssignmentModal(
               lead
             );
-          }
-
-        }
-      );
-
-    });
-
-  tbody
-    .querySelectorAll(
-      "[data-review-completion]"
-    )
-    .forEach(function(button) {
-
-      button.addEventListener(
-        "click",
-        function() {
-
-          const lead =
-            allLeads.find(
-              row => row.id === button.dataset.reviewCompletion
-            );
-
-          if (lead) {
-            openReviewCompletionModal(lead);
           }
 
         }
@@ -4338,45 +4088,120 @@ async function createLead(event) {
 
   event.preventDefault();
 
-  const saveButton = document.getElementById("saveLeadButton");
 
-  if (isCreatingLead) {
-    return;
-  }
+  const saveButton =
+    document.getElementById(
+      "saveLeadButton"
+    );
 
-  if (!currentAuthUser || !currentAppUser) {
+
+  if (
+    !currentAuthUser ||
+    !currentAppUser
+  ) {
+
     showNotice(
       "Your Support session is not ready.",
       "error",
       leadsNotice
     );
+
     return;
+
   }
 
-  const customerName = document.getElementById("leadCustomerName").value.trim();
-  const mobile = document.getElementById("leadMobile").value.trim();
-  const alternateMobile = document.getElementById("leadAlternateMobile").value.trim();
-  const serviceType = document.getElementById("leadServiceType").value;
-  const address = document.getElementById("leadAddress").value.trim();
-  const city = document.getElementById("leadCity").value.trim();
-  const state = document.getElementById("leadState").value.trim();
-  const pincode = document.getElementById("leadPincode").value.trim();
-  const preferredDate = document.getElementById("leadPreferredDate").value;
-  const preferredTime = document.getElementById("leadPreferredTime").value.trim();
-  const notes = document.getElementById("leadNotes").value.trim();
 
-  const cleanMobile = mobile.replace(/\D/g, "");
-  const cleanAlternateMobile = alternateMobile.replace(/\D/g, "");
-  const cleanPincode = pincode.replace(/\D/g, "");
-  const todayString = getTodayLocalDate();
+  const customerName =
+    document.getElementById(
+      "leadCustomerName"
+    ).value.trim();
+
+
+  const mobile =
+    document.getElementById(
+      "leadMobile"
+    ).value.trim();
+
+
+  const alternateMobile =
+    document.getElementById(
+      "leadAlternateMobile"
+    ).value.trim();
+
+
+  const serviceType =
+    document.getElementById(
+      "leadServiceType"
+    ).value;
+
+
+  const address =
+    document.getElementById(
+      "leadAddress"
+    ).value.trim();
+
+
+  const city =
+    document.getElementById(
+      "leadCity"
+    ).value.trim();
+
+
+  const state =
+    document.getElementById(
+      "leadState"
+    ).value.trim();
+
+
+  const pincode =
+    document.getElementById(
+      "leadPincode"
+    ).value.trim();
+
+
+  const preferredDate =
+    document.getElementById(
+      "leadPreferredDate"
+    ).value;
+
+
+  const preferredTime =
+    document.getElementById(
+      "leadPreferredTime"
+    ).value.trim();
+
+
+  const notes =
+    document.getElementById(
+      "leadNotes"
+    ).value.trim();
+
+
+  const cleanMobile =
+    mobile.replace(/\D/g,"");
+
+  const cleanAlternateMobile =
+    alternateMobile.replace(/\D/g,"");
+
+  const cleanPincode =
+    pincode.replace(/\D/g,"");
+
+  const todayString =
+    getTodayLocalDate();
 
   clearLeadValidation();
 
   let firstInvalidField = null;
 
   if (!customerName) {
-    setFieldError("leadCustomerName", "", "Customer name is required.");
-    firstInvalidField = firstInvalidField || document.getElementById("leadCustomerName");
+    setFieldError(
+      "leadCustomerName",
+      "",
+      "Customer name is required."
+    );
+    firstInvalidField =
+      firstInvalidField ||
+      document.getElementById("leadCustomerName");
   }
 
   if (!/^\d{10}$/.test(cleanMobile)) {
@@ -4385,175 +4210,284 @@ async function createLead(event) {
       "leadMobileError",
       "Mobile number must contain exactly 10 digits."
     );
-    firstInvalidField = firstInvalidField || document.getElementById("leadMobile");
+    firstInvalidField =
+      firstInvalidField ||
+      document.getElementById("leadMobile");
   }
 
-  if (alternateMobile && !/^\d{10}$/.test(cleanAlternateMobile)) {
+  if (
+    alternateMobile &&
+    !/^\d{10}$/.test(cleanAlternateMobile)
+  ) {
     setFieldError(
       "leadAlternateMobile",
       "leadAlternateMobileError",
       "Alternate mobile must contain exactly 10 digits."
     );
-    firstInvalidField = firstInvalidField || document.getElementById("leadAlternateMobile");
+    firstInvalidField =
+      firstInvalidField ||
+      document.getElementById("leadAlternateMobile");
   }
 
-  if (cleanPincode && !/^\d{6}$/.test(cleanPincode)) {
+  if (
+    cleanPincode &&
+    !/^\d{6}$/.test(cleanPincode)
+  ) {
     setFieldError(
       "leadPincode",
       "leadPincodeError",
       "Pincode must contain exactly 6 digits."
     );
-    firstInvalidField = firstInvalidField || document.getElementById("leadPincode");
+    firstInvalidField =
+      firstInvalidField ||
+      document.getElementById("leadPincode");
   }
 
-  if (preferredDate && preferredDate < todayString) {
+  if (
+    preferredDate &&
+    preferredDate < todayString
+  ) {
     setFieldError(
       "leadPreferredDate",
       "leadPreferredDateError",
       "Preferred date cannot be earlier than today."
     );
-    firstInvalidField = firstInvalidField || document.getElementById("leadPreferredDate");
+    firstInvalidField =
+      firstInvalidField ||
+      document.getElementById("leadPreferredDate");
   }
 
-  if (firstInvalidField) {
+  if (
+    firstInvalidField
+  ) {
     showNotice(
       "Please correct the highlighted fields before creating the lead.",
       "error",
       leadsNotice
     );
+
     firstInvalidField.focus();
     return;
   }
 
+
   /*
-    Duplicate warning remains intentional: Support may create another
-    service request for the same customer. The actual save is now one
-    atomic database transaction, so a failed code/service-record step
-    can never leave a half-created lead behind.
+    Duplicate warning.
+
+    We do NOT block creation.
+    Support can still intentionally create
+    another service request.
   */
-  const possibleDuplicate = allLeads.find(function(lead) {
-    const existingMobile = String(lead.mobile || "").replace(/\D/g, "");
-    return existingMobile === cleanMobile;
-  });
+
+  const possibleDuplicate =
+    allLeads.find(function(lead) {
+
+      const existingMobile =
+        String(
+          lead.mobile || ""
+        )
+        .replace(/\D/g,"");
+
+      return (
+        existingMobile ===
+        cleanMobile
+      );
+
+    });
+
 
   if (possibleDuplicate) {
-    const confirmed = window.confirm(
-      "A previous lead already exists for this mobile number.\n\n" +
-      "Lead: " + (possibleDuplicate.lead_number || "Existing lead") +
-      "\n\nCreate this new lead anyway?"
-    );
+
+    const confirmed =
+      window.confirm(
+        "A previous lead already exists for this mobile number.\n\n" +
+        "Lead: " +
+        (
+          possibleDuplicate.lead_number ||
+          "Existing lead"
+        ) +
+        "\n\nCreate this new lead anyway?"
+      );
+
 
     if (!confirmed) {
       return;
     }
+
   }
 
-  isCreatingLead = true;
-  if (saveButton) {
-    saveButton.disabled = true;
-    saveButton.textContent = "Creating...";
-  }
+
+  saveButton.disabled =
+    true;
+
+  saveButton.textContent =
+    "Creating...";
+
 
   try {
-    const leadNumber = generateLeadNumber();
 
-    /*
-      IMPORTANT:
-      Lead + service order + visit + first completion code are now
-      created by ONE RPC transaction. This prevents the old situation
-      where the lead was inserted first, the code failed afterwards,
-      and clicking Create Lead again produced duplicates.
-    */
-    const { data, error } = await supabaseClient.rpc(
-      "create_lead_with_completion_code",
-      {
-        p_lead_number: leadNumber,
-        p_service_type: serviceType,
-        p_customer_name: customerName,
-        p_mobile: cleanMobile,
-        p_alternate_mobile: cleanAlternateMobile || null,
-        p_address: address || null,
-        p_city: city || null,
-        p_state: state || null,
-        p_pincode: cleanPincode || null,
-        p_preferred_date: preferredDate || null,
-        p_preferred_time: preferredTime || null,
-        p_notes: notes || null
-      }
-    );
+    const leadNumber =
+      generateLeadNumber();
+
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
+        .from("leads")
+        .insert({
+
+          lead_number:
+            leadNumber,
+
+          partner_id:
+            null,
+
+          customer_id:
+            null,
+
+          service_type:
+            serviceType,
+
+          customer_name:
+            customerName,
+
+          mobile:
+            cleanMobile,
+
+          alternate_mobile:
+            cleanAlternateMobile ||
+            null,
+
+          address:
+            address ||
+            null,
+
+          city:
+            city ||
+            null,
+
+          state:
+            state ||
+            null,
+
+          pincode:
+            cleanPincode ||
+            null,
+
+          preferred_date:
+            preferredDate ||
+            null,
+
+          preferred_time:
+            preferredTime ||
+            null,
+
+          notes:
+            notes ||
+            null,
+
+          status:
+            "NEW",
+
+          assigned_technician_id:
+            null,
+
+          created_by:
+            currentAuthUser.id,
+
+          updated_by:
+            currentAuthUser.id
+
+        })
+        .select()
+        .single();
+
 
     if (error) {
-      console.error("Create lead transaction error:", error);
 
-      if (error.code === "23505") {
+      console.error(
+        "Create lead error:",
+        error
+      );
+
+      /*
+        Rare lead number collision.
+        User can retry.
+      */
+
+      if (
+        error.code === "23505"
+      ) {
+
         throw new Error(
-          "This Lead ID was already used. Please click Create Lead once more. No duplicate lead was created."
+          "Lead ID collision occurred. Please click Create Lead again."
         );
+
       }
 
-      throw new Error(error.message || "Unable to create lead.");
-    }
 
-    if (!data || !data.lead_id || !/^\d{6}$/.test(String(data.completion_code || ""))) {
-      console.error("Invalid create lead RPC response:", data);
       throw new Error(
-        "Lead creation was not completed because the server did not return a valid Service Completion Code. No partial lead was saved."
+        error.message ||
+        "Unable to create lead."
       );
+
     }
 
-    const createdLeadNumber = String(data.lead_number || leadNumber);
-    const cleanCompletionCode = String(data.completion_code).trim();
 
-    selectedCompletionLead = {
-      id: data.lead_id,
-      lead_number: createdLeadNumber,
-      customer_name: customerName,
-      mobile: cleanMobile,
-      service_type: serviceType,
-      city: city,
-      state: state
-    };
+    console.log(
+      "Lead created:",
+      data
+    );
+
 
     closeLeadModal();
+
     leadForm.reset();
     clearLeadValidation();
     setLeadDateMinimum();
 
-    /* Refresh the page data BEFORE showing the code modal. */
-    await loadLeads();
-    await loadDashboardData();
 
     showNotice(
-      "Lead " + createdLeadNumber +
-      " created successfully. Service Completion Code is ready.",
+      "Lead " +
+      leadNumber +
+      " created successfully.",
       "success",
       leadsNotice
     );
 
-    showLeadCreatedCodeModal(
-      createdLeadNumber,
-      customerName,
-      cleanMobile,
-      cleanCompletionCode
-    );
+
+    await loadLeads();
+
+    await loadDashboardData();
+
 
   } catch (error) {
-    console.error("Lead creation exception:", error);
+
+    console.error(
+      "Lead creation exception:",
+      error
+    );
+
 
     showNotice(
-      error.message || "Unable to create lead. No duplicate lead was created.",
+      error.message ||
+      "Unable to create lead.",
       "error",
       leadsNotice
     );
 
   } finally {
-    isCreatingLead = false;
 
-    if (saveButton) {
-      saveButton.disabled = false;
-      saveButton.textContent = "Create Lead";
-    }
+    saveButton.disabled =
+      false;
+
+    saveButton.textContent =
+      "Create Lead";
+
   }
+
 }
 
 
@@ -5356,662 +5290,6 @@ if (assignmentModal) {
 }
 
 
-/* =====================================================
-   38. REVIEW COMPLETION
-   ===================================================== */
-
-function reviewMessage(message, type = "error") {
-
-  if (!reviewCompletionMessage) return;
-
-  reviewCompletionMessage.textContent = message;
-  reviewCompletionMessage.className = "dashboard-notice";
-  reviewCompletionMessage.style.display = "block";
-
-  if (type === "success") {
-    reviewCompletionMessage.style.borderColor = "rgba(53,209,170,.35)";
-  } else {
-    reviewCompletionMessage.classList.add("error");
-  }
-
-}
-
-
-function closeReviewCompletionModal() {
-
-  if (!reviewCompletionModal) return;
-
-  reviewCompletionModal.classList.remove("open");
-  selectedCompletionLead = null;
-
-  if (reviewDocuments) {
-    reviewDocuments.innerHTML = "";
-  }
-
-  if (newCompletionCodeCard) {
-    newCompletionCodeCard.style.display = "none";
-  }
-
-  if (newCompletionCodeValue) {
-    newCompletionCodeValue.textContent = "—";
-  }
-
-  if (completionCodeExpiry) {
-    completionCodeExpiry.textContent = "";
-  }
-
-  if (whatsappCompletionCodeButton) {
-    whatsappCompletionCodeButton.href = "#";
-  }
-
-}
-
-
-function documentTitle(type) {
-
-  const labels = {
-    INDOOR_LOCATION: "Indoor Location",
-    INDOOR_SERIAL: "Indoor Serial Number",
-    OUTDOOR_LOCATION: "Outdoor Location",
-    OUTDOOR_SERIAL: "Outdoor Serial Number",
-    AC_BILL: "AC Bill",
-    PAYMENT_PROOF: "Payment Proof",
-    OTHER: "Other Document"
-  };
-
-  return labels[type] || formatStatus(type);
-
-}
-
-
-function formatAmount(value) {
-
-  const amount = Number(value);
-
-  if (!Number.isFinite(amount)) return "—";
-
-  return "₹" + amount.toLocaleString("en-IN", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  });
-
-}
-
-
-async function createReviewDocumentUrl(path) {
-
-  const { data, error } =
-    await supabaseClient.storage
-      .from("service-documents")
-      .createSignedUrl(path, 600);
-
-  if (error || !data?.signedUrl) {
-    throw new Error(error?.message || "Unable to create document preview link.");
-  }
-
-  return data.signedUrl;
-
-}
-
-
-async function loadReviewDocuments(serviceOrderId, visitId) {
-
-  reviewDocuments.innerHTML =
-    '<div class="small">Loading submitted documents...</div>';
-
-  let query = supabaseClient
-    .from("documents")
-    .select("id,document_type,storage_path,original_filename,mime_type,created_at")
-    .order("created_at", { ascending: false });
-
-  if (visitId) {
-    query = query.eq("visit_id", visitId);
-  } else {
-    query = query.eq("service_order_id", serviceOrderId);
-  }
-
-  const { data, error } = await query;
-
-  if (error) {
-    throw new Error("Unable to load submitted documents: " + error.message);
-  }
-
-  const documents = Array.isArray(data) ? data : [];
-
-  if (!documents.length) {
-    reviewDocuments.innerHTML =
-      '<div class="small">No submitted documents found.</div>';
-    return;
-  }
-
-  reviewDocuments.innerHTML = "";
-
-  for (const doc of documents) {
-
-    const card = document.createElement("div");
-    card.className = "card";
-    card.style.padding = "12px";
-
-    const title = document.createElement("div");
-    title.style.fontWeight = "800";
-    title.style.marginBottom = "8px";
-    title.textContent = documentTitle(doc.document_type);
-
-    const meta = document.createElement("div");
-    meta.className = "small";
-    meta.textContent = doc.original_filename || "Submitted document";
-
-    card.appendChild(title);
-    card.appendChild(meta);
-
-    try {
-      const url = await createReviewDocumentUrl(doc.storage_path);
-
-      if (String(doc.mime_type || "").startsWith("image/")) {
-        const image = document.createElement("img");
-        image.src = url;
-        image.alt = documentTitle(doc.document_type);
-        image.loading = "lazy";
-        image.style.width = "100%";
-        image.style.maxHeight = "260px";
-        image.style.objectFit = "contain";
-        image.style.borderRadius = "10px";
-        image.style.marginTop = "10px";
-        image.style.background = "#06101d";
-        card.appendChild(image);
-      }
-
-      const openLink = document.createElement("a");
-      openLink.href = url;
-      openLink.target = "_blank";
-      openLink.rel = "noopener noreferrer";
-      openLink.className = "btn";
-      openLink.style.display = "inline-block";
-      openLink.style.marginTop = "10px";
-      openLink.textContent = "Open Document";
-      card.appendChild(openLink);
-
-    } catch (urlError) {
-
-      const unavailable = document.createElement("div");
-      unavailable.className = "small";
-      unavailable.style.marginTop = "8px";
-      unavailable.textContent = "Preview unavailable: " + urlError.message;
-      card.appendChild(unavailable);
-
-    }
-
-    reviewDocuments.appendChild(card);
-
-  }
-
-}
-
-
-async function openReviewCompletionModal(lead) {
-
-  selectedCompletionLead = lead;
-
-  reviewCompletionModal.classList.add("open");
-  reviewCompletionModal.setAttribute("aria-hidden", "false");
-
-  approveCompletionButton.disabled = true;
-  requestCorrectionButton.disabled = true;
-
-  reviewMessage("Loading completion details...", "success");
-
-  reviewCompletionSummary.innerHTML = `
-    <strong>${escapeHtml(lead.lead_number || "—")}</strong>
-    <div class="small">${escapeHtml(lead.customer_name || "—")} • ${escapeHtml(lead.service_type || "AC / Air Conditioner")}</div>
-    <div class="small">${escapeHtml(getLeadLocation(lead))}</div>
-    <div class="small">Mobile: ${escapeHtml(lead.mobile || "—")}</div>
-  `;
-
-  reviewAmountCollected.textContent = "—";
-  reviewPaymentMode.textContent = "—";
-  reviewVerification.textContent = "Loading...";
-  reviewDocuments.innerHTML = '<div class="small">Loading submitted documents...</div>';
-
-  try {
-
-    const { data: serviceOrder, error: orderError } =
-      await supabaseClient
-        .from("service_orders")
-        .select("id,lead_id")
-        .eq("lead_id", lead.id)
-        .maybeSingle();
-
-    if (orderError) throw new Error("Unable to load service order: " + orderError.message);
-    if (!serviceOrder) throw new Error("No service order found for this lead.");
-
-    const { data: visit, error: visitError } =
-      await supabaseClient
-        .from("visits")
-        .select("id,service_order_id,technician_id,status,visit_number,service_completed_at")
-        .eq("service_order_id", serviceOrder.id)
-        .order("visit_number", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-    if (visitError) throw new Error("Unable to load service visit: " + visitError.message);
-
-    const { data: payment, error: paymentError } =
-      await supabaseClient
-        .from("payments")
-        .select("amount_collected,payment_mode,updated_at,created_at")
-        .eq("service_order_id", serviceOrder.id)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-    if (paymentError) throw new Error("Unable to load payment details: " + paymentError.message);
-
-    reviewAmountCollected.textContent =
-      payment ? formatAmount(payment.amount_collected) : "₹0.00";
-
-    reviewPaymentMode.textContent =
-      payment?.payment_mode || "—";
-
-    const { data: codeData, error: codeError } =
-      await supabaseClient
-        .from("service_completion_codes")
-        .select("verified_at,expires_at,attempts,max_attempts")
-        .eq("service_order_id", serviceOrder.id)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-    if (codeError) {
-      reviewVerification.textContent = "Completion code verification details unavailable.";
-    } else if (codeData?.verified_at) {
-      reviewVerification.innerHTML =
-        '<strong style="color:var(--green);">✓ Completion Code Verified</strong>' +
-        '<div class="small">Verified: ' + escapeHtml(formatDate(codeData.verified_at)) + '</div>';
-    } else {
-      reviewVerification.innerHTML =
-        '<strong>Not verified</strong><div class="small">No verified completion code record was found.</div>';
-    }
-
-    await loadReviewDocuments(serviceOrder.id, visit?.id || null);
-
-    approveCompletionButton.disabled = false;
-    requestCorrectionButton.disabled = false;
-    reviewMessage("Review the evidence and payment details, then choose an action.", "success");
-
-  } catch (error) {
-
-    console.error("Review completion error:", error);
-    reviewMessage(error.message || "Unable to load completion details.");
-    approveCompletionButton.disabled = true;
-    requestCorrectionButton.disabled = false;
-
-  }
-
-}
-
-
-async function approveSelectedCompletion() {
-
-  if (!selectedCompletionLead) return;
-
-  const lead = selectedCompletionLead;
-
-  if (!confirm("Approve this completion and mark the lead as COMPLETED?")) return;
-
-  approveCompletionButton.disabled = true;
-  requestCorrectionButton.disabled = true;
-  reviewMessage("Approving completion...", "success");
-
-  try {
-
-    const now = new Date().toISOString();
-
-    const { error: leadError } =
-      await supabaseClient
-        .from("leads")
-        .update({
-          status: "COMPLETED",
-          updated_by: currentAppUser.id,
-          updated_at: now
-        })
-        .eq("id", lead.id)
-        .eq("status", "COMPLETION_SUBMITTED");
-
-    if (leadError) throw new Error("Unable to complete lead: " + leadError.message);
-
-    const { data: serviceOrder } =
-      await supabaseClient
-        .from("service_orders")
-        .select("id")
-        .eq("lead_id", lead.id)
-        .maybeSingle();
-
-    if (serviceOrder?.id) {
-      const { error: visitError } =
-        await supabaseClient
-          .from("visits")
-          .update({ status: "COMPLETED", updated_at: now })
-          .eq("service_order_id", serviceOrder.id)
-          .eq("status", "COMPLETION_SUBMITTED");
-
-      if (visitError) throw new Error("Lead completed, but visit update failed: " + visitError.message);
-    }
-
-    await supabaseClient
-      .from("audit_logs")
-      .insert({
-        actor_user_id: currentAppUser.id,
-        actor_role: currentAppUser.role,
-        action: "COMPLETION_APPROVED",
-        entity_type: "lead",
-        entity_id: lead.id,
-        old_value: { status: "COMPLETION_SUBMITTED" },
-        new_value: { status: "COMPLETED" },
-        reason: "Support reviewed and approved completion submission."
-      });
-
-    closeReviewCompletionModal();
-    await loadLeads();
-    await loadDashboardData();
-    showNotice("Lead " + lead.lead_number + " marked as Completed.", "success", leadsNotice);
-
-  } catch (error) {
-
-    console.error("Approve completion error:", error);
-    reviewMessage(error.message || "Unable to approve completion.");
-    approveCompletionButton.disabled = false;
-    requestCorrectionButton.disabled = false;
-
-  }
-
-}
-
-
-function closeLeadCreatedCodeModal() {
-
-  if (!leadCreatedCodeModal) return;
-
-  leadCreatedCodeModal.classList.remove("open");
-  leadCreatedCodeModal.setAttribute("aria-hidden", "true");
-
-  if (leadCreatedCodeValue) leadCreatedCodeValue.textContent = "—";
-  if (leadCreatedCodeLeadNumber) leadCreatedCodeLeadNumber.textContent = "—";
-  if (leadCreatedCodeCustomer) leadCreatedCodeCustomer.textContent = "—";
-  if (whatsappLeadCreatedCodeButton) whatsappLeadCreatedCodeButton.href = "#";
-}
-
-function showLeadCreatedCodeModal(leadNumber, customerName, mobile, code) {
-
-  if (!leadCreatedCodeModal || !leadCreatedCodeValue) return;
-
-  leadCreatedCodeLeadNumber.textContent = String(leadNumber || "—");
-  leadCreatedCodeCustomer.textContent = String(customerName || "—");
-  leadCreatedCodeValue.textContent = String(code || "—");
-
-  const cleanMobile = String(mobile || "").replace(/\D/g, "");
-  const whatsappNumber = cleanMobile.length === 10 ? "91" + cleanMobile : cleanMobile;
-  const message =
-    "ORACLIME Service Completion Code for " +
-    String(leadNumber || "your service") +
-    ": " + String(code || "") +
-    "\n\nPlease provide this code to the technician after the service is completed.";
-
-  if (whatsappLeadCreatedCodeButton) {
-    whatsappLeadCreatedCodeButton.href = whatsappNumber
-      ? "https://wa.me/" + whatsappNumber + "?text=" + encodeURIComponent(message)
-      : "https://wa.me/?text=" + encodeURIComponent(message);
-  }
-
-  leadCreatedCodeModal.classList.add("open");
-  leadCreatedCodeModal.setAttribute("aria-hidden", "false");
-}
-
-async function copyLeadCreatedCode() {
-
-  const code = leadCreatedCodeValue?.textContent?.trim();
-
-  if (!code || !/^\d{6}$/.test(code)) return;
-
-  try {
-    await navigator.clipboard.writeText(code);
-    if (copyLeadCreatedCodeButton) {
-      copyLeadCreatedCodeButton.textContent = "Copied";
-      setTimeout(function() {
-        if (copyLeadCreatedCodeButton) copyLeadCreatedCodeButton.textContent = "Copy Code";
-      }, 1400);
-    }
-  } catch (error) {
-    window.prompt("Copy the Service Completion Code:", code);
-  }
-}
-
-function showNewCompletionCode(code, mobile, expiresAt) {
-
-  if (!newCompletionCodeCard || !newCompletionCodeValue) return;
-
-  newCompletionCodeValue.textContent = String(code || "—");
-
-  if (completionCodeExpiry) {
-    completionCodeExpiry.textContent =
-      expiresAt
-        ? "Valid until " + new Date(expiresAt).toLocaleString("en-IN", {
-            dateStyle: "medium",
-            timeStyle: "short"
-          })
-        : "Validity: 24 hours";
-  }
-
-  if (whatsappCompletionCodeButton) {
-    const cleanMobile = String(mobile || "").replace(/\D/g, "");
-    const whatsappNumber =
-      cleanMobile.length === 10
-        ? "91" + cleanMobile
-        : cleanMobile;
-
-    const message =
-      "ORACLIME Service Completion Code for " +
-      (selectedCompletionLead?.lead_number || "your service") +
-      ": " + String(code || "") +
-      "\n\nPlease provide this code to the technician after the service is corrected/completed.";
-
-    whatsappCompletionCodeButton.href =
-      whatsappNumber
-        ? "https://wa.me/" + whatsappNumber + "?text=" + encodeURIComponent(message)
-        : "https://wa.me/?text=" + encodeURIComponent(message);
-  }
-
-  newCompletionCodeCard.style.display = "block";
-}
-
-
-async function copyNewCompletionCode() {
-
-  const code = newCompletionCodeValue?.textContent?.trim();
-
-  if (!code || !/^\d{6}$/.test(code)) return;
-
-  try {
-    await navigator.clipboard.writeText(code);
-    copyCompletionCodeButton.textContent = "Copied";
-    setTimeout(function() {
-      if (copyCompletionCodeButton) {
-        copyCompletionCodeButton.textContent = "Copy Code";
-      }
-    }, 1400);
-  } catch (error) {
-    window.prompt("Copy the new Service Completion Code:", code);
-  }
-}
-
-
-async function requestCompletionCorrection() {
-
-  if (!selectedCompletionLead) return;
-
-  const lead = selectedCompletionLead;
-  const reason = prompt("What needs correction?\n\nExample: missing photo, unclear serial number, incorrect payment details.");
-
-  if (reason === null) return;
-
-  const cleanReason = reason.trim();
-
-  if (!cleanReason) {
-    reviewMessage("Please enter a correction reason.");
-    return;
-  }
-
-  requestCorrectionButton.disabled = true;
-  approveCompletionButton.disabled = true;
-  reviewMessage("Generating a new Service Completion Code...", "success");
-
-  try {
-
-    const now = new Date().toISOString();
-
-    const { data: serviceOrder, error: serviceOrderError } =
-      await supabaseClient
-        .from("service_orders")
-        .select("id")
-        .eq("lead_id", lead.id)
-        .maybeSingle();
-
-    if (serviceOrderError) {
-      throw new Error("Unable to load service order: " + serviceOrderError.message);
-    }
-
-    if (!serviceOrder?.id) {
-      throw new Error("No service order found for this lead.");
-    }
-
-    /*
-      The database RPC is the only place that creates the raw code.
-      It authorizes the active Support user, invalidates the previous
-      code, stores only the SHA-256 hash, and returns the new 6-digit
-      code once to this authenticated Support session.
-    */
-    const { data: newCode, error: codeError } =
-      await supabaseClient.rpc(
-        "issue_service_completion_code",
-        { p_lead_id: lead.id }
-      );
-
-    if (codeError) {
-      throw new Error(
-        "Unable to generate the new Service Completion Code: " +
-        codeError.message
-      );
-    }
-
-    const cleanCode = String(newCode || "").trim();
-
-    if (!/^\d{6}$/.test(cleanCode)) {
-      throw new Error(
-        "The new Service Completion Code was not generated correctly."
-      );
-    }
-
-    const { error: leadError } =
-      await supabaseClient
-        .from("leads")
-        .update({
-          status: "CORRECTION_REQUIRED",
-          updated_by: currentAppUser.id,
-          updated_at: now
-        })
-        .eq("id", lead.id)
-        .eq("status", "COMPLETION_SUBMITTED");
-
-    if (leadError) {
-      throw new Error(
-        "Unable to request correction: " + leadError.message
-      );
-    }
-
-    const { data: latestCodeRow, error: latestCodeError } =
-      await supabaseClient
-        .from("service_completion_codes")
-        .select("expires_at")
-        .eq("service_order_id", serviceOrder.id)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-    if (latestCodeError) {
-      console.warn("Unable to load new code expiry:", latestCodeError);
-    }
-
-    const { error: correctionError } =
-      await supabaseClient
-        .from("correction_requests")
-        .insert({
-          lead_id: lead.id,
-          service_order_id: serviceOrder.id,
-          requested_by: currentAppUser.id,
-          reason: cleanReason,
-          requested_fields: { completion: true },
-          status: "PENDING"
-        });
-
-    if (correctionError) {
-      console.warn(
-        "Correction request record failed:",
-        correctionError
-      );
-    }
-
-    const { error: auditError } =
-      await supabaseClient
-        .from("audit_logs")
-        .insert({
-          actor_user_id: currentAppUser.id,
-          actor_role: currentAppUser.role,
-          action: "COMPLETION_CORRECTION_REQUESTED",
-          entity_type: "lead",
-          entity_id: lead.id,
-          old_value: { status: "COMPLETION_SUBMITTED" },
-          new_value: {
-            status: "CORRECTION_REQUIRED",
-            replacement_code_issued: true
-          },
-          reason: cleanReason
-        });
-
-    if (auditError) {
-      console.warn("Correction audit log failed:", auditError);
-    }
-
-    showNewCompletionCode(
-      cleanCode,
-      lead.mobile,
-      latestCodeRow?.expires_at || null
-    );
-
-    reviewMessage(
-      "Correction requested. Send the new Service Completion Code to the customer. The technician must use this new code when resubmitting.",
-      "success"
-    );
-
-    await loadLeads();
-    await loadDashboardData();
-
-    showNotice(
-      "Correction requested for " +
-      lead.lead_number +
-      ". A new Service Completion Code has been generated.",
-      "success",
-      leadsNotice
-    );
-
-  } catch (error) {
-
-    console.error("Correction request error:", error);
-    reviewMessage(error.message || "Unable to request correction.");
-    requestCorrectionButton.disabled = false;
-    approveCompletionButton.disabled = false;
-
-  }
-
-}
 
 /* =====================================================
    TECHNICIANS MODULE
@@ -6924,8 +6202,9 @@ document
     loadTechnicians
   );
 
+
 /* =====================================================
-   39. NAVIGATION
+   38. NAVIGATION
    ===================================================== */
 
 function sectionLabel(section) {
@@ -7452,56 +6731,7 @@ if (refreshButton) {
 
 
 /* =====================================================
-   40. REVIEW COMPLETION EVENTS
-   ===================================================== */
-
-if (document.getElementById("closeReviewCompletionModal")) {
-  document
-    .getElementById("closeReviewCompletionModal")
-    .addEventListener("click", closeReviewCompletionModal);
-}
-
-if (reviewCompletionModal) {
-  reviewCompletionModal.addEventListener("click", function(event) {
-    if (event.target === reviewCompletionModal) {
-      closeReviewCompletionModal();
-    }
-  });
-}
-
-if (approveCompletionButton) {
-  approveCompletionButton.addEventListener("click", approveSelectedCompletion);
-}
-
-if (copyCompletionCodeButton) {
-  copyCompletionCodeButton.addEventListener("click", copyNewCompletionCode);
-}
-
-if (requestCorrectionButton) {
-  requestCorrectionButton.addEventListener("click", requestCompletionCorrection);
-}
-
-
-if (document.getElementById("closeLeadCreatedCodeModal")) {
-  document.getElementById("closeLeadCreatedCodeModal").addEventListener("click", closeLeadCreatedCodeModal);
-}
-
-if (document.getElementById("doneLeadCreatedCodeButton")) {
-  document.getElementById("doneLeadCreatedCodeButton").addEventListener("click", closeLeadCreatedCodeModal);
-}
-
-if (copyLeadCreatedCodeButton) {
-  copyLeadCreatedCodeButton.addEventListener("click", copyLeadCreatedCode);
-}
-
-if (leadCreatedCodeModal) {
-  leadCreatedCodeModal.addEventListener("click", function(event) {
-    if (event.target === leadCreatedCodeModal) closeLeadCreatedCodeModal();
-  });
-}
-
-/* =====================================================
-   41. LOGOUT
+   38. LOGOUT
    ===================================================== */
 
 if (logoutButton) {
@@ -7734,7 +6964,8 @@ supabaseClient
 
 
 /* =====================================================
-   38. START ===================================================== */
+   38. START
+   ===================================================== */
 
 setLeadDateMinimum();
 setupLeadValidation();
