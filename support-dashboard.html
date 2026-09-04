@@ -11,7 +11,96 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    /* =====================================================
+    
+/* =====================================================
+   ACTION BUTTON FIX
+   ===================================================== */
+
+.btn {
+  appearance: none;
+  -webkit-appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 10px 16px;
+  border: 1px solid rgba(53,209,170,.38);
+  border-radius: 10px;
+  background: rgba(53,209,170,.12);
+  color: #ffffff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: .18s ease;
+}
+
+.btn:hover {
+  background: rgba(53,209,170,.20);
+  border-color: rgba(53,209,170,.65);
+  transform: translateY(-1px);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn.primary,
+.table-action.primary {
+  background: var(--green);
+  border-color: var(--green);
+  color: #06101d;
+}
+
+.btn.primary:hover,
+.table-action.primary:hover {
+  background: #45dbb7;
+  border-color: #45dbb7;
+}
+
+.table-action {
+  appearance: none;
+  -webkit-appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 9px 14px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.status-complete-action {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+
+      /* =====================================================
        SUPPORT DASHBOARD
        ===================================================== */
 
@@ -876,7 +965,18 @@
       }
 
     }
-  </style>
+  
+
+.leads-table td:last-child {
+  min-width: 150px;
+  white-space: nowrap;
+}
+
+.leads-table td:last-child .btn,
+.leads-table td:last-child .table-action {
+  min-width: 126px;
+}
+</style>
 </head>
 
 <body>
