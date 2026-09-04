@@ -2960,6 +2960,7 @@ const requestCorrectionButton =
   document.getElementById("requestCorrectionButton");
 
 let selectedCompletionLead = null;
+let isCreatingLead = false;
 
 const leadCreatedCodeModal =
   document.getElementById("leadCreatedCodeModal");
@@ -4337,120 +4338,45 @@ async function createLead(event) {
 
   event.preventDefault();
 
+  const saveButton = document.getElementById("saveLeadButton");
 
-  const saveButton =
-    document.getElementById(
-      "saveLeadButton"
-    );
+  if (isCreatingLead) {
+    return;
+  }
 
-
-  if (
-    !currentAuthUser ||
-    !currentAppUser
-  ) {
-
+  if (!currentAuthUser || !currentAppUser) {
     showNotice(
       "Your Support session is not ready.",
       "error",
       leadsNotice
     );
-
     return;
-
   }
 
+  const customerName = document.getElementById("leadCustomerName").value.trim();
+  const mobile = document.getElementById("leadMobile").value.trim();
+  const alternateMobile = document.getElementById("leadAlternateMobile").value.trim();
+  const serviceType = document.getElementById("leadServiceType").value;
+  const address = document.getElementById("leadAddress").value.trim();
+  const city = document.getElementById("leadCity").value.trim();
+  const state = document.getElementById("leadState").value.trim();
+  const pincode = document.getElementById("leadPincode").value.trim();
+  const preferredDate = document.getElementById("leadPreferredDate").value;
+  const preferredTime = document.getElementById("leadPreferredTime").value.trim();
+  const notes = document.getElementById("leadNotes").value.trim();
 
-  const customerName =
-    document.getElementById(
-      "leadCustomerName"
-    ).value.trim();
-
-
-  const mobile =
-    document.getElementById(
-      "leadMobile"
-    ).value.trim();
-
-
-  const alternateMobile =
-    document.getElementById(
-      "leadAlternateMobile"
-    ).value.trim();
-
-
-  const serviceType =
-    document.getElementById(
-      "leadServiceType"
-    ).value;
-
-
-  const address =
-    document.getElementById(
-      "leadAddress"
-    ).value.trim();
-
-
-  const city =
-    document.getElementById(
-      "leadCity"
-    ).value.trim();
-
-
-  const state =
-    document.getElementById(
-      "leadState"
-    ).value.trim();
-
-
-  const pincode =
-    document.getElementById(
-      "leadPincode"
-    ).value.trim();
-
-
-  const preferredDate =
-    document.getElementById(
-      "leadPreferredDate"
-    ).value;
-
-
-  const preferredTime =
-    document.getElementById(
-      "leadPreferredTime"
-    ).value.trim();
-
-
-  const notes =
-    document.getElementById(
-      "leadNotes"
-    ).value.trim();
-
-
-  const cleanMobile =
-    mobile.replace(/\D/g,"");
-
-  const cleanAlternateMobile =
-    alternateMobile.replace(/\D/g,"");
-
-  const cleanPincode =
-    pincode.replace(/\D/g,"");
-
-  const todayString =
-    getTodayLocalDate();
+  const cleanMobile = mobile.replace(/\D/g, "");
+  const cleanAlternateMobile = alternateMobile.replace(/\D/g, "");
+  const cleanPincode = pincode.replace(/\D/g, "");
+  const todayString = getTodayLocalDate();
 
   clearLeadValidation();
 
   let firstInvalidField = null;
 
   if (!customerName) {
-    setFieldError(
-      "leadCustomerName",
-      "",
-      "Customer name is required."
-    );
-    firstInvalidField =
-      firstInvalidField ||
-      document.getElementById("leadCustomerName");
+    setFieldError("leadCustomerName", "", "Customer name is required.");
+    firstInvalidField = firstInvalidField || document.getElementById("leadCustomerName");
   }
 
   if (!/^\d{10}$/.test(cleanMobile)) {
@@ -4459,274 +4385,128 @@ async function createLead(event) {
       "leadMobileError",
       "Mobile number must contain exactly 10 digits."
     );
-    firstInvalidField =
-      firstInvalidField ||
-      document.getElementById("leadMobile");
+    firstInvalidField = firstInvalidField || document.getElementById("leadMobile");
   }
 
-  if (
-    alternateMobile &&
-    !/^\d{10}$/.test(cleanAlternateMobile)
-  ) {
+  if (alternateMobile && !/^\d{10}$/.test(cleanAlternateMobile)) {
     setFieldError(
       "leadAlternateMobile",
       "leadAlternateMobileError",
       "Alternate mobile must contain exactly 10 digits."
     );
-    firstInvalidField =
-      firstInvalidField ||
-      document.getElementById("leadAlternateMobile");
+    firstInvalidField = firstInvalidField || document.getElementById("leadAlternateMobile");
   }
 
-  if (
-    cleanPincode &&
-    !/^\d{6}$/.test(cleanPincode)
-  ) {
+  if (cleanPincode && !/^\d{6}$/.test(cleanPincode)) {
     setFieldError(
       "leadPincode",
       "leadPincodeError",
       "Pincode must contain exactly 6 digits."
     );
-    firstInvalidField =
-      firstInvalidField ||
-      document.getElementById("leadPincode");
+    firstInvalidField = firstInvalidField || document.getElementById("leadPincode");
   }
 
-  if (
-    preferredDate &&
-    preferredDate < todayString
-  ) {
+  if (preferredDate && preferredDate < todayString) {
     setFieldError(
       "leadPreferredDate",
       "leadPreferredDateError",
       "Preferred date cannot be earlier than today."
     );
-    firstInvalidField =
-      firstInvalidField ||
-      document.getElementById("leadPreferredDate");
+    firstInvalidField = firstInvalidField || document.getElementById("leadPreferredDate");
   }
 
-  if (
-    firstInvalidField
-  ) {
+  if (firstInvalidField) {
     showNotice(
       "Please correct the highlighted fields before creating the lead.",
       "error",
       leadsNotice
     );
-
     firstInvalidField.focus();
     return;
   }
 
-
   /*
-    Duplicate warning.
-
-    We do NOT block creation.
-    Support can still intentionally create
-    another service request.
+    Duplicate warning remains intentional: Support may create another
+    service request for the same customer. The actual save is now one
+    atomic database transaction, so a failed code/service-record step
+    can never leave a half-created lead behind.
   */
-
-  const possibleDuplicate =
-    allLeads.find(function(lead) {
-
-      const existingMobile =
-        String(
-          lead.mobile || ""
-        )
-        .replace(/\D/g,"");
-
-      return (
-        existingMobile ===
-        cleanMobile
-      );
-
-    });
-
+  const possibleDuplicate = allLeads.find(function(lead) {
+    const existingMobile = String(lead.mobile || "").replace(/\D/g, "");
+    return existingMobile === cleanMobile;
+  });
 
   if (possibleDuplicate) {
-
-    const confirmed =
-      window.confirm(
-        "A previous lead already exists for this mobile number.\n\n" +
-        "Lead: " +
-        (
-          possibleDuplicate.lead_number ||
-          "Existing lead"
-        ) +
-        "\n\nCreate this new lead anyway?"
-      );
-
+    const confirmed = window.confirm(
+      "A previous lead already exists for this mobile number.\n\n" +
+      "Lead: " + (possibleDuplicate.lead_number || "Existing lead") +
+      "\n\nCreate this new lead anyway?"
+    );
 
     if (!confirmed) {
       return;
     }
-
   }
 
-
-  saveButton.disabled =
-    true;
-
-  saveButton.textContent =
-    "Creating...";
-
+  isCreatingLead = true;
+  if (saveButton) {
+    saveButton.disabled = true;
+    saveButton.textContent = "Creating...";
+  }
 
   try {
-
-    const leadNumber =
-      generateLeadNumber();
-
-
-    const {
-      data,
-      error
-    } =
-      await supabaseClient
-        .from("leads")
-        .insert({
-
-          lead_number:
-            leadNumber,
-
-          partner_id:
-            null,
-
-          customer_id:
-            null,
-
-          service_type:
-            serviceType,
-
-          customer_name:
-            customerName,
-
-          mobile:
-            cleanMobile,
-
-          alternate_mobile:
-            cleanAlternateMobile ||
-            null,
-
-          address:
-            address ||
-            null,
-
-          city:
-            city ||
-            null,
-
-          state:
-            state ||
-            null,
-
-          pincode:
-            cleanPincode ||
-            null,
-
-          preferred_date:
-            preferredDate ||
-            null,
-
-          preferred_time:
-            preferredTime ||
-            null,
-
-          notes:
-            notes ||
-            null,
-
-          status:
-            "NEW",
-
-          assigned_technician_id:
-            null,
-
-          created_by:
-            currentAuthUser.id,
-
-          updated_by:
-            currentAuthUser.id
-
-        })
-        .select()
-        .single();
-
-
-    if (error) {
-
-      console.error(
-        "Create lead error:",
-        error
-      );
-
-      /*
-        Rare lead number collision.
-        User can retry.
-      */
-
-      if (
-        error.code === "23505"
-      ) {
-
-        throw new Error(
-          "Lead ID collision occurred. Please click Create Lead again."
-        );
-
-      }
-
-
-      throw new Error(
-        error.message ||
-        "Unable to create lead."
-      );
-
-    }
-
-
-    console.log(
-      "Lead created:",
-      data
-    );
+    const leadNumber = generateLeadNumber();
 
     /*
-      Automatically prepare the service record and issue the
-      first Service Completion Code for every newly created lead.
-      The raw code is returned only to this authenticated Support
-      session; only its hash is stored in the database.
+      IMPORTANT:
+      Lead + service order + visit + first completion code are now
+      created by ONE RPC transaction. This prevents the old situation
+      where the lead was inserted first, the code failed afterwards,
+      and clicking Create Lead again produced duplicates.
     */
-    const { data: completionCode, error: completionCodeError } =
-      await supabaseClient.rpc(
-        "prepare_lead_completion_code",
-        { p_lead_id: data.id }
-      );
+    const { data, error } = await supabaseClient.rpc(
+      "create_lead_with_completion_code",
+      {
+        p_lead_number: leadNumber,
+        p_service_type: serviceType,
+        p_customer_name: customerName,
+        p_mobile: cleanMobile,
+        p_alternate_mobile: cleanAlternateMobile || null,
+        p_address: address || null,
+        p_city: city || null,
+        p_state: state || null,
+        p_pincode: cleanPincode || null,
+        p_preferred_date: preferredDate || null,
+        p_preferred_time: preferredTime || null,
+        p_notes: notes || null
+      }
+    );
 
-    if (completionCodeError) {
+    if (error) {
+      console.error("Create lead transaction error:", error);
+
+      if (error.code === "23505") {
+        throw new Error(
+          "This Lead ID was already used. Please click Create Lead once more. No duplicate lead was created."
+        );
+      }
+
+      throw new Error(error.message || "Unable to create lead.");
+    }
+
+    if (!data || !data.lead_id || !/^\d{6}$/.test(String(data.completion_code || ""))) {
+      console.error("Invalid create lead RPC response:", data);
       throw new Error(
-        "Lead was created, but the Service Completion Code could not be generated: " +
-        completionCodeError.message
+        "Lead creation was not completed because the server did not return a valid Service Completion Code. No partial lead was saved."
       );
     }
 
-    const cleanCompletionCode =
-      String(completionCode || "").trim();
-
-    if (!/^\d{6}$/.test(cleanCompletionCode)) {
-      throw new Error(
-        "Lead was created, but the Service Completion Code was not generated correctly."
-      );
-    }
-
-    closeLeadModal();
-
-    leadForm.reset();
-    clearLeadValidation();
-    setLeadDateMinimum();
+    const createdLeadNumber = String(data.lead_number || leadNumber);
+    const cleanCompletionCode = String(data.completion_code).trim();
 
     selectedCompletionLead = {
-      id: data.id,
-      lead_number: leadNumber,
+      id: data.lead_id,
+      lead_number: createdLeadNumber,
       customer_name: customerName,
       mobile: cleanMobile,
       service_type: serviceType,
@@ -4734,51 +4514,46 @@ async function createLead(event) {
       state: state
     };
 
+    closeLeadModal();
+    leadForm.reset();
+    clearLeadValidation();
+    setLeadDateMinimum();
+
+    /* Refresh the page data BEFORE showing the code modal. */
+    await loadLeads();
+    await loadDashboardData();
+
+    showNotice(
+      "Lead " + createdLeadNumber +
+      " created successfully. Service Completion Code is ready.",
+      "success",
+      leadsNotice
+    );
+
     showLeadCreatedCodeModal(
-      leadNumber,
+      createdLeadNumber,
       customerName,
       cleanMobile,
       cleanCompletionCode
     );
 
-    showNotice(
-      "Lead " +
-      leadNumber +
-      " created successfully. A Service Completion Code has been generated.",
-      "success",
-      leadsNotice
-    );
-
-    await loadLeads();
-
-    await loadDashboardData();
-
-
   } catch (error) {
-
-    console.error(
-      "Lead creation exception:",
-      error
-    );
-
+    console.error("Lead creation exception:", error);
 
     showNotice(
-      error.message ||
-      "Unable to create lead.",
+      error.message || "Unable to create lead. No duplicate lead was created.",
       "error",
       leadsNotice
     );
 
   } finally {
+    isCreatingLead = false;
 
-    saveButton.disabled =
-      false;
-
-    saveButton.textContent =
-      "Create Lead";
-
+    if (saveButton) {
+      saveButton.disabled = false;
+      saveButton.textContent = "Create Lead";
+    }
   }
-
 }
 
 
