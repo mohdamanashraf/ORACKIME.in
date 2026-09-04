@@ -612,107 +612,6 @@
       margin-bottom: 5px;
     }
 
-
-    /* TECHNICIANS MODULE */
-
-    .technician-toolbar {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      align-items: center;
-      margin-bottom: 18px;
-    }
-
-    .technician-search {
-      flex: 1 1 280px;
-    }
-
-    .technician-table-wrap {
-      overflow-x: auto;
-    }
-
-    .technician-table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 760px;
-    }
-
-    .technician-table th,
-    .technician-table td {
-      padding: 14px 12px;
-      border-bottom: 1px solid var(--line);
-      text-align: left;
-      vertical-align: middle;
-    }
-
-    .technician-table th {
-      color: var(--muted);
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: .08em;
-    }
-
-    .technician-name {
-      font-weight: 700;
-      margin-bottom: 3px;
-    }
-
-    .technician-sub {
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    .status-pill {
-      display: inline-flex;
-      align-items: center;
-      padding: 5px 9px;
-      border-radius: 999px;
-      border: 1px solid var(--line);
-      font-size: 11px;
-      font-weight: 700;
-      white-space: nowrap;
-    }
-
-    .status-pill.available {
-      border-color: rgba(53,209,170,.35);
-      color: var(--green);
-    }
-
-    .status-pill.busy {
-      color: #f3c96b;
-    }
-
-    .status-pill.offline,
-    .status-pill.inactive {
-      color: var(--muted);
-    }
-
-    .technician-actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .technician-empty {
-      padding: 36px 15px;
-      text-align: center;
-      color: var(--muted);
-    }
-
-    .form-help {
-      margin-top: 5px;
-      color: var(--muted);
-      font-size: 11px;
-      line-height: 1.4;
-    }
-
-    @media (max-width: 650px) {
-      .technician-table {
-        min-width: 680px;
-      }
-    }
-
     @media (max-width: 650px) {
       .assignment-card {
         grid-template-columns: 1fr;
@@ -1923,100 +1822,6 @@
     </section>
 
 
-
-    <!-- =================================================
-         TECHNICIANS SECTION
-         ================================================= -->
-
-    <section
-      id="techniciansSection"
-      class="dashboard-section"
-      style="display:none;"
-    >
-
-      <div class="dashboard-header">
-
-        <div>
-          <div class="eyebrow">ORACLIME Operations</div>
-          <h1>Technicians</h1>
-          <p>Manage the technician network and availability used for service assignments.</p>
-        </div>
-
-        <div class="header-actions">
-          <button class="btn primary" type="button" id="createTechnicianButton">
-            + Add Technician
-          </button>
-          <button class="btn" type="button" id="techniciansRefreshButton">
-            Refresh
-          </button>
-        </div>
-
-      </div>
-
-      <div id="techniciansNotice" class="dashboard-notice"></div>
-
-      <div class="card">
-
-        <div class="technician-toolbar">
-          <input
-            class="technician-search"
-            type="search"
-            id="technicianSearch"
-            placeholder="Search by name, mobile, code or city"
-            autocomplete="off"
-          >
-
-          <select id="technicianStatusFilter" aria-label="Technician status">
-            <option value="ALL">All Status</option>
-            <option value="ACTIVE">Active</option>
-            <option value="INACTIVE">Inactive</option>
-          </select>
-
-          <select id="technicianAvailabilityFilter" aria-label="Availability">
-            <option value="ALL">All Availability</option>
-            <option value="AVAILABLE">Available</option>
-            <option value="BUSY">Busy</option>
-            <option value="OFFLINE">Offline</option>
-          </select>
-        </div>
-
-        <div id="techniciansLoading" class="small" style="padding:20px 0;">
-          Loading technicians...
-        </div>
-
-        <div
-          id="techniciansTableWrap"
-          class="technician-table-wrap"
-          style="display:none;"
-        >
-          <table class="technician-table">
-            <thead>
-              <tr>
-                <th>Technician</th>
-                <th>Mobile</th>
-                <th>Service Area</th>
-                <th>Skills</th>
-                <th>Status</th>
-                <th>Availability</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody id="techniciansTableBody"></tbody>
-          </table>
-        </div>
-
-        <div
-          id="techniciansEmpty"
-          class="technician-empty"
-          style="display:none;"
-        >
-          No technicians found.
-        </div>
-
-      </div>
-
-    </section>
-
   </main>
 
 </div>
@@ -2402,204 +2207,68 @@
 </div>
 
 
-
 <!-- =====================================================
-     ADD TECHNICIAN MODAL
+     REVIEW COMPLETION MODAL
      ===================================================== -->
 
-<div id="technicianModal" class="modal-overlay">
-
+<div
+  id="reviewCompletionModal"
+  class="modal-overlay"
+>
   <div
     class="modal"
     role="dialog"
     aria-modal="true"
-    aria-labelledby="technicianModalTitle"
+    aria-labelledby="reviewCompletionTitle"
   >
-
     <div class="modal-header">
       <div>
-        <h2 id="technicianModalTitle">Add Technician</h2>
-        <p>Create a technician profile for future service assignments.</p>
+        <h2 id="reviewCompletionTitle">Review Completion</h2>
+        <p>Verify the submitted service evidence before closing the lead.</p>
       </div>
-
-      <button
-        type="button"
-        class="modal-close"
-        id="closeTechnicianModal"
-        aria-label="Close"
-      >×</button>
+      <button type="button" class="modal-close" id="closeReviewCompletionModal" aria-label="Close">×</button>
     </div>
 
-    <form id="technicianForm">
+    <div class="modal-body">
+      <div id="reviewCompletionMessage" class="dashboard-notice" style="display:none;"></div>
 
-      <div class="modal-body">
+      <div class="assignment-summary" id="reviewCompletionSummary"></div>
 
-        <div class="lead-form-grid">
-
-          <div class="lead-form-field">
-            <label for="technicianFullName">Full Name *</label>
-            <input
-              type="text"
-              id="technicianFullName"
-              required
-              maxlength="120"
-              autocomplete="name"
-            >
-          </div>
-
-          <div class="lead-form-field">
-            <label for="technicianMobile">Mobile *</label>
-            <input
-              type="tel"
-              id="technicianMobile"
-              required
-              maxlength="10"
-              minlength="10"
-              inputmode="numeric"
-              pattern="[0-9]{10}"
-              autocomplete="tel"
-              placeholder="10-digit mobile"
-            >
-            <div id="technicianMobileError" class="field-error" role="alert"></div>
-          </div>
-
-          <div class="lead-form-field">
-            <label for="technicianAlternateMobile">Alternate Mobile</label>
-            <input
-              type="tel"
-              id="technicianAlternateMobile"
-              maxlength="10"
-              minlength="10"
-              inputmode="numeric"
-              pattern="[0-9]{10}"
-              placeholder="Optional 10-digit mobile"
-            >
-            <div id="technicianAlternateMobileError" class="field-error" role="alert"></div>
-          </div>
-
-          <div class="lead-form-field">
-            <label for="technicianEmail">Email</label>
-            <input
-              type="email"
-              id="technicianEmail"
-              maxlength="160"
-              autocomplete="email"
-            >
-          </div>
-
-          <div class="lead-form-field">
-            <label for="technicianCity">City</label>
-            <input
-              type="text"
-              id="technicianCity"
-              maxlength="80"
-              autocomplete="address-level2"
-            >
-          </div>
-
-          <div class="lead-form-field">
-            <label for="technicianState">State</label>
-            <input
-              type="text"
-              id="technicianState"
-              maxlength="80"
-              autocomplete="address-level1"
-            >
-          </div>
-
-          <div class="lead-form-field">
-            <label for="technicianPincode">Pincode</label>
-            <input
-              type="text"
-              id="technicianPincode"
-              maxlength="6"
-              minlength="6"
-              inputmode="numeric"
-              pattern="[0-9]{6}"
-              placeholder="6-digit pincode"
-            >
-            <div id="technicianPincodeError" class="field-error" role="alert"></div>
-          </div>
-
-          <div class="lead-form-field">
-            <label for="technicianServiceArea">Service Area</label>
-            <input
-              type="text"
-              id="technicianServiceArea"
-              maxlength="180"
-              placeholder="e.g. Moradabad, Rampur"
-            >
-            <div class="form-help">Use the areas where this technician can normally accept jobs.</div>
-          </div>
-
-          <div class="lead-form-field lead-form-full">
-            <label for="technicianSkills">Skills *</label>
-            <input
-              type="text"
-              id="technicianSkills"
-              required
-              maxlength="200"
-              placeholder="e.g. AC, Electrical"
-            >
-            <div class="form-help">Separate multiple skills with commas.</div>
-          </div>
-
-          <div class="lead-form-field">
-            <label for="technicianStatus">Account Status</label>
-            <select id="technicianStatus">
-              <option value="ACTIVE">Active</option>
-              <option value="INACTIVE">Inactive</option>
-            </select>
-          </div>
-
-          <div class="lead-form-field">
-            <label for="technicianAvailability">Availability</label>
-            <select id="technicianAvailability">
-              <option value="AVAILABLE">Available</option>
-              <option value="BUSY">Busy</option>
-              <option value="OFFLINE">Offline</option>
-            </select>
-          </div>
-
-          <div class="lead-form-field lead-form-full">
-            <label for="technicianAddress">Address</label>
-            <textarea
-              id="technicianAddress"
-              maxlength="300"
-              placeholder="Technician address"
-            ></textarea>
-          </div>
-
-          <div class="lead-form-field lead-form-full">
-            <label for="technicianNotes">Notes</label>
-            <textarea
-              id="technicianNotes"
-              maxlength="500"
-              placeholder="Internal support notes"
-            ></textarea>
-          </div>
-
+      <div class="g2" style="margin-bottom:16px;">
+        <div class="card" style="padding:16px;">
+          <div class="small">Amount Collected</div>
+          <strong id="reviewAmountCollected" style="font-size:22px;">—</strong>
         </div>
-
-        <div id="technicianFormError" class="field-error" role="alert"></div>
-
+        <div class="card" style="padding:16px;">
+          <div class="small">Payment Mode</div>
+          <strong id="reviewPaymentMode" style="font-size:18px;">—</strong>
+        </div>
       </div>
 
-      <div class="modal-footer">
-        <button type="button" class="btn" id="cancelTechnicianButton">
-          Cancel
-        </button>
-
-        <button type="submit" class="btn primary" id="saveTechnicianButton">
-          Add Technician
-        </button>
+      <div class="card" style="padding:16px; margin-bottom:16px;">
+        <div class="section-title-row" style="margin-bottom:10px;">
+          <h3 style="margin:0;">Completion Verification</h3>
+        </div>
+        <div id="reviewVerification" class="small">Loading...</div>
       </div>
 
-    </form>
+      <div class="card" style="padding:16px;">
+        <div class="section-title-row" style="margin-bottom:12px;">
+          <h3 style="margin:0;">Submitted Photos</h3>
+        </div>
+        <div id="reviewDocuments" class="g2">
+          <div class="small">Loading submitted documents...</div>
+        </div>
+      </div>
+    </div>
 
+    <div class="modal-footer">
+      <button type="button" class="btn" id="requestCorrectionButton">Request Correction</button>
+      <button type="button" class="btn primary" id="approveCompletionButton">Approve &amp; Complete</button>
+    </div>
   </div>
-
 </div>
+
 
 <!-- =====================================================
      FOOTER
@@ -2659,8 +2328,6 @@ let filteredLeads = [];
 let unassignedLeads = [];
 let availableTechnicians = [];
 let selectedAssignmentLead = null;
-let allTechnicians = [];
-let filteredTechnicians = [];
 
 
 /* =====================================================
@@ -2684,42 +2351,6 @@ const assignmentsSection =
 
 const assignmentsNotice =
   document.getElementById("assignmentsNotice");
-
-const techniciansSection =
-  document.getElementById("techniciansSection");
-
-const techniciansNotice =
-  document.getElementById("techniciansNotice");
-
-const techniciansLoading =
-  document.getElementById("techniciansLoading");
-
-const techniciansTableWrap =
-  document.getElementById("techniciansTableWrap");
-
-const techniciansTableBody =
-  document.getElementById("techniciansTableBody");
-
-const techniciansEmpty =
-  document.getElementById("techniciansEmpty");
-
-const technicianSearch =
-  document.getElementById("technicianSearch");
-
-const technicianStatusFilter =
-  document.getElementById("technicianStatusFilter");
-
-const technicianAvailabilityFilter =
-  document.getElementById("technicianAvailabilityFilter");
-
-const technicianModal =
-  document.getElementById("technicianModal");
-
-const technicianForm =
-  document.getElementById("technicianForm");
-
-const technicianFormError =
-  document.getElementById("technicianFormError");
 
 const assignmentsRefreshButton =
   document.getElementById("assignmentsRefreshButton");
@@ -2768,6 +2399,36 @@ const leadModal =
 
 const leadForm =
   document.getElementById("leadForm");
+
+const reviewCompletionModal =
+  document.getElementById("reviewCompletionModal");
+
+const reviewCompletionSummary =
+  document.getElementById("reviewCompletionSummary");
+
+const reviewAmountCollected =
+  document.getElementById("reviewAmountCollected");
+
+const reviewPaymentMode =
+  document.getElementById("reviewPaymentMode");
+
+const reviewVerification =
+  document.getElementById("reviewVerification");
+
+const reviewDocuments =
+  document.getElementById("reviewDocuments");
+
+const reviewCompletionMessage =
+  document.getElementById("reviewCompletionMessage");
+
+const approveCompletionButton =
+  document.getElementById("approveCompletionButton");
+
+const requestCorrectionButton =
+  document.getElementById("requestCorrectionButton");
+
+let selectedCompletionLead = null;
+
 
 
 /* =====================================================
@@ -3650,38 +3311,37 @@ function renderLeads() {
 
             <td>
 
-            ${
-  lead.status === "COMPLETION_SUBMITTED"
-    ? `
-      <button
-        type="button"
-        class="btn primary"
-        data-review-completion="${escapeHtml(lead.id)}"
-      >
-        Review Completion
-      </button>
-    `
-    : !lead.assigned_technician_id &&
-      ["NEW","RESCHEDULED","RESCHEDULE_REQUESTED"].includes(lead.status)
-      ? `
-        <button
-          type="button"
-          class="btn primary"
-          data-assign-lead="${escapeHtml(lead.id)}"
-        >
-          Assign
-        </button>
-      `
-      : lead.status === "COMPLETED"
-        ? `
-          <span class="small">Completed</span>
-        `
-        : `
-          <span class="small">
-            ${lead.assigned_technician_id ? "Assigned" : "—"}
-          </span>
-        `
-}
+              ${
+                lead.status === "COMPLETION_SUBMITTED"
+                  ? `
+                    <button
+                      type="button"
+                      class="btn primary"
+                      data-review-completion="${escapeHtml(lead.id)}"
+                    >
+                      Review Completion
+                    </button>
+                  `
+                  : !lead.assigned_technician_id &&
+                    ["NEW","RESCHEDULED","RESCHEDULE_REQUESTED"].includes(lead.status)
+                    ? `
+                      <button
+                        type="button"
+                        class="btn primary"
+                        data-assign-lead="${escapeHtml(lead.id)}"
+                      >
+                        Assign
+                      </button>
+                    `
+                    : lead.status === "COMPLETED"
+                      ? `
+                        <span class="small">Completed</span>
+                      `
+                      : `
+                        <span class="small">
+                          ${lead.assigned_technician_id ? "Assigned" : "—"}
+                        </span>
+                      `
               }
 
             </td>
@@ -3719,6 +3379,30 @@ function renderLeads() {
             openAssignmentModal(
               lead
             );
+          }
+
+        }
+      );
+
+    });
+
+  tbody
+    .querySelectorAll(
+      "[data-review-completion]"
+    )
+    .forEach(function(button) {
+
+      button.addEventListener(
+        "click",
+        function() {
+
+          const lead =
+            allLeads.find(
+              row => row.id === button.dataset.reviewCompletion
+            );
+
+          if (lead) {
+            openReviewCompletionModal(lead);
           }
 
         }
@@ -5305,921 +4989,453 @@ if (assignmentModal) {
 }
 
 
-
 /* =====================================================
-   TECHNICIANS MODULE
+   38. REVIEW COMPLETION
    ===================================================== */
 
-function technicianStatusClass(value) {
-  return String(value || "")
-    .toLowerCase()
-    .replace(/[^a-z]/g, "");
-}
+function reviewMessage(message, type = "error") {
 
+  if (!reviewCompletionMessage) return;
 
-function formatTechnicianStatus(value) {
-  return value === "ACTIVE"
-    ? "Active"
-    : "Inactive";
-}
+  reviewCompletionMessage.textContent = message;
+  reviewCompletionMessage.className = "dashboard-notice";
+  reviewCompletionMessage.style.display = "block";
 
-
-function formatAvailability(value) {
-  if (value === "AVAILABLE") return "Available";
-  if (value === "BUSY") return "Busy";
-  return "Offline";
-}
-
-
-function technicianMatchesFilter(technician) {
-
-  const search =
-    (technicianSearch?.value || "")
-      .trim()
-      .toLowerCase();
-
-  const status =
-    technicianStatusFilter?.value || "ALL";
-
-  const availability =
-    technicianAvailabilityFilter?.value || "ALL";
-
-  if (
-    status !== "ALL" &&
-    technician.status !== status
-  ) {
-    return false;
+  if (type === "success") {
+    reviewCompletionMessage.style.borderColor = "rgba(53,209,170,.35)";
+  } else {
+    reviewCompletionMessage.classList.add("error");
   }
 
-  if (
-    availability !== "ALL" &&
-    technician.availability_status !== availability
-  ) {
-    return false;
-  }
-
-  if (!search) {
-    return true;
-  }
-
-  const skills =
-    Array.isArray(technician.skills)
-      ? technician.skills.join(" ")
-      : (technician.skills || "");
-
-  const haystack = [
-    technician.full_name,
-    technician.technician_code,
-    technician.mobile,
-    technician.city,
-    technician.state,
-    technician.service_area,
-    skills
-  ]
-    .filter(Boolean)
-    .join(" ")
-    .toLowerCase();
-
-  return haystack.includes(search);
 }
 
 
-function renderTechnicians() {
+function closeReviewCompletionModal() {
 
-  filteredTechnicians =
-    allTechnicians.filter(
-      technicianMatchesFilter
-    );
+  if (!reviewCompletionModal) return;
 
-  techniciansTableBody.innerHTML = "";
+  reviewCompletionModal.classList.remove("open");
+  selectedCompletionLead = null;
 
-  if (!filteredTechnicians.length) {
-    techniciansTableWrap.style.display = "none";
-    techniciansEmpty.style.display = "block";
-    return;
+  if (reviewDocuments) {
+    reviewDocuments.innerHTML = "";
   }
-
-  techniciansEmpty.style.display = "none";
-  techniciansTableWrap.style.display = "block";
-
-  techniciansTableBody.innerHTML =
-    filteredTechnicians.map(function(technician) {
-
-      const skills =
-        Array.isArray(technician.skills)
-          ? technician.skills.join(", ")
-          : (technician.skills || "—");
-
-      const area =
-        technician.service_area ||
-        [
-          technician.city,
-          technician.state
-        ]
-          .filter(Boolean)
-          .join(", ") ||
-        "—";
-
-      const statusClass =
-        technicianStatusClass(
-          technician.status
-        );
-
-      const availabilityClass =
-        technicianStatusClass(
-          technician.availability_status
-        );
-
-      return `
-        <tr>
-          <td>
-            <div class="technician-name">
-              ${escapeHtml(
-                technician.full_name || "Unnamed Technician"
-              )}
-            </div>
-            <div class="technician-sub">
-              ${escapeHtml(
-                technician.technician_code || "No code"
-              )}
-            </div>
-          </td>
-
-          <td>
-            ${escapeHtml(
-              technician.mobile || "—"
-            )}
-          </td>
-
-          <td>
-            ${escapeHtml(area)}
-          </td>
-
-          <td>
-            ${escapeHtml(skills)}
-          </td>
-
-          <td>
-            <span class="status-pill ${statusClass}">
-              ${escapeHtml(
-                formatTechnicianStatus(
-                  technician.status
-                )
-              )}
-            </span>
-          </td>
-
-          <td>
-            <span class="status-pill ${availabilityClass}">
-              ${escapeHtml(
-                formatAvailability(
-                  technician.availability_status
-                )
-              )}
-            </span>
-          </td>
-
-          <td>
-            <div class="technician-actions">
-              ${
-                technician.status === "ACTIVE"
-                  ? `
-                    <button
-                      type="button"
-                      class="btn"
-                      data-toggle-technician="${escapeHtml(technician.id)}"
-                      data-next-status="INACTIVE"
-                    >
-                      Deactivate
-                    </button>
-                  `
-                  : `
-                    <button
-                      type="button"
-                      class="btn"
-                      data-toggle-technician="${escapeHtml(technician.id)}"
-                      data-next-status="ACTIVE"
-                    >
-                      Activate
-                    </button>
-                  `
-              }
-            </div>
-          </td>
-        </tr>
-      `;
-
-    }).join("");
-
-  techniciansTableBody
-    .querySelectorAll(
-      "[data-toggle-technician]"
-    )
-    .forEach(function(button) {
-
-      button.addEventListener(
-        "click",
-        function() {
-
-          updateTechnicianStatus(
-            button.dataset.toggleTechnician,
-            button.dataset.nextStatus
-          );
-
-        }
-      );
-
-    });
 
 }
 
 
-async function loadTechnicians() {
+function documentTitle(type) {
 
-  techniciansLoading.style.display = "block";
-  techniciansTableWrap.style.display = "none";
-  techniciansEmpty.style.display = "none";
+  const labels = {
+    INDOOR_LOCATION: "Indoor Location",
+    INDOOR_SERIAL: "Indoor Serial Number",
+    OUTDOOR_LOCATION: "Outdoor Location",
+    OUTDOOR_SERIAL: "Outdoor Serial Number",
+    AC_BILL: "AC Bill",
+    PAYMENT_PROOF: "Payment Proof",
+    OTHER: "Other Document"
+  };
 
-  const {
-    data,
-    error
-  } =
-    await supabaseClient
-      .from("technicians")
-      .select(`
-        id,
-        technician_code,
-        full_name,
-        mobile,
-        alternate_mobile,
-        email,
-        city,
-        state,
-        pincode,
-        service_area,
-        skills,
-        status,
-        availability_status,
-        created_at
-      `)
-      .order(
-        "created_at",
-        { ascending: false }
-      );
-
-  techniciansLoading.style.display = "none";
-
-  if (error) {
-
-    console.error(
-      "Technicians load error:",
-      error
-    );
-
-    showNotice(
-      "Unable to load technicians. Please check the browser console.",
-      "error",
-      techniciansNotice
-    );
-
-    techniciansEmpty.textContent =
-      "Unable to load technicians.";
-
-    techniciansEmpty.style.display =
-      "block";
-
-    return;
-  }
-
-  hideNotice(techniciansNotice);
-
-  allTechnicians =
-    Array.isArray(data)
-      ? data
-      : [];
-
-  renderTechnicians();
+  return labels[type] || formatStatus(type);
 
 }
 
 
-function openTechnicianModal() {
+function formatAmount(value) {
 
-  technicianForm.reset();
+  const amount = Number(value);
 
-  technicianFormError.textContent = "";
+  if (!Number.isFinite(amount)) return "—";
 
-  [
-    "technicianMobile",
-    "technicianAlternateMobile",
-    "technicianPincode"
-  ].forEach(function(id) {
-
-    const input =
-      document.getElementById(id);
-
-    if (input) {
-      input.classList.remove(
-        "input-invalid"
-      );
-      input.setCustomValidity("");
-    }
-
+  return "₹" + amount.toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
   });
 
-  document.getElementById(
-    "technicianMobileError"
-  ).textContent = "";
-
-  document.getElementById(
-    "technicianAlternateMobileError"
-  ).textContent = "";
-
-  document.getElementById(
-    "technicianPincodeError"
-  ).textContent = "";
-
-  technicianModal.classList.add("open");
-
 }
 
 
-function closeTechnicianModal() {
+async function createReviewDocumentUrl(path) {
 
-  technicianModal.classList.remove("open");
+  const { data, error } =
+    await supabaseClient.storage
+      .from("service-documents")
+      .createSignedUrl(path, 600);
 
-  technicianFormError.textContent = "";
-
-}
-
-
-function technicianDigits(id, maxLength) {
-
-  const input =
-    document.getElementById(id);
-
-  if (!input) return;
-
-  input.value =
-    input.value
-      .replace(/\D/g, "")
-      .slice(0, maxLength);
-
-}
-
-
-function technicianSetError(
-  fieldId,
-  errorId,
-  message
-) {
-
-  const field =
-    document.getElementById(fieldId);
-
-  if (field) {
-    field.classList.add("input-invalid");
-    field.setCustomValidity(message);
+  if (error || !data?.signedUrl) {
+    throw new Error(error?.message || "Unable to create document preview link.");
   }
 
-  const error =
-    document.getElementById(errorId);
+  return data.signedUrl;
+
+}
+
+
+async function loadReviewDocuments(serviceOrderId, visitId) {
+
+  reviewDocuments.innerHTML =
+    '<div class="small">Loading submitted documents...</div>';
+
+  let query = supabaseClient
+    .from("documents")
+    .select("id,document_type,storage_path,original_filename,mime_type,created_at")
+    .order("created_at", { ascending: false });
+
+  if (visitId) {
+    query = query.eq("visit_id", visitId);
+  } else {
+    query = query.eq("service_order_id", serviceOrderId);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
-    error.textContent = message;
+    throw new Error("Unable to load submitted documents: " + error.message);
   }
 
-}
+  const documents = Array.isArray(data) ? data : [];
 
-
-async function generateTechnicianCode() {
-
-  const {
-    count,
-    error
-  } =
-    await supabaseClient
-      .from("technicians")
-      .select("id", {
-        count: "exact",
-        head: true
-      });
-
-  if (error) {
-    console.error(
-      "Technician count error:",
-      error
-    );
-  }
-
-  const nextNumber =
-    (Number(count) || 0) + 1;
-
-  return (
-    "TEC-" +
-    String(nextNumber).padStart(3, "0")
-  );
-
-}
-
-
-async function createTechnician(event) {
-
-  event.preventDefault();
-
-  technicianFormError.textContent = "";
-
-  const fullName =
-    document.getElementById(
-      "technicianFullName"
-    ).value.trim();
-
-  const mobile =
-    document.getElementById(
-      "technicianMobile"
-    ).value.trim();
-
-  const alternateMobile =
-    document.getElementById(
-      "technicianAlternateMobile"
-    ).value.trim();
-
-  const email =
-    document.getElementById(
-      "technicianEmail"
-    ).value.trim();
-
-  const city =
-    document.getElementById(
-      "technicianCity"
-    ).value.trim();
-
-  const state =
-    document.getElementById(
-      "technicianState"
-    ).value.trim();
-
-  const pincode =
-    document.getElementById(
-      "technicianPincode"
-    ).value.trim();
-
-  const serviceArea =
-    document.getElementById(
-      "technicianServiceArea"
-    ).value.trim();
-
-  const skillsRaw =
-    document.getElementById(
-      "technicianSkills"
-    ).value.trim();
-
-  const status =
-    document.getElementById(
-      "technicianStatus"
-    ).value;
-
-  const availability =
-    document.getElementById(
-      "technicianAvailability"
-    ).value;
-
-  const address =
-    document.getElementById(
-      "technicianAddress"
-    ).value.trim();
-
-  const notes =
-    document.getElementById(
-      "technicianNotes"
-    ).value.trim();
-
-  const cleanMobile =
-    mobile.replace(/\D/g, "");
-
-  const cleanAlternateMobile =
-    alternateMobile.replace(/\D/g, "");
-
-  const cleanPincode =
-    pincode.replace(/\D/g, "");
-
-  [
-    "technicianMobile",
-    "technicianAlternateMobile",
-    "technicianPincode"
-  ].forEach(function(id) {
-
-    const input =
-      document.getElementById(id);
-
-    if (input) {
-      input.classList.remove(
-        "input-invalid"
-      );
-      input.setCustomValidity("");
-    }
-
-  });
-
-  document.getElementById(
-    "technicianMobileError"
-  ).textContent = "";
-
-  document.getElementById(
-    "technicianAlternateMobileError"
-  ).textContent = "";
-
-  document.getElementById(
-    "technicianPincodeError"
-  ).textContent = "";
-
-  let invalid = false;
-
-  if (!fullName) {
-    technicianFormError.textContent =
-      "Full name is required.";
-    invalid = true;
-  }
-
-  if (!/^\d{10}$/.test(cleanMobile)) {
-    technicianSetError(
-      "technicianMobile",
-      "technicianMobileError",
-      "Mobile number must contain exactly 10 digits."
-    );
-    invalid = true;
-  }
-
-  if (
-    alternateMobile &&
-    !/^\d{10}$/.test(
-      cleanAlternateMobile
-    )
-  ) {
-    technicianSetError(
-      "technicianAlternateMobile",
-      "technicianAlternateMobileError",
-      "Alternate mobile must contain exactly 10 digits."
-    );
-    invalid = true;
-  }
-
-  if (
-    pincode &&
-    !/^\d{6}$/.test(cleanPincode)
-  ) {
-    technicianSetError(
-      "technicianPincode",
-      "technicianPincodeError",
-      "Pincode must contain exactly 6 digits."
-    );
-    invalid = true;
-  }
-
-  if (!skillsRaw) {
-    technicianFormError.textContent =
-      technicianFormError.textContent ||
-      "At least one technician skill is required.";
-    invalid = true;
-  }
-
-  if (invalid) {
+  if (!documents.length) {
+    reviewDocuments.innerHTML =
+      '<div class="small">No submitted documents found.</div>';
     return;
   }
 
-  const skills =
-    skillsRaw
-      .split(",")
-      .map(function(skill) {
-        return skill.trim();
-      })
-      .filter(Boolean)
-      .filter(function(skill, index, array) {
-        return array.indexOf(skill) === index;
-      });
+  reviewDocuments.innerHTML = "";
 
-  const saveButton =
-    document.getElementById(
-      "saveTechnicianButton"
-    );
+  for (const doc of documents) {
 
-  saveButton.disabled = true;
-  saveButton.textContent =
-    "Adding...";
+    const card = document.createElement("div");
+    card.className = "card";
+    card.style.padding = "12px";
+
+    const title = document.createElement("div");
+    title.style.fontWeight = "800";
+    title.style.marginBottom = "8px";
+    title.textContent = documentTitle(doc.document_type);
+
+    const meta = document.createElement("div");
+    meta.className = "small";
+    meta.textContent = doc.original_filename || "Submitted document";
+
+    card.appendChild(title);
+    card.appendChild(meta);
+
+    try {
+      const url = await createReviewDocumentUrl(doc.storage_path);
+
+      if (String(doc.mime_type || "").startsWith("image/")) {
+        const image = document.createElement("img");
+        image.src = url;
+        image.alt = documentTitle(doc.document_type);
+        image.loading = "lazy";
+        image.style.width = "100%";
+        image.style.maxHeight = "260px";
+        image.style.objectFit = "contain";
+        image.style.borderRadius = "10px";
+        image.style.marginTop = "10px";
+        image.style.background = "#06101d";
+        card.appendChild(image);
+      }
+
+      const openLink = document.createElement("a");
+      openLink.href = url;
+      openLink.target = "_blank";
+      openLink.rel = "noopener noreferrer";
+      openLink.className = "btn";
+      openLink.style.display = "inline-block";
+      openLink.style.marginTop = "10px";
+      openLink.textContent = "Open Document";
+      card.appendChild(openLink);
+
+    } catch (urlError) {
+
+      const unavailable = document.createElement("div");
+      unavailable.className = "small";
+      unavailable.style.marginTop = "8px";
+      unavailable.textContent = "Preview unavailable: " + urlError.message;
+      card.appendChild(unavailable);
+
+    }
+
+    reviewDocuments.appendChild(card);
+
+  }
+
+}
+
+
+async function openReviewCompletionModal(lead) {
+
+  selectedCompletionLead = lead;
+
+  reviewCompletionModal.classList.add("open");
+  reviewCompletionModal.setAttribute("aria-hidden", "false");
+
+  approveCompletionButton.disabled = true;
+  requestCorrectionButton.disabled = true;
+
+  reviewMessage("Loading completion details...", "success");
+
+  reviewCompletionSummary.innerHTML = `
+    <strong>${escapeHtml(lead.lead_number || "—")}</strong>
+    <div class="small">${escapeHtml(lead.customer_name || "—")} • ${escapeHtml(lead.service_type || "AC / Air Conditioner")}</div>
+    <div class="small">${escapeHtml(getLeadLocation(lead))}</div>
+    <div class="small">Mobile: ${escapeHtml(lead.mobile || "—")}</div>
+  `;
+
+  reviewAmountCollected.textContent = "—";
+  reviewPaymentMode.textContent = "—";
+  reviewVerification.textContent = "Loading...";
+  reviewDocuments.innerHTML = '<div class="small">Loading submitted documents...</div>';
 
   try {
 
-    const technicianCode =
-      await generateTechnicianCode();
-
-    const {
-      error
-    } =
+    const { data: serviceOrder, error: orderError } =
       await supabaseClient
-        .from("technicians")
-        .insert({
-          technician_code:
-            technicianCode,
-          full_name:
-            fullName,
-          mobile:
-            cleanMobile,
-          alternate_mobile:
-            cleanAlternateMobile || null,
-          email:
-            email || null,
-          address:
-            address || null,
-          city:
-            city || null,
-          state:
-            state || null,
-          pincode:
-            cleanPincode || null,
-          service_area:
-            serviceArea || null,
-          skills:
-            skills,
-          status:
-            status,
-          availability_status:
-            availability,
-          notes:
-            notes || null
-        });
+        .from("service_orders")
+        .select("id,lead_id")
+        .eq("lead_id", lead.id)
+        .maybeSingle();
 
-    if (error) {
-      throw error;
+    if (orderError) throw new Error("Unable to load service order: " + orderError.message);
+    if (!serviceOrder) throw new Error("No service order found for this lead.");
+
+    const { data: visit, error: visitError } =
+      await supabaseClient
+        .from("visits")
+        .select("id,service_order_id,technician_id,status,visit_number,service_completed_at")
+        .eq("service_order_id", serviceOrder.id)
+        .order("visit_number", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+    if (visitError) throw new Error("Unable to load service visit: " + visitError.message);
+
+    const { data: payment, error: paymentError } =
+      await supabaseClient
+        .from("payments")
+        .select("amount_collected,payment_mode,updated_at,created_at")
+        .eq("service_order_id", serviceOrder.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+    if (paymentError) throw new Error("Unable to load payment details: " + paymentError.message);
+
+    reviewAmountCollected.textContent =
+      payment ? formatAmount(payment.amount_collected) : "₹0.00";
+
+    reviewPaymentMode.textContent =
+      payment?.payment_mode || "—";
+
+    const { data: codeData, error: codeError } =
+      await supabaseClient
+        .from("service_completion_codes")
+        .select("verified_at,expires_at,attempts,max_attempts")
+        .eq("service_order_id", serviceOrder.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+    if (codeError) {
+      reviewVerification.textContent = "Completion code verification details unavailable.";
+    } else if (codeData?.verified_at) {
+      reviewVerification.innerHTML =
+        '<strong style="color:var(--green);">✓ Completion Code Verified</strong>' +
+        '<div class="small">Verified: ' + escapeHtml(formatDate(codeData.verified_at)) + '</div>';
+    } else {
+      reviewVerification.innerHTML =
+        '<strong>Not verified</strong><div class="small">No verified completion code record was found.</div>';
     }
 
-    closeTechnicianModal();
+    await loadReviewDocuments(serviceOrder.id, visit?.id || null);
 
-    showNotice(
-      "Technician " +
-      technicianCode +
-      " added successfully.",
-      "success",
-      techniciansNotice
-    );
-
-    await loadTechnicians();
-
-    if (
-      typeof loadAvailableTechnicians ===
-      "function"
-    ) {
-      await loadAvailableTechnicians();
-    }
+    approveCompletionButton.disabled = false;
+    requestCorrectionButton.disabled = false;
+    reviewMessage("Review the evidence and payment details, then choose an action.", "success");
 
   } catch (error) {
 
-    console.error(
-      "Create technician error:",
-      error
-    );
-
-    technicianFormError.textContent =
-      error?.message ||
-      "Unable to add technician.";
-
-  } finally {
-
-    saveButton.disabled = false;
-    saveButton.textContent =
-      "Add Technician";
+    console.error("Review completion error:", error);
+    reviewMessage(error.message || "Unable to load completion details.");
+    approveCompletionButton.disabled = true;
+    requestCorrectionButton.disabled = false;
 
   }
 
 }
 
 
-async function updateTechnicianStatus(
-  technicianId,
-  nextStatus
-) {
+async function approveSelectedCompletion() {
 
-  const technician =
-    allTechnicians.find(
-      row => row.id === technicianId
-    );
+  if (!selectedCompletionLead) return;
 
-  if (!technician) {
-    return;
-  }
+  const lead = selectedCompletionLead;
 
-  const action =
-    nextStatus === "ACTIVE"
-      ? "activate"
-      : "deactivate";
+  if (!confirm("Approve this completion and mark the lead as COMPLETED?")) return;
 
-  if (
-    !window.confirm(
-      "Are you sure you want to " +
-      action +
-      " " +
-      technician.full_name +
-      "?"
-    )
-  ) {
-    return;
-  }
+  approveCompletionButton.disabled = true;
+  requestCorrectionButton.disabled = true;
+  reviewMessage("Approving completion...", "success");
 
-  const {
-    error
-  } =
+  try {
+
+    const now = new Date().toISOString();
+
+    const { error: leadError } =
+      await supabaseClient
+        .from("leads")
+        .update({
+          status: "COMPLETED",
+          updated_by: currentAppUser.id,
+          updated_at: now
+        })
+        .eq("id", lead.id)
+        .eq("status", "COMPLETION_SUBMITTED");
+
+    if (leadError) throw new Error("Unable to complete lead: " + leadError.message);
+
+    const { data: serviceOrder } =
+      await supabaseClient
+        .from("service_orders")
+        .select("id")
+        .eq("lead_id", lead.id)
+        .maybeSingle();
+
+    if (serviceOrder?.id) {
+      const { error: visitError } =
+        await supabaseClient
+          .from("visits")
+          .update({ status: "COMPLETED", updated_at: now })
+          .eq("service_order_id", serviceOrder.id)
+          .eq("status", "COMPLETION_SUBMITTED");
+
+      if (visitError) throw new Error("Lead completed, but visit update failed: " + visitError.message);
+    }
+
     await supabaseClient
-      .from("technicians")
-      .update({
-        status: nextStatus
-      })
-      .eq(
-        "id",
-        technicianId
-      );
+      .from("audit_logs")
+      .insert({
+        actor_user_id: currentAppUser.id,
+        actor_role: currentAppUser.role,
+        action: "COMPLETION_APPROVED",
+        entity_type: "lead",
+        entity_id: lead.id,
+        old_value: { status: "COMPLETION_SUBMITTED" },
+        new_value: { status: "COMPLETED" },
+        reason: "Support reviewed and approved completion submission."
+      });
 
-  if (error) {
+    closeReviewCompletionModal();
+    await loadLeads();
+    await loadDashboardData();
+    showNotice("Lead " + lead.lead_number + " marked as Completed.", "success", leadsNotice);
 
-    console.error(
-      "Technician status error:",
-      error
-    );
+  } catch (error) {
 
-    showNotice(
-      error.message ||
-      "Unable to update technician status.",
-      "error",
-      techniciansNotice
-    );
+    console.error("Approve completion error:", error);
+    reviewMessage(error.message || "Unable to approve completion.");
+    approveCompletionButton.disabled = false;
+    requestCorrectionButton.disabled = false;
 
+  }
+
+}
+
+
+async function requestCompletionCorrection() {
+
+  if (!selectedCompletionLead) return;
+
+  const lead = selectedCompletionLead;
+  const reason = prompt("What needs correction?\n\nExample: missing photo, unclear serial number, incorrect payment details.");
+
+  if (reason === null) return;
+
+  const cleanReason = reason.trim();
+
+  if (!cleanReason) {
+    reviewMessage("Please enter a correction reason.");
     return;
   }
 
-  showNotice(
-    technician.full_name +
-    " is now " +
-    (
-      nextStatus === "ACTIVE"
-        ? "active."
-        : "inactive."
-    ),
-    "success",
-    techniciansNotice
-  );
+  requestCorrectionButton.disabled = true;
+  approveCompletionButton.disabled = true;
+  reviewMessage("Requesting correction...", "success");
 
-  await loadTechnicians();
+  try {
 
-  if (
-    typeof loadAvailableTechnicians ===
-    "function"
-  ) {
-    await loadAvailableTechnicians();
+    const now = new Date().toISOString();
+
+    const { error: leadError } =
+      await supabaseClient
+        .from("leads")
+        .update({
+          status: "CORRECTION_REQUIRED",
+          updated_by: currentAppUser.id,
+          updated_at: now
+        })
+        .eq("id", lead.id)
+        .eq("status", "COMPLETION_SUBMITTED");
+
+    if (leadError) throw new Error("Unable to request correction: " + leadError.message);
+
+    const { data: serviceOrder } =
+      await supabaseClient
+        .from("service_orders")
+        .select("id")
+        .eq("lead_id", lead.id)
+        .maybeSingle();
+
+    const { error: correctionError } =
+      await supabaseClient
+        .from("correction_requests")
+        .insert({
+          lead_id: lead.id,
+          service_order_id: serviceOrder?.id || null,
+          requested_by: currentAppUser.id,
+          reason: cleanReason,
+          requested_fields: { completion: true },
+          status: "PENDING"
+        });
+
+    if (correctionError) {
+      console.warn("Correction request record failed:", correctionError);
+    }
+
+    await supabaseClient
+      .from("audit_logs")
+      .insert({
+        actor_user_id: currentAppUser.id,
+        actor_role: currentAppUser.role,
+        action: "COMPLETION_CORRECTION_REQUESTED",
+        entity_type: "lead",
+        entity_id: lead.id,
+        old_value: { status: "COMPLETION_SUBMITTED" },
+        new_value: { status: "CORRECTION_REQUIRED" },
+        reason: cleanReason
+      });
+
+    closeReviewCompletionModal();
+    await loadLeads();
+    await loadDashboardData();
+    showNotice("Correction requested for " + lead.lead_number + ".", "success", leadsNotice);
+
+  } catch (error) {
+
+    console.error("Correction request error:", error);
+    reviewMessage(error.message || "Unable to request correction.");
+    requestCorrectionButton.disabled = false;
+    approveCompletionButton.disabled = false;
+
   }
 
 }
-
-
-document
-  .getElementById(
-    "technicianMobile"
-  )
-  .addEventListener(
-    "input",
-    function(event) {
-      technicianDigits(
-        "technicianMobile",
-        10
-      );
-    }
-  );
-
-
-document
-  .getElementById(
-    "technicianAlternateMobile"
-  )
-  .addEventListener(
-    "input",
-    function() {
-      technicianDigits(
-        "technicianAlternateMobile",
-        10
-      );
-    }
-  );
-
-
-document
-  .getElementById(
-    "technicianPincode"
-  )
-  .addEventListener(
-    "input",
-    function() {
-      technicianDigits(
-        "technicianPincode",
-        6
-      );
-    }
-  );
-
-
-technicianForm.addEventListener(
-  "submit",
-  createTechnician
-);
-
-
-document
-  .getElementById(
-    "createTechnicianButton"
-  )
-  .addEventListener(
-    "click",
-    openTechnicianModal
-  );
-
-
-document
-  .getElementById(
-    "closeTechnicianModal"
-  )
-  .addEventListener(
-    "click",
-    closeTechnicianModal
-  );
-
-
-document
-  .getElementById(
-    "cancelTechnicianButton"
-  )
-  .addEventListener(
-    "click",
-    closeTechnicianModal
-  );
-
-
-if (technicianModal) {
-
-  technicianModal.addEventListener(
-    "click",
-    function(event) {
-
-      if (
-        event.target ===
-        technicianModal
-      ) {
-        closeTechnicianModal();
-      }
-
-    }
-  );
-
-}
-
-
-document
-  .getElementById(
-    "technicianSearch"
-  )
-  .addEventListener(
-    "input",
-    renderTechnicians
-  );
-
-
-document
-  .getElementById(
-    "technicianStatusFilter"
-  )
-  .addEventListener(
-    "change",
-    renderTechnicians
-  );
-
-
-document
-  .getElementById(
-    "technicianAvailabilityFilter"
-  )
-  .addEventListener(
-    "change",
-    renderTechnicians
-  );
-
-
-document
-  .getElementById(
-    "techniciansRefreshButton"
-  )
-  .addEventListener(
-    "click",
-    loadTechnicians
-  );
 
 
 /* =====================================================
-   38. NAVIGATION
+   39. NAVIGATION
    ===================================================== */
 
 function sectionLabel(section) {
@@ -6315,9 +5531,6 @@ function activateSection(section) {
     assignmentsSection.style.display =
       "none";
 
-    techniciansSection.style.display =
-      "none";
-
     hideNotice(leadsNotice);
 
     window.scrollTo({
@@ -6339,9 +5552,6 @@ function activateSection(section) {
       "block";
 
     assignmentsSection.style.display =
-      "none";
-
-    techniciansSection.style.display =
       "none";
 
     hideNotice(dashboardNotice);
@@ -6369,43 +5579,10 @@ function activateSection(section) {
     assignmentsSection.style.display =
       "block";
 
-    techniciansSection.style.display =
-      "none";
-
     hideNotice(dashboardNotice);
     hideNotice(leadsNotice);
 
     loadUnassignedLeads();
-
-    window.scrollTo({
-      top:0,
-      behavior:"smooth"
-    });
-
-    return;
-
-  }
-
-
-  if (section === "technicians") {
-
-    dashboardSection.style.display =
-      "none";
-
-    leadsSection.style.display =
-      "none";
-
-    assignmentsSection.style.display =
-      "none";
-
-    techniciansSection.style.display =
-      "block";
-
-    hideNotice(dashboardNotice);
-    hideNotice(leadsNotice);
-    hideNotice(assignmentsNotice);
-
-    loadTechnicians();
 
     window.scrollTo({
       top:0,
@@ -6424,9 +5601,6 @@ function activateSection(section) {
     "none";
 
   assignmentsSection.style.display =
-    "none";
-
-  techniciansSection.style.display =
     "none";
 
 
@@ -6746,7 +5920,34 @@ if (refreshButton) {
 
 
 /* =====================================================
-   38. LOGOUT
+   40. REVIEW COMPLETION EVENTS
+   ===================================================== */
+
+if (document.getElementById("closeReviewCompletionModal")) {
+  document
+    .getElementById("closeReviewCompletionModal")
+    .addEventListener("click", closeReviewCompletionModal);
+}
+
+if (reviewCompletionModal) {
+  reviewCompletionModal.addEventListener("click", function(event) {
+    if (event.target === reviewCompletionModal) {
+      closeReviewCompletionModal();
+    }
+  });
+}
+
+if (approveCompletionButton) {
+  approveCompletionButton.addEventListener("click", approveSelectedCompletion);
+}
+
+if (requestCorrectionButton) {
+  requestCorrectionButton.addEventListener("click", requestCompletionCorrection);
+}
+
+
+/* =====================================================
+   41. LOGOUT
    ===================================================== */
 
 if (logoutButton) {
@@ -6978,7 +6179,9 @@ supabaseClient
   );
 
 
-/* ===================================================== 38. START  ===================================================== */
+/* =====================================================
+   38. START
+   ===================================================== */
 
 setLeadDateMinimum();
 setupLeadValidation();
