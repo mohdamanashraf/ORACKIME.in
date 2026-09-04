@@ -306,6 +306,45 @@
   }
 }
 
+
+/* ===== Technician Profile ===== */
+.profile-btn{
+  border:1px solid rgba(99,169,255,.22);
+  background:#10263a;
+  color:#fff;
+  padding:10px 15px;
+  border-radius:10px;
+  cursor:pointer;
+  font-weight:800;
+}
+.tech-header-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.profile-modal{position:fixed;inset:0;z-index:10000;display:none;align-items:flex-start;justify-content:center;padding:24px 12px;overflow:auto;background:rgba(2,8,14,.82);backdrop-filter:blur(8px)}
+.profile-modal.open{display:flex}
+.profile-panel{width:min(760px,100%);background:#0c1b2d;border:1px solid rgba(255,255,255,.10);border-radius:20px;box-shadow:0 22px 70px rgba(0,0,0,.45);overflow:hidden}
+.profile-head{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;padding:22px;border-bottom:1px solid rgba(255,255,255,.08)}
+.profile-head h2{margin:0 0 5px}.profile-head p{margin:0;opacity:.65;font-size:14px}
+.close-profile{border:1px solid rgba(255,255,255,.12);background:#10263a;color:#fff;width:40px;height:40px;border-radius:10px;cursor:pointer;font-size:22px}
+.profile-body{padding:22px}
+.profile-section{margin-top:20px;padding-top:18px;border-top:1px solid rgba(255,255,255,.08)}
+.profile-section:first-child{margin-top:0;padding-top:0;border-top:0}
+.profile-section h3{margin:0 0 14px;font-size:17px}
+.profile-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.profile-field label{display:block;font-size:12px;font-weight:800;margin-bottom:7px;opacity:.82}
+.profile-field input,.profile-field select{
+  width:100%;box-sizing:border-box;border:1px solid rgba(255,255,255,.12);
+  background:#081624;color:#fff;border-radius:10px;padding:12px;outline:none
+}
+.profile-field input:focus,.profile-field select:focus{border-color:#63a9ff}
+.profile-field small{display:block;margin-top:6px;opacity:.5;line-height:1.4}
+.profile-note{padding:12px 14px;border-radius:10px;background:#10263a;font-size:13px;line-height:1.5;opacity:.88}
+.profile-error,.profile-success{display:none;margin-bottom:14px;padding:12px 14px;border-radius:10px}
+.profile-error{background:#45212a;color:#ffd7dc}.profile-success{background:#12392f;color:#baf5e3}
+.profile-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:22px}
+.save-profile{border:0;border-radius:10px;padding:12px 18px;cursor:pointer;font-weight:900;background:#35d1aa;color:#04131e}
+.cancel-profile{border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:12px 18px;cursor:pointer;font-weight:800;background:#10263a;color:#fff}
+.save-profile:disabled{opacity:.5;cursor:not-allowed}
+@media(max-width:700px){.profile-grid{grid-template-columns:1fr}.profile-body,.profile-head{padding:16px}.profile-actions{display:grid;grid-template-columns:1fr 1fr}.profile-actions button{width:100%}}
+
 /* ===== Completion Workflow ===== */
 .completion-modal{position:fixed;inset:0;z-index:9999;display:none;align-items:flex-start;justify-content:center;padding:24px 12px;overflow:auto;background:rgba(2,8,14,.82);backdrop-filter:blur(8px)}
 .completion-modal.open{display:flex}
@@ -368,9 +407,15 @@
         </div>
       </div>
 
-      <button class="tech-logout" id="logoutBtn">
-        Logout
-      </button>
+      <div class="tech-header-actions">
+        <button class="profile-btn" type="button" id="profileBtn">
+          Profile
+        </button>
+
+        <button class="tech-logout" id="logoutBtn">
+          Logout
+        </button>
+      </div>
 
     </div>
 
@@ -437,6 +482,99 @@
 </main>
 
 
+
+
+<div class="profile-modal" id="profileModal" aria-hidden="true">
+  <div class="profile-panel">
+    <div class="profile-head">
+      <div>
+        <h2>My Profile</h2>
+        <p>Update your contact and professional information.</p>
+      </div>
+      <button class="close-profile" type="button" onclick="closeProfile()">×</button>
+    </div>
+
+    <div class="profile-body">
+      <div id="profileError" class="profile-error"></div>
+      <div id="profileSuccess" class="profile-success"></div>
+
+      <form id="profileForm">
+        <div class="profile-section">
+          <h3>Personal & Contact</h3>
+          <div class="profile-grid">
+            <div class="profile-field">
+              <label>Full Name</label>
+              <input id="profileFullName" type="text" required>
+            </div>
+            <div class="profile-field">
+              <label>Technician ID</label>
+              <input id="profileCode" type="text" readonly>
+            </div>
+            <div class="profile-field">
+              <label>Mobile</label>
+              <input id="profileMobile" type="tel">
+            </div>
+            <div class="profile-field">
+              <label>Alternate Mobile</label>
+              <input id="profileAlternateMobile" type="tel">
+            </div>
+            <div class="profile-field">
+              <label>Login Email</label>
+              <input id="profileEmail" type="email">
+              <small>Changing login email may require email confirmation from Supabase.</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="profile-section">
+          <h3>Address & Service Area</h3>
+          <div class="profile-grid">
+            <div class="profile-field" style="grid-column:1/-1">
+              <label>Address</label>
+              <input id="profileAddress" type="text">
+            </div>
+            <div class="profile-field">
+              <label>City</label>
+              <input id="profileCity" type="text">
+            </div>
+            <div class="profile-field">
+              <label>State</label>
+              <input id="profileState" type="text">
+            </div>
+            <div class="profile-field">
+              <label>Pincode</label>
+              <input id="profilePincode" type="text">
+            </div>
+            <div class="profile-field">
+              <label>Service Area</label>
+              <input id="profileServiceArea" type="text">
+            </div>
+            <div class="profile-field">
+              <label>Availability</label>
+              <select id="profileAvailability">
+                <option value="AVAILABLE">Available</option>
+                <option value="BUSY">Busy</option>
+                <option value="OFFLINE">Offline</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="profile-section">
+          <h3>Bank Information</h3>
+          <div class="profile-note">
+            Bank details will be added after the dedicated secure bank-details table is enabled in the ORACLIME database. Bank information should not be stored in the technician profile or notes field.
+          </div>
+        </div>
+
+        <div class="profile-actions">
+          <button class="cancel-profile" type="button" onclick="closeProfile()">Cancel</button>
+          <button class="save-profile" id="saveProfileBtn" type="submit">Save Profile</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 
 <div class="completion-modal" id="completionModal" aria-hidden="true">
   <div class="completion-panel">
@@ -668,6 +806,179 @@ function statusLabel(status){
 }
 
 
+
+function profileMessage(type,message){
+  const e=document.getElementById("profileError");
+  const s=document.getElementById("profileSuccess");
+  e.style.display="none";
+  s.style.display="none";
+
+  if(type==="error"){
+    e.textContent=message;
+    e.style.display="block";
+  }else{
+    s.textContent=message;
+    s.style.display="block";
+  }
+}
+
+function openProfile(){
+  if(!currentTechnician){
+    showError("Technician profile is not loaded yet.");
+    return;
+  }
+
+  document.getElementById("profileFullName").value =
+    currentTechnician.full_name || "";
+  document.getElementById("profileCode").value =
+    currentTechnician.technician_code || "";
+  document.getElementById("profileMobile").value =
+    currentTechnician.mobile || "";
+  document.getElementById("profileAlternateMobile").value =
+    currentTechnician.alternate_mobile || "";
+  document.getElementById("profileEmail").value =
+    currentTechnician.email || currentUser?.email || "";
+  document.getElementById("profileAddress").value =
+    currentTechnician.address || "";
+  document.getElementById("profileCity").value =
+    currentTechnician.city || "";
+  document.getElementById("profileState").value =
+    currentTechnician.state || "";
+  document.getElementById("profilePincode").value =
+    currentTechnician.pincode || "";
+  document.getElementById("profileServiceArea").value =
+    currentTechnician.service_area || "";
+  document.getElementById("profileAvailability").value =
+    currentTechnician.availability_status || "AVAILABLE";
+
+  profileMessage("success","");
+  document.getElementById("profileSuccess").style.display="none";
+
+  const modal=document.getElementById("profileModal");
+  modal.classList.add("open");
+  modal.setAttribute("aria-hidden","false");
+}
+
+function closeProfile(){
+  const modal=document.getElementById("profileModal");
+  modal.classList.remove("open");
+  modal.setAttribute("aria-hidden","true");
+  document.getElementById("profileForm").reset();
+  document.getElementById("profileError").style.display="none";
+  document.getElementById("profileSuccess").style.display="none";
+}
+
+async function saveProfile(){
+  if(!currentTechnician || !currentUser){
+    throw new Error("Technician profile is not ready.");
+  }
+
+  const fullName=document.getElementById("profileFullName").value.trim();
+  const mobile=document.getElementById("profileMobile").value.trim();
+  const alternateMobile=document.getElementById("profileAlternateMobile").value.trim();
+  const newEmail=document.getElementById("profileEmail").value.trim();
+  const address=document.getElementById("profileAddress").value.trim();
+  const city=document.getElementById("profileCity").value.trim();
+  const state=document.getElementById("profileState").value.trim();
+  const pincode=document.getElementById("profilePincode").value.trim();
+  const serviceArea=document.getElementById("profileServiceArea").value.trim();
+  const availability=document.getElementById("profileAvailability").value;
+
+  if(!fullName){
+    throw new Error("Full Name is required.");
+  }
+
+  if(newEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)){
+    throw new Error("Please enter a valid email address.");
+  }
+
+  const payload={
+    full_name:fullName,
+    mobile:mobile || null,
+    alternate_mobile:alternateMobile || null,
+    email:newEmail || null,
+    address:address || null,
+    city:city || null,
+    state:state || null,
+    pincode:pincode || null,
+    service_area:serviceArea || null,
+    availability_status:availability,
+    updated_at:new Date().toISOString()
+  };
+
+  const {error}=await supabaseClient
+    .from("technicians")
+    .update(payload)
+    .eq("id",currentTechnician.id)
+    .eq("user_id",currentUser.id);
+
+  if(error){
+    throw error;
+  }
+
+  // Keep the authenticated login email in sync when changed.
+  if(newEmail && newEmail !== (currentUser.email || "")){
+    const {data:authData,error:authError}=await supabaseClient.auth.updateUser({
+      email:newEmail
+    });
+
+    if(authError){
+      throw new Error(
+        "Profile saved, but login email could not be changed: " +
+        authError.message
+      );
+    }
+
+    if(authData?.user){
+      currentUser=authData.user;
+    }
+  }
+
+  currentTechnician={
+    ...currentTechnician,
+    ...payload
+  };
+
+  document.getElementById("techName").textContent =
+    currentTechnician.full_name || "Technician";
+
+  const firstLetter=(currentTechnician.full_name || "T")
+    .trim().charAt(0).toUpperCase();
+
+  document.getElementById("techAvatar").textContent=firstLetter;
+
+  profileMessage(
+    "success",
+    "Profile updated successfully."
+  );
+
+  setTimeout(closeProfile,900);
+}
+
+document.getElementById("profileBtn").addEventListener("click",openProfile);
+
+document.getElementById("profileForm").addEventListener("submit",async function(e){
+  e.preventDefault();
+
+  const btn=document.getElementById("saveProfileBtn");
+  btn.disabled=true;
+  btn.textContent="Saving...";
+
+  try{
+    await saveProfile();
+  }catch(err){
+    console.error("Profile update error:",err);
+    profileMessage(
+      "error",
+      err.message || "Unable to update profile."
+    );
+  }finally{
+    btn.disabled=false;
+    btn.textContent="Save Profile";
+  }
+});
+
+
 async function loadTechnician(){
 
   hideError();
@@ -714,9 +1025,12 @@ async function loadTechnician(){
       technician_code,
       full_name,
       mobile,
+      alternate_mobile,
       email,
+      address,
       city,
       state,
+      pincode,
       service_area,
       status,
       availability_status
@@ -990,6 +1304,19 @@ function renderJob(job){
         class="job-btn primary"
         onclick="goToCompletion('${job.id}')">
         Submit Completion
+      </button>
+    `;
+
+  }
+
+
+  if(status === "CORRECTION_REQUIRED"){
+
+    buttons += `
+      <button
+        class="job-btn primary"
+        onclick="goToCompletion('${job.id}')">
+        Resubmit Completion
       </button>
     `;
 
@@ -1308,7 +1635,9 @@ async function goToCompletion(leadId){
 
   completionMessage(
     "success",
-    "Preparing service record..."
+    job.status === "CORRECTION_REQUIRED"
+      ? "Correction requested by ORACLIME Support. Please resubmit the required completion proof."
+      : "Preparing service record..."
   );
 
   document.getElementById("submitCompletionBtn").disabled = true;
@@ -1660,7 +1989,7 @@ const now =
         })
         .eq("id",completionJob.id)
         .eq("assigned_technician_id",currentTechnician.id)
-        .eq("status","IN_PROGRESS"));
+        .in("status",["IN_PROGRESS","CORRECTION_REQUIRED"]));
 
     if(error){
       throw error;
