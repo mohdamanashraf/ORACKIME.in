@@ -2252,6 +2252,53 @@
         <div id="reviewVerification" class="small">Loading...</div>
       </div>
 
+      <div
+        id="newCompletionCodeCard"
+        class="card"
+        style="padding:16px; margin-bottom:16px; display:none; border-color:rgba(53,209,170,.35);"
+      >
+        <div class="section-title-row" style="margin-bottom:10px;">
+          <h3 style="margin:0;">New Service Completion Code</h3>
+        </div>
+
+        <div class="small" style="margin-bottom:12px;">
+          Give this new 6-digit code to the customer. The previous code has been invalidated.
+        </div>
+
+        <div
+          style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;"
+        >
+          <strong
+            id="newCompletionCodeValue"
+            style="font-size:30px;letter-spacing:5px;"
+          >—</strong>
+
+          <button
+            type="button"
+            class="btn"
+            id="copyCompletionCodeButton"
+          >
+            Copy Code
+          </button>
+
+          <a
+            id="whatsappCompletionCodeButton"
+            class="btn primary"
+            href="#"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Open WhatsApp
+          </a>
+        </div>
+
+        <div
+          id="completionCodeExpiry"
+          class="small"
+          style="margin-top:10px;"
+        ></div>
+      </div>
+
       <div class="card" style="padding:16px;">
         <div class="section-title-row" style="margin-bottom:12px;">
           <h3 style="margin:0;">Submitted Photos</h3>
@@ -2420,6 +2467,21 @@ const reviewDocuments =
 
 const reviewCompletionMessage =
   document.getElementById("reviewCompletionMessage");
+
+const newCompletionCodeCard =
+  document.getElementById("newCompletionCodeCard");
+
+const newCompletionCodeValue =
+  document.getElementById("newCompletionCodeValue");
+
+const completionCodeExpiry =
+  document.getElementById("completionCodeExpiry");
+
+const copyCompletionCodeButton =
+  document.getElementById("copyCompletionCodeButton");
+
+const whatsappCompletionCodeButton =
+  document.getElementById("whatsappCompletionCodeButton");
 
 const approveCompletionButton =
   document.getElementById("approveCompletionButton");
@@ -5021,6 +5083,22 @@ function closeReviewCompletionModal() {
     reviewDocuments.innerHTML = "";
   }
 
+  if (newCompletionCodeCard) {
+    newCompletionCodeCard.style.display = "none";
+  }
+
+  if (newCompletionCodeValue) {
+    newCompletionCodeValue.textContent = "—";
+  }
+
+  if (completionCodeExpiry) {
+    completionCodeExpiry.textContent = "";
+  }
+
+  if (whatsappCompletionCodeButton) {
+    whatsappCompletionCodeButton.href = "#";
+  }
+
 }
 
 
@@ -5344,6 +5422,65 @@ async function approveSelectedCompletion() {
 }
 
 
+function showNewCompletionCode(code, mobile, expiresAt) {
+
+  if (!newCompletionCodeCard || !newCompletionCodeValue) return;
+
+  newCompletionCodeValue.textContent = String(code || "—");
+
+  if (completionCodeExpiry) {
+    completionCodeExpiry.textContent =
+      expiresAt
+        ? "Valid until " + new Date(expiresAt).toLocaleString("en-IN", {
+            dateStyle: "medium",
+            timeStyle: "short"
+          })
+        : "Validity: 24 hours";
+  }
+
+  if (whatsappCompletionCodeButton) {
+    const cleanMobile = String(mobile || "").replace(/\D/g, "");
+    const whatsappNumber =
+      cleanMobile.length === 10
+        ? "91" + cleanMobile
+        : cleanMobile;
+
+    const message =
+      "ORACLIME Service Completion Code for " +
+      (selectedCompletionLead?.lead_number || "your service") +
+      ": " + String(code || "") +
+      "\n\nPlease provide this code to the technician after the service is corrected/completed.";
+
+    whatsappCompletionCodeButton.href =
+      whatsappNumber
+        ? "https://wa.me/" + whatsappNumber + "?text=" + encodeURIComponent(message)
+        : "https://wa.me/?text=" + encodeURIComponent(message);
+  }
+
+  newCompletionCodeCard.style.display = "block";
+}
+
+
+async function copyNewCompletionCode() {
+
+  const code = newCompletionCodeValue?.textContent?.trim();
+
+  if (!code || !/^\d{6}$/.test(code)) return;
+
+  try {
+    await navigator.clipboard.writeText(code);
+    copyCompletionCodeButton.textContent = "Copied";
+    setTimeout(function() {
+      if (copyCompletionCodeButton) {
+        copyCompletionCodeButton.textContent = "Copy Code";
+      }
+    }, 1400);
+  } catch (error) {
+    window.prompt("Copy the new Service Completion Code:", code);
+  }
+}
+
+
 async function requestCompletionCorrection() {
 
   if (!selectedCompletionLead) return;
@@ -5362,11 +5499,53 @@ async function requestCompletionCorrection() {
 
   requestCorrectionButton.disabled = true;
   approveCompletionButton.disabled = true;
-  reviewMessage("Requesting correction...", "success");
+  reviewMessage("Generating a new Service Completion Code...", "success");
 
   try {
 
     const now = new Date().toISOString();
+
+    const { data: serviceOrder, error: serviceOrderError } =
+      await supabaseClient
+        .from("service_orders")
+        .select("id")
+        .eq("lead_id", lead.id)
+        .maybeSingle();
+
+    if (serviceOrderError) {
+      throw new Error("Unable to load service order: " + serviceOrderError.message);
+    }
+
+    if (!serviceOrder?.id) {
+      throw new Error("No service order found for this lead.");
+    }
+
+    /*
+      The database RPC is the only place that creates the raw code.
+      It authorizes the active Support user, invalidates the previous
+      code, stores only the SHA-256 hash, and returns the new 6-digit
+      code once to this authenticated Support session.
+    */
+    const { data: newCode, error: codeError } =
+      await supabaseClient.rpc(
+        "issue_service_completion_code",
+        { p_lead_id: lead.id }
+      );
+
+    if (codeError) {
+      throw new Error(
+        "Unable to generate the new Service Completion Code: " +
+        codeError.message
+      );
+    }
+
+    const cleanCode = String(newCode || "").trim();
+
+    if (!/^\d{6}$/.test(cleanCode)) {
+      throw new Error(
+        "The new Service Completion Code was not generated correctly."
+      );
+    }
 
     const { error: leadError } =
       await supabaseClient
@@ -5379,21 +5558,31 @@ async function requestCompletionCorrection() {
         .eq("id", lead.id)
         .eq("status", "COMPLETION_SUBMITTED");
 
-    if (leadError) throw new Error("Unable to request correction: " + leadError.message);
+    if (leadError) {
+      throw new Error(
+        "Unable to request correction: " + leadError.message
+      );
+    }
 
-    const { data: serviceOrder } =
+    const { data: latestCodeRow, error: latestCodeError } =
       await supabaseClient
-        .from("service_orders")
-        .select("id")
-        .eq("lead_id", lead.id)
+        .from("service_completion_codes")
+        .select("expires_at")
+        .eq("service_order_id", serviceOrder.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
         .maybeSingle();
+
+    if (latestCodeError) {
+      console.warn("Unable to load new code expiry:", latestCodeError);
+    }
 
     const { error: correctionError } =
       await supabaseClient
         .from("correction_requests")
         .insert({
           lead_id: lead.id,
-          service_order_id: serviceOrder?.id || null,
+          service_order_id: serviceOrder.id,
           requested_by: currentAppUser.id,
           reason: cleanReason,
           requested_fields: { completion: true },
@@ -5401,26 +5590,54 @@ async function requestCompletionCorrection() {
         });
 
     if (correctionError) {
-      console.warn("Correction request record failed:", correctionError);
+      console.warn(
+        "Correction request record failed:",
+        correctionError
+      );
     }
 
-    await supabaseClient
-      .from("audit_logs")
-      .insert({
-        actor_user_id: currentAppUser.id,
-        actor_role: currentAppUser.role,
-        action: "COMPLETION_CORRECTION_REQUESTED",
-        entity_type: "lead",
-        entity_id: lead.id,
-        old_value: { status: "COMPLETION_SUBMITTED" },
-        new_value: { status: "CORRECTION_REQUIRED" },
-        reason: cleanReason
-      });
+    const { error: auditError } =
+      await supabaseClient
+        .from("audit_logs")
+        .insert({
+          actor_user_id: currentAppUser.id,
+          actor_role: currentAppUser.role,
+          action: "COMPLETION_CORRECTION_REQUESTED",
+          entity_type: "lead",
+          entity_id: lead.id,
+          old_value: { status: "COMPLETION_SUBMITTED" },
+          new_value: {
+            status: "CORRECTION_REQUIRED",
+            replacement_code_issued: true
+          },
+          reason: cleanReason
+        });
 
-    closeReviewCompletionModal();
+    if (auditError) {
+      console.warn("Correction audit log failed:", auditError);
+    }
+
+    showNewCompletionCode(
+      cleanCode,
+      lead.mobile,
+      latestCodeRow?.expires_at || null
+    );
+
+    reviewMessage(
+      "Correction requested. Send the new Service Completion Code to the customer. The technician must use this new code when resubmitting.",
+      "success"
+    );
+
     await loadLeads();
     await loadDashboardData();
-    showNotice("Correction requested for " + lead.lead_number + ".", "success", leadsNotice);
+
+    showNotice(
+      "Correction requested for " +
+      lead.lead_number +
+      ". A new Service Completion Code has been generated.",
+      "success",
+      leadsNotice
+    );
 
   } catch (error) {
 
@@ -5432,7 +5649,6 @@ async function requestCompletionCorrection() {
   }
 
 }
-
 
 /* =====================================================
    39. NAVIGATION
@@ -5939,6 +6155,10 @@ if (reviewCompletionModal) {
 
 if (approveCompletionButton) {
   approveCompletionButton.addEventListener("click", approveSelectedCompletion);
+}
+
+if (copyCompletionCodeButton) {
+  copyCompletionCodeButton.addEventListener("click", copyNewCompletionCode);
 }
 
 if (requestCorrectionButton) {
