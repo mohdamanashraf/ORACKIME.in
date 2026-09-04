@@ -5107,7 +5107,7 @@ async function assignSelectedTechnician() {
     );
 
     await loadUnassignedLeads();
-    await loadLeads();
+    await loadLeads(true);
     await loadDashboardData();
 
   } catch (error) {
@@ -6130,6 +6130,719 @@ document
 
 
 /* =====================================================
+   38. REVIEW COMPLETION
+   ===================================================== */
+
+function reviewMessage(message, type = "error") {
+
+  if (!reviewCompletionMessage) return;
+
+  reviewCompletionMessage.textContent = message;
+  reviewCompletionMessage.className = "dashboard-notice";
+  reviewCompletionMessage.style.display = "block";
+
+  if (type === "success") {
+    reviewCompletionMessage.style.borderColor = "rgba(53,209,170,.35)";
+  } else {
+    reviewCompletionMessage.classList.add("error");
+  }
+
+}
+
+
+function closeReviewCompletionModal() {
+
+  if (!reviewCompletionModal) return;
+
+  reviewCompletionModal.classList.remove("open");
+  selectedCompletionLead = null;
+
+  if (reviewDocuments) {
+    reviewDocuments.innerHTML = "";
+  }
+
+  if (newCompletionCodeCard) {
+    newCompletionCodeCard.style.display = "none";
+  }
+
+  if (newCompletionCodeValue) {
+    newCompletionCodeValue.textContent = "—";
+  }
+
+  if (completionCodeExpiry) {
+    completionCodeExpiry.textContent = "";
+  }
+
+  if (whatsappCompletionCodeButton) {
+    whatsappCompletionCodeButton.href = "#";
+  }
+
+}
+
+
+function documentTitle(type) {
+
+  const labels = {
+    INDOOR_LOCATION: "Indoor Location",
+    INDOOR_SERIAL: "Indoor Serial Number",
+    OUTDOOR_LOCATION: "Outdoor Location",
+    OUTDOOR_SERIAL: "Outdoor Serial Number",
+    AC_BILL: "AC Bill",
+    PAYMENT_PROOF: "Payment Proof",
+    OTHER: "Other Document"
+  };
+
+  return labels[type] || formatStatus(type);
+
+}
+
+
+function formatAmount(value) {
+
+  const amount = Number(value);
+
+  if (!Number.isFinite(amount)) return "—";
+
+  return "₹" + amount.toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+
+}
+
+
+async function createReviewDocumentUrl(path) {
+
+  const { data, error } =
+    await supabaseClient.storage
+      .from("service-documents")
+      .createSignedUrl(path, 600);
+
+  if (error || !data?.signedUrl) {
+    throw new Error(error?.message || "Unable to create document preview link.");
+  }
+
+  return data.signedUrl;
+
+}
+
+
+async function loadReviewDocuments(serviceOrderId, visitId) {
+
+  reviewDocuments.innerHTML =
+    '<div class="small">Loading submitted documents...</div>';
+
+  let query = supabaseClient
+    .from("documents")
+    .select("id,document_type,storage_path,original_filename,mime_type,created_at")
+    .order("created_at", { ascending: false });
+
+  if (visitId) {
+    query = query.eq("visit_id", visitId);
+  } else {
+    query = query.eq("service_order_id", serviceOrderId);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    throw new Error("Unable to load submitted documents: " + error.message);
+  }
+
+  const documents = Array.isArray(data) ? data : [];
+
+  if (!documents.length) {
+    reviewDocuments.innerHTML =
+      '<div class="small">No submitted documents found.</div>';
+    return;
+  }
+
+  reviewDocuments.innerHTML = "";
+
+  for (const doc of documents) {
+
+    const card = document.createElement("div");
+    card.className = "card";
+    card.style.padding = "12px";
+
+    const title = document.createElement("div");
+    title.style.fontWeight = "800";
+    title.style.marginBottom = "8px";
+    title.textContent = documentTitle(doc.document_type);
+
+    const meta = document.createElement("div");
+    meta.className = "small";
+    meta.textContent = doc.original_filename || "Submitted document";
+
+    card.appendChild(title);
+    card.appendChild(meta);
+
+    try {
+      const url = await createReviewDocumentUrl(doc.storage_path);
+
+      if (String(doc.mime_type || "").startsWith("image/")) {
+        const image = document.createElement("img");
+        image.src = url;
+        image.alt = documentTitle(doc.document_type);
+        image.loading = "lazy";
+        image.style.width = "100%";
+        image.style.maxHeight = "260px";
+        image.style.objectFit = "contain";
+        image.style.borderRadius = "10px";
+        image.style.marginTop = "10px";
+        image.style.background = "#06101d";
+        card.appendChild(image);
+      }
+
+      const openLink = document.createElement("a");
+      openLink.href = url;
+      openLink.target = "_blank";
+      openLink.rel = "noopener noreferrer";
+      openLink.className = "btn";
+      openLink.style.display = "inline-block";
+      openLink.style.marginTop = "10px";
+      openLink.textContent = "Open Document";
+      card.appendChild(openLink);
+
+    } catch (urlError) {
+
+      const unavailable = document.createElement("div");
+      unavailable.className = "small";
+      unavailable.style.marginTop = "8px";
+      unavailable.textContent = "Preview unavailable: " + urlError.message;
+      card.appendChild(unavailable);
+
+    }
+
+    reviewDocuments.appendChild(card);
+
+  }
+
+}
+
+
+async function openReviewCompletionModal(lead) {
+
+  selectedCompletionLead = lead;
+
+  reviewCompletionModal.classList.add("open");
+  reviewCompletionModal.setAttribute("aria-hidden", "false");
+
+  approveCompletionButton.disabled = true;
+  requestCorrectionButton.disabled = true;
+
+  reviewMessage("Loading completion details...", "success");
+
+  reviewCompletionSummary.innerHTML = `
+    <strong>${escapeHtml(lead.lead_number || "—")}</strong>
+    <div class="small">${escapeHtml(lead.customer_name || "—")} • ${escapeHtml(lead.service_type || "AC / Air Conditioner")}</div>
+    <div class="small">${escapeHtml(getLeadLocation(lead))}</div>
+    <div class="small">Mobile: ${escapeHtml(lead.mobile || "—")}</div>
+  `;
+
+  reviewAmountCollected.textContent = "—";
+  reviewPaymentMode.textContent = "—";
+  reviewVerification.textContent = "Loading...";
+  reviewDocuments.innerHTML = '<div class="small">Loading submitted documents...</div>';
+
+  try {
+
+    const { data: serviceOrder, error: orderError } =
+      await supabaseClient
+        .from("service_orders")
+        .select("id,lead_id")
+        .eq("lead_id", lead.id)
+        .maybeSingle();
+
+    if (orderError) throw new Error("Unable to load service order: " + orderError.message);
+    if (!serviceOrder) throw new Error("No service order found for this lead.");
+
+    const { data: visit, error: visitError } =
+      await supabaseClient
+        .from("visits")
+        .select("id,service_order_id,technician_id,status,visit_number,service_completed_at")
+        .eq("service_order_id", serviceOrder.id)
+        .order("visit_number", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+    if (visitError) throw new Error("Unable to load service visit: " + visitError.message);
+
+    const { data: payment, error: paymentError } =
+      await supabaseClient
+        .from("payments")
+        .select("amount_collected,payment_mode,updated_at,created_at")
+        .eq("service_order_id", serviceOrder.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+    if (paymentError) throw new Error("Unable to load payment details: " + paymentError.message);
+
+    reviewAmountCollected.textContent =
+      payment ? formatAmount(payment.amount_collected) : "₹0.00";
+
+    reviewPaymentMode.textContent =
+      payment?.payment_mode || "—";
+
+    const { data: codeData, error: codeError } =
+      await supabaseClient
+        .from("service_completion_codes")
+        .select("verified_at,expires_at,attempts,max_attempts")
+        .eq("service_order_id", serviceOrder.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+    if (codeError) {
+      reviewVerification.textContent = "Completion code verification details unavailable.";
+    } else if (codeData?.verified_at) {
+      reviewVerification.innerHTML =
+        '<strong style="color:var(--green);">✓ Completion Code Verified</strong>' +
+        '<div class="small">Verified: ' + escapeHtml(formatDate(codeData.verified_at)) + '</div>';
+    } else {
+      reviewVerification.innerHTML =
+        '<strong>Not verified</strong><div class="small">No verified completion code record was found.</div>';
+    }
+
+    await loadReviewDocuments(serviceOrder.id, visit?.id || null);
+
+    approveCompletionButton.disabled = false;
+    requestCorrectionButton.disabled = false;
+    reviewMessage("Review the evidence and payment details, then choose an action.", "success");
+
+  } catch (error) {
+
+    console.error("Review completion error:", error);
+    reviewMessage(error.message || "Unable to load completion details.");
+    approveCompletionButton.disabled = true;
+    requestCorrectionButton.disabled = false;
+
+  }
+
+}
+
+
+async function approveSelectedCompletion() {
+
+  if (!selectedCompletionLead) return;
+
+  const lead = selectedCompletionLead;
+
+  if (!confirm("Approve this completion and mark the lead as COMPLETED?")) return;
+
+  approveCompletionButton.disabled = true;
+  requestCorrectionButton.disabled = true;
+  reviewMessage("Approving completion...", "success");
+
+  try {
+
+    const now = new Date().toISOString();
+
+    const { error: leadError } =
+      await supabaseClient
+        .from("leads")
+        .update({
+          status: "COMPLETED",
+          updated_by: currentAppUser.id,
+          updated_at: now
+        })
+        .eq("id", lead.id)
+        .eq("status", "COMPLETION_SUBMITTED");
+
+    if (leadError) throw new Error("Unable to complete lead: " + leadError.message);
+
+    const { data: serviceOrder } =
+      await supabaseClient
+        .from("service_orders")
+        .select("id")
+        .eq("lead_id", lead.id)
+        .maybeSingle();
+
+    if (serviceOrder?.id) {
+      const { error: visitError } =
+        await supabaseClient
+          .from("visits")
+          .update({ status: "COMPLETED", updated_at: now })
+          .eq("service_order_id", serviceOrder.id)
+          .eq("status", "COMPLETION_SUBMITTED");
+
+      if (visitError) throw new Error("Lead completed, but visit update failed: " + visitError.message);
+    }
+
+    await supabaseClient
+      .from("audit_logs")
+      .insert({
+        actor_user_id: currentAppUser.id,
+        actor_role: currentAppUser.role,
+        action: "COMPLETION_APPROVED",
+        entity_type: "lead",
+        entity_id: lead.id,
+        old_value: { status: "COMPLETION_SUBMITTED" },
+        new_value: { status: "COMPLETED" },
+        reason: "Support reviewed and approved completion submission."
+      });
+
+    closeReviewCompletionModal();
+    await loadLeads(true);
+    await loadDashboardData();
+    showNotice("Lead " + lead.lead_number + " marked as Completed.", "success", leadsNotice);
+
+  } catch (error) {
+
+    console.error("Approve completion error:", error);
+    reviewMessage(error.message || "Unable to approve completion.");
+    approveCompletionButton.disabled = false;
+    requestCorrectionButton.disabled = false;
+
+  }
+
+}
+
+
+function showNewCompletionCode(code, mobile, expiresAt) {
+
+  if (!newCompletionCodeCard || !newCompletionCodeValue) return;
+
+  newCompletionCodeValue.textContent = String(code || "—");
+
+  if (completionCodeExpiry) {
+    completionCodeExpiry.textContent =
+      expiresAt
+        ? "Valid until " + new Date(expiresAt).toLocaleString("en-IN", {
+            dateStyle: "medium",
+            timeStyle: "short"
+          })
+        : "Validity: 24 hours";
+  }
+
+  if (whatsappCompletionCodeButton) {
+    const cleanMobile = String(mobile || "").replace(/\D/g, "");
+    const whatsappNumber =
+      cleanMobile.length === 10
+        ? "91" + cleanMobile
+        : cleanMobile;
+
+    const message =
+      "ORACLIME Service Completion Code for " +
+      (selectedCompletionLead?.lead_number || "your service") +
+      ": " + String(code || "") +
+      "\n\nPlease provide this code to the technician after the service is corrected/completed.";
+
+    whatsappCompletionCodeButton.href =
+      whatsappNumber
+        ? "https://wa.me/" + whatsappNumber + "?text=" + encodeURIComponent(message)
+        : "https://wa.me/?text=" + encodeURIComponent(message);
+  }
+
+  newCompletionCodeCard.style.display = "block";
+}
+
+
+async function copyNewCompletionCode() {
+
+  const code = newCompletionCodeValue?.textContent?.trim();
+
+  if (!code || !/^\d{6}$/.test(code)) return;
+
+  try {
+    await navigator.clipboard.writeText(code);
+    copyCompletionCodeButton.textContent = "Copied";
+    setTimeout(function() {
+      if (copyCompletionCodeButton) {
+        copyCompletionCodeButton.textContent = "Copy Code";
+      }
+    }, 1400);
+  } catch (error) {
+    window.prompt("Copy the new Service Completion Code:", code);
+  }
+}
+
+
+async function requestCompletionCorrection() {
+
+  if (!selectedCompletionLead) return;
+
+  const lead = selectedCompletionLead;
+  const reason = prompt("What needs correction?\n\nExample: missing photo, unclear serial number, incorrect payment details.");
+
+  if (reason === null) return;
+
+  const cleanReason = reason.trim();
+
+  if (!cleanReason) {
+    reviewMessage("Please enter a correction reason.");
+    return;
+  }
+
+  requestCorrectionButton.disabled = true;
+  approveCompletionButton.disabled = true;
+  reviewMessage("Generating a new Service Completion Code...", "success");
+
+  try {
+
+    const now = new Date().toISOString();
+
+    const { data: serviceOrder, error: serviceOrderError } =
+      await supabaseClient
+        .from("service_orders")
+        .select("id")
+        .eq("lead_id", lead.id)
+        .maybeSingle();
+
+    if (serviceOrderError) {
+      throw new Error("Unable to load service order: " + serviceOrderError.message);
+    }
+
+    if (!serviceOrder?.id) {
+      throw new Error("No service order found for this lead.");
+    }
+
+    /*
+      The database RPC is the only place that creates the raw code.
+      It authorizes the active Support user, invalidates the previous
+      code, stores only the SHA-256 hash, and returns the new 6-digit
+      code once to this authenticated Support session.
+    */
+    const { data: newCode, error: codeError } =
+      await supabaseClient.rpc(
+        "issue_service_completion_code",
+        { p_lead_id: lead.id }
+      );
+
+    if (codeError) {
+      throw new Error(
+        "Unable to generate the new Service Completion Code: " +
+        codeError.message
+      );
+    }
+
+    const cleanCode = String(newCode || "").trim();
+
+    if (!/^\d{6}$/.test(cleanCode)) {
+      throw new Error(
+        "The new Service Completion Code was not generated correctly."
+      );
+    }
+
+    const { error: leadError } =
+      await supabaseClient
+        .from("leads")
+        .update({
+          status: "CORRECTION_REQUIRED",
+          updated_by: currentAppUser.id,
+          updated_at: now
+        })
+        .eq("id", lead.id)
+        .eq("status", "COMPLETION_SUBMITTED");
+
+    if (leadError) {
+      throw new Error(
+        "Unable to request correction: " + leadError.message
+      );
+    }
+
+    const { data: latestCodeRow, error: latestCodeError } =
+      await supabaseClient
+        .from("service_completion_codes")
+        .select("expires_at")
+        .eq("service_order_id", serviceOrder.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+    if (latestCodeError) {
+      console.warn("Unable to load new code expiry:", latestCodeError);
+    }
+
+    const { error: correctionError } =
+      await supabaseClient
+        .from("correction_requests")
+        .insert({
+          lead_id: lead.id,
+          service_order_id: serviceOrder.id,
+          requested_by: currentAppUser.id,
+          reason: cleanReason,
+          requested_fields: { completion: true },
+          status: "PENDING"
+        });
+
+    if (correctionError) {
+      console.warn(
+        "Correction request record failed:",
+        correctionError
+      );
+    }
+
+    const { error: auditError } =
+      await supabaseClient
+        .from("audit_logs")
+        .insert({
+          actor_user_id: currentAppUser.id,
+          actor_role: currentAppUser.role,
+          action: "COMPLETION_CORRECTION_REQUESTED",
+          entity_type: "lead",
+          entity_id: lead.id,
+          old_value: { status: "COMPLETION_SUBMITTED" },
+          new_value: {
+            status: "CORRECTION_REQUIRED",
+            replacement_code_issued: true
+          },
+          reason: cleanReason
+        });
+
+    if (auditError) {
+      console.warn("Correction audit log failed:", auditError);
+    }
+
+    showNewCompletionCode(
+      cleanCode,
+      lead.mobile,
+      latestCodeRow?.expires_at || null
+    );
+
+    reviewMessage(
+      "Correction requested. Send the new Service Completion Code to the customer. The technician must use this new code when resubmitting.",
+      "success"
+    );
+
+    await loadLeads(true);
+    await loadDashboardData();
+
+    showNotice(
+      "Correction requested for " +
+      lead.lead_number +
+      ". A new Service Completion Code has been generated.",
+      "success",
+      leadsNotice
+    );
+
+  } catch (error) {
+
+    console.error("Correction request error:", error);
+    reviewMessage(error.message || "Unable to request correction.");
+    requestCorrectionButton.disabled = false;
+    approveCompletionButton.disabled = false;
+
+  }
+
+}
+
+
+
+
+function openCompletionReview(leadId) {
+
+  const lead =
+    allLeads.find(function(item) {
+      return item.id === leadId;
+    });
+
+  if (!lead) {
+    showNotice(
+      "Lead details could not be found.",
+      "error",
+      leadsNotice
+    );
+    return;
+  }
+
+  return openReviewCompletionModal(lead);
+}
+
+
+
+/* =====================================================
+   COMPLETION ACTION NORMALIZER
+   ===================================================== */
+
+function normalizeLeadCompletionActions() {
+
+  const rows =
+    document.querySelectorAll("#leadsTableBody tr");
+
+  rows.forEach(function(row) {
+
+    const cells =
+      row.querySelectorAll("td");
+
+    if (!cells.length) return;
+
+    const leadNumber =
+      cells[0].textContent.trim();
+
+    const lead =
+      allLeads.find(function(item) {
+        return item.lead_number === leadNumber;
+      });
+
+    if (!lead) return;
+
+    const actionCell =
+      cells[cells.length - 1];
+
+    if (!actionCell) return;
+
+    if (lead.status === "COMPLETION_SUBMITTED") {
+
+      actionCell.innerHTML = `
+        <button
+          class="table-action primary"
+          onclick="openCompletionReview('${lead.id}')">
+          Review Completion
+        </button>
+      `;
+
+    } else if (lead.status === "CORRECTION_REQUIRED") {
+
+      actionCell.innerHTML = `
+        <button
+          class="table-action primary"
+          onclick="openCompletionReview('${lead.id}')">
+          Review Correction
+        </button>
+      `;
+
+    } else if (lead.status === "COMPLETED") {
+
+      actionCell.innerHTML =
+        '<span class="status-complete-action">Completed</span>';
+
+    }
+
+  });
+}
+
+
+
+(function hookLeadRenderer() {
+
+  const originalApplyLeadFilters =
+    window.applyLeadFilters;
+
+  if (typeof originalApplyLeadFilters !== "function") {
+    return;
+  }
+
+  window.applyLeadFilters =
+    function() {
+
+      originalApplyLeadFilters.apply(
+        this,
+        arguments
+      );
+
+      setTimeout(
+        normalizeLeadCompletionActions,
+        0
+      );
+
+    };
+
+})();
+
+
+/* =====================================================
    38. NAVIGATION
    ===================================================== */
 
@@ -6578,7 +7291,7 @@ if (leadsRefreshButton) {
 
       try {
 
-        await loadLeads();
+        await loadLeads(true);
 
         await loadDashboardData();
 
@@ -6627,7 +7340,7 @@ if (refreshButton) {
           "none"
         ) {
 
-          await loadLeads();
+          await loadLeads(true);
 
         }
 
@@ -6653,6 +7366,53 @@ if (refreshButton) {
     }
   );
 
+}
+
+
+
+/* =====================================================
+   REVIEW COMPLETION EVENTS
+   ===================================================== */
+
+if (document.getElementById("closeReviewCompletionModal")) {
+  document
+    .getElementById("closeReviewCompletionModal")
+    .addEventListener(
+      "click",
+      closeReviewCompletionModal
+    );
+}
+
+if (reviewCompletionModal) {
+  reviewCompletionModal.addEventListener(
+    "click",
+    function(event) {
+      if (event.target === reviewCompletionModal) {
+        closeReviewCompletionModal();
+      }
+    }
+  );
+}
+
+if (approveCompletionButton) {
+  approveCompletionButton.addEventListener(
+    "click",
+    approveSelectedCompletion
+  );
+}
+
+if (copyCompletionCodeButton) {
+  copyCompletionCodeButton.addEventListener(
+    "click",
+    copyNewCompletionCode
+  );
+}
+
+if (requestCorrectionButton) {
+  requestCorrectionButton.addEventListener(
+    "click",
+    requestCompletionCorrection
+  );
 }
 
 
