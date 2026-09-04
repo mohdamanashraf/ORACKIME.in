@@ -1272,222 +1272,362 @@
 
   <script>
 
-    /* ==========================================
-       SUPABASE CONFIGURATION
-       ========================================== */
+  /* ==========================================
+     SUPABASE CONFIGURATION
+     ========================================== */
 
-    const SUPABASE_URL =
-      "https://dmygjpkzuewnpxsispcm.supabase.co";
+  const SUPABASE_URL =
+    "https://dmygjpkzuewnpxsispcm.supabase.co";
 
-    const SUPABASE_ANON_KEY =
-      "sb_publishable_mQskIlYXBc4v8bXwF1FxmA_HLgigkqi";
+  const SUPABASE_ANON_KEY =
+    "sb_publishable_mQskIlYXBc4v8bXwF1FxmA_HLgigkqi";
+
+  const supabaseClient =
+    window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_ANON_KEY
+    );
 
 
-    const supabaseClient =
-      window.supabase.createClient(
-        SUPABASE_URL,
-        SUPABASE_ANON_KEY
+  /* ==========================================
+     GLOBAL USER
+     ========================================== */
+
+  let currentAuthUser = null;
+  let currentAppUser = null;
+
+
+  /* ==========================================
+     ELEMENTS
+     ========================================== */
+
+  const loadingScreen =
+    document.getElementById("loadingScreen");
+
+  const dashboardLayout =
+    document.getElementById("dashboardLayout");
+
+  const dashboardNotice =
+    document.getElementById("dashboardNotice");
+
+  const logoutButton =
+    document.getElementById("logoutButton");
+
+  const refreshButton =
+    document.getElementById("refreshButton");
+
+  const createLeadButton =
+    document.getElementById("createLeadButton");
+
+
+  /* ==========================================
+     NOTICE
+     ========================================== */
+
+  function showNotice(message) {
+
+    dashboardNotice.textContent = message;
+
+    dashboardNotice.className =
+      "dashboard-notice error";
+
+  }
+
+
+  function hideNotice() {
+
+    dashboardNotice.textContent = "";
+
+    dashboardNotice.className =
+      "dashboard-notice";
+
+  }
+
+
+  /* ==========================================
+     LOAD SUPPORT PROFILE
+     ========================================== */
+
+  async function loadSupportUser(userId) {
+
+    /*
+      STEP 1
+      Load basic application profile
+      from app_users.
+    */
+
+    const {
+      data: appUser,
+      error: appUserError
+    } = await supabaseClient
+      .from("app_users")
+      .select(
+        "id, full_name, email, role, status"
+      )
+      .eq("id", userId)
+      .single();
+
+
+    if (appUserError) {
+
+      console.error(
+        "app_users profile error:",
+        appUserError
       );
 
-
-    /* ==========================================
-       GLOBAL USER
-       ========================================== */
-
-    let currentAuthUser = null;
-    let currentAppUser = null;
-
-
-    /* ==========================================
-       ELEMENTS
-       ========================================== */
-
-    const loadingScreen =
-      document.getElementById("loadingScreen");
-
-    const dashboardLayout =
-      document.getElementById("dashboardLayout");
-
-    const dashboardNotice =
-      document.getElementById("dashboardNotice");
-
-    const logoutButton =
-      document.getElementById("logoutButton");
-
-    const refreshButton =
-      document.getElementById("refreshButton");
-
-    const createLeadButton =
-      document.getElementById("createLeadButton");
-
-
-    /* ==========================================
-       NOTICE
-       ========================================== */
-
-    function showNotice(message) {
-
-      dashboardNotice.textContent = message;
-
-      dashboardNotice.className =
-        "dashboard-notice error";
+      throw new Error(
+        "Unable to load your ORACLIME support profile."
+      );
 
     }
 
 
-    function hideNotice() {
+    if (!appUser) {
 
-      dashboardNotice.textContent = "";
-
-      dashboardNotice.className =
-        "dashboard-notice";
+      throw new Error(
+        "Your ORACLIME account profile was not found."
+      );
 
     }
 
 
-    /* ==========================================
-       LOAD SUPPORT USER
-       ========================================== */
+    /*
+      STEP 2
+      Verify SUPPORT role.
+    */
 
-    async function loadSupportUser(userId) {
+    if (appUser.role !== "SUPPORT") {
+
+      await supabaseClient.auth.signOut();
+
+      throw new Error(
+        "Access denied. This account is not a Support account."
+      );
+
+    }
+
+
+    /*
+      STEP 3
+      Verify ACTIVE account.
+    */
+
+    if (appUser.status !== "ACTIVE") {
+
+      await supabaseClient.auth.signOut();
+
+      throw new Error(
+        "Your Support account is inactive."
+      );
+
+    }
+
+
+    /*
+      STEP 4
+      Load support-specific profile
+      from support_members.
+    */
+
+    const {
+      data: supportMember,
+      error: supportMemberError
+    } = await supabaseClient
+      .from("support_members")
+      .select(
+        "id, support_code, full_name, email, status"
+      )
+      .eq("id", userId)
+      .single();
+
+
+    if (supportMemberError) {
+
+      console.error(
+        "support_members profile error:",
+        supportMemberError
+      );
+
+      throw new Error(
+        "Unable to load your ORACLIME support profile."
+      );
+
+    }
+
+
+    if (!supportMember) {
+
+      throw new Error(
+        "Your Support profile was not found."
+      );
+
+    }
+
+
+    /*
+      STEP 5
+      Verify Support profile is ACTIVE.
+    */
+
+    if (supportMember.status !== "ACTIVE") {
+
+      await supabaseClient.auth.signOut();
+
+      throw new Error(
+        "Your Support profile is inactive."
+      );
+
+    }
+
+
+    /*
+      STEP 6
+      Combine both profiles.
+    */
+
+    return {
+
+      id:
+        appUser.id,
+
+      full_name:
+        supportMember.full_name ||
+        appUser.full_name ||
+        "ORACLIME Support",
+
+      email:
+        supportMember.email ||
+        appUser.email ||
+        "",
+
+      role:
+        appUser.role,
+
+      status:
+        appUser.status,
+
+      support_code:
+        supportMember.support_code ||
+        "SUPPORT",
+
+      designation:
+        "Support"
+
+    };
+
+  }
+
+
+  /* ==========================================
+     UPDATE USER INTERFACE
+     ========================================== */
+
+  function updateUserInterface(user) {
+
+    const displayName =
+      user.full_name ||
+      "ORACLIME Support";
+
+
+    const topUserName =
+      document.getElementById(
+        "topUserName"
+      );
+
+    if (topUserName) {
+
+      topUserName.textContent =
+        displayName;
+
+    }
+
+
+    const sidebarUserName =
+      document.getElementById(
+        "sidebarUserName"
+      );
+
+    if (sidebarUserName) {
+
+      sidebarUserName.textContent =
+        displayName;
+
+    }
+
+
+    const sidebarSupportCode =
+      document.getElementById(
+        "sidebarSupportCode"
+      );
+
+    if (sidebarSupportCode) {
+
+      sidebarSupportCode.textContent =
+        user.support_code ||
+        "SUPPORT";
+
+    }
+
+
+    const welcomeText =
+      document.getElementById(
+        "welcomeText"
+      );
+
+    if (welcomeText) {
+
+      welcomeText.textContent =
+        "Welcome " +
+        displayName +
+        ". Manage leads, technicians and service operations.";
+
+    }
+
+
+    const supportAccessStatus =
+      document.getElementById(
+        "supportAccessStatus"
+      );
+
+    if (supportAccessStatus) {
+
+      supportAccessStatus.textContent =
+        "● Verified — Support";
+
+    }
+
+  }
+
+
+  /* ==========================================
+     DASHBOARD DATA
+     ========================================== */
+
+  async function loadDashboardData() {
+
+    hideNotice();
+
+    /*
+      Leads table already exists in Supabase.
+      Try to load current lead statistics.
+    */
+
+    try {
 
       const {
-        data,
+        data: leads,
         error
       } = await supabaseClient
-        .from("app_users")
-        .select(
-          "id, full_name, email, role, status, support_code, designation"
-        )
-        .eq("id", userId)
-        .single();
+        .from("leads")
+        .select("id, status");
 
 
       if (error) {
 
         console.error(
-          "Profile error:",
+          "Lead statistics error:",
           error
         );
-
-        throw new Error(
-          "Unable to load your ORACLIME support profile."
-        );
-
-      }
-
-
-      if (!data) {
-
-        throw new Error(
-          "Your ORACLIME account profile was not found."
-        );
-
-      }
-
-
-      /* SUPPORT ONLY */
-
-      if (data.role !== "SUPPORT") {
-
-        await supabaseClient.auth.signOut();
-
-        throw new Error(
-          "Access denied. This account is not a Support account."
-        );
-
-      }
-
-
-      /* ACTIVE ONLY */
-
-      if (data.status !== "ACTIVE") {
-
-        await supabaseClient.auth.signOut();
-
-        throw new Error(
-          "Your Support account is inactive."
-        );
-
-      }
-
-
-      return data;
-
-    }
-
-
-    /* ==========================================
-       UPDATE USER INFORMATION
-       ========================================== */
-
-    function updateUserInterface(user) {
-
-      const displayName =
-        user.full_name ||
-        "ORACLIME Support";
-
-
-      document.getElementById(
-        "topUserName"
-      ).textContent =
-        displayName;
-
-
-      document.getElementById(
-        "sidebarUserName"
-      ).textContent =
-        displayName;
-
-
-      document.getElementById(
-        "sidebarSupportCode"
-      ).textContent =
-        user.support_code ||
-        "SUPPORT";
-
-
-      document.getElementById(
-        "welcomeText"
-      ).textContent =
-        "Welcome " +
-        displayName +
-        ". Manage leads, technicians and service operations.";
-
-
-      document.getElementById(
-        "supportAccessStatus"
-      ).textContent =
-        "● Verified — " +
-        (user.designation || "Support");
-
-    }
-
-
-    /* ==========================================
-       LOAD DASHBOARD
-       ========================================== */
-
-    async function loadDashboardData() {
-
-      hideNotice();
-
-
-      /*
-        IMPORTANT:
-
-        The lead table will be created in the next
-        database step.
-
-        Until then the dashboard displays safe
-        zero values instead of breaking.
-      */
-
-      const leadTableExists =
-        await checkLeadsTable();
-
-
-      if (!leadTableExists) {
 
         setAllStatsToZero();
 
@@ -1496,330 +1636,318 @@
       }
 
 
-      try {
-
-        const {
-          data: leads,
-          error
-        } = await supabaseClient
-          .from("leads")
-          .select("status");
+      const list =
+        leads || [];
 
 
-        if (error) {
-
-          console.error(
-            "Lead statistics error:",
-            error
-          );
-
-          setAllStatsToZero();
-
-          return;
-
-        }
+      setStat(
+        "statNewLeads",
+        countStatus(
+          list,
+          ["NEW"]
+        )
+      );
 
 
-        const list =
-          leads || [];
+      setStat(
+        "statUnassigned",
+        countStatus(
+          list,
+          ["UNASSIGNED"]
+        )
+      );
 
 
-        setStat(
-          "statNewLeads",
-          countStatus(
-            list,
-            ["NEW"]
-          )
-        );
+      setStat(
+        "statAssigned",
+        countStatus(
+          list,
+          ["ASSIGNED"]
+        )
+      );
 
 
-        setStat(
-          "statUnassigned",
-          countStatus(
-            list,
-            ["UNASSIGNED"]
-          )
-        );
+      setStat(
+        "statInProgress",
+        countStatus(
+          list,
+          [
+            "EN_ROUTE",
+            "ARRIVED",
+            "IN_PROGRESS"
+          ]
+        )
+      );
 
 
-        setStat(
-          "statAssigned",
-          countStatus(
-            list,
-            ["ASSIGNED"]
-          )
-        );
+      setStat(
+        "statCompletion",
+        countStatus(
+          list,
+          ["COMPLETION_SUBMITTED"]
+        )
+      );
 
 
-        setStat(
-          "statInProgress",
-          countStatus(
-            list,
-            [
-              "EN_ROUTE",
-              "ARRIVED",
-              "IN_PROGRESS"
-            ]
-          )
-        );
+      setStat(
+        "statCompleted",
+        countStatus(
+          list,
+          ["COMPLETED"]
+        )
+      );
 
 
-        setStat(
-          "statCompletion",
-          countStatus(
-            list,
-            ["COMPLETION_SUBMITTED"]
-          )
-        );
+      setStat(
+        "statRescheduled",
+        countStatus(
+          list,
+          [
+            "RESCHEDULED",
+            "RESCHEDULE_REQUESTED"
+          ]
+        )
+      );
 
 
-        setStat(
-          "statCompleted",
-          countStatus(
-            list,
-            ["COMPLETED"]
-          )
-        );
+      setStat(
+        "statPaymentPending",
+        countStatus(
+          list,
+          ["PAYMENT_PENDING"]
+        )
+      );
 
+    } catch (error) {
 
-        setStat(
-          "statRescheduled",
-          countStatus(
-            list,
-            [
-              "RESCHEDULED",
-              "RESCHEDULE_REQUESTED"
-            ]
-          )
-        );
-
-
-        setStat(
-          "statPaymentPending",
-          countStatus(
-            list,
-            ["PAYMENT_PENDING"]
-          )
-        );
-
-      } catch (error) {
-
-        console.error(
-          "Dashboard data error:",
-          error
-        );
-
-        setAllStatsToZero();
-
-      }
-
-    }
-
-
-    /* ==========================================
-       CHECK LEADS TABLE
-       ========================================== */
-
-    async function checkLeadsTable() {
-
-      const {
+      console.error(
+        "Dashboard data error:",
         error
-      } = await supabaseClient
-        .from("leads")
-        .select("id")
-        .limit(1);
+      );
 
-
-      if (error) {
-
-        /*
-          Table does not exist yet OR
-          RLS is not configured yet.
-
-          Dashboard remains usable.
-        */
-
-        console.log(
-          "Leads table not ready yet."
-        );
-
-        return false;
-
-      }
-
-
-      return true;
+      setAllStatsToZero();
 
     }
 
+  }
 
-    /* ==========================================
-       STAT HELPERS
-       ========================================== */
 
-    function countStatus(
-      rows,
-      statuses
-    ) {
+  /* ==========================================
+     STAT HELPERS
+     ========================================== */
 
-      return rows.filter(function(row) {
+  function countStatus(
+    rows,
+    statuses
+  ) {
+
+    return rows.filter(
+      function(row) {
 
         return statuses.includes(
           row.status
         );
 
-      }).length;
-
-    }
-
-
-    function setStat(
-      elementId,
-      value
-    ) {
-
-      const element =
-        document.getElementById(
-          elementId
-        );
-
-      if (element) {
-
-        element.textContent =
-          String(value);
-
       }
+    ).length;
+
+  }
+
+
+  function setStat(
+    elementId,
+    value
+  ) {
+
+    const element =
+      document.getElementById(
+        elementId
+      );
+
+    if (element) {
+
+      element.textContent =
+        String(value);
 
     }
 
-
-    function setAllStatsToZero() {
-
-      setStat("statNewLeads", 0);
-
-      setStat("statUnassigned", 0);
-
-      setStat("statAssigned", 0);
-
-      setStat("statInProgress", 0);
-
-      setStat("statCompletion", 0);
-
-      setStat("statCompleted", 0);
-
-      setStat("statRescheduled", 0);
-
-      setStat("statPaymentPending", 0);
-
-    }
+  }
 
 
-    /* ==========================================
-       NAVIGATION
-       ========================================== */
+  function setAllStatsToZero() {
 
-    function activateSection(section) {
+    setStat(
+      "statNewLeads",
+      0
+    );
 
-      document
-        .querySelectorAll(
-          ".sidebar-nav button"
-        )
-        .forEach(function(button) {
+    setStat(
+      "statUnassigned",
+      0
+    );
+
+    setStat(
+      "statAssigned",
+      0
+    );
+
+    setStat(
+      "statInProgress",
+      0
+    );
+
+    setStat(
+      "statCompletion",
+      0
+    );
+
+    setStat(
+      "statCompleted",
+      0
+    );
+
+    setStat(
+      "statRescheduled",
+      0
+    );
+
+    setStat(
+      "statPaymentPending",
+      0
+    );
+
+  }
+
+
+  /* ==========================================
+     NAVIGATION
+     ========================================== */
+
+  function activateSection(section) {
+
+    document
+      .querySelectorAll(
+        ".sidebar-nav button"
+      )
+      .forEach(
+        function(button) {
 
           button.classList.toggle(
             "active",
             button.dataset.section === section
           );
 
-        });
-
-
-      const mobileNavigation =
-        document.getElementById(
-          "mobileNavigation"
-        );
-
-
-      if (
-        mobileNavigation &&
-        mobileNavigation.value !== section
-      ) {
-
-        mobileNavigation.value =
-          section;
-
-      }
-
-
-      if (section === "dashboard") {
-
-        window.scrollTo({
-          top: 0,
-          behavior: "smooth"
-        });
-
-        return;
-
-      }
-
-
-      /*
-        These pages will be connected one by one.
-      */
-
-      showNotice(
-        sectionLabel(section) +
-        " module will be connected in the next step."
+        }
       );
 
+
+    const mobileNavigation =
+      document.getElementById(
+        "mobileNavigation"
+      );
+
+
+    if (
+      mobileNavigation &&
+      mobileNavigation.value !== section
+    ) {
+
+      mobileNavigation.value =
+        section;
+
+    }
+
+
+    if (section === "dashboard") {
+
+      hideNotice();
+
       window.scrollTo({
+
         top: 0,
+
         behavior: "smooth"
+
       });
 
-    }
-
-
-    function sectionLabel(section) {
-
-      const labels = {
-
-        leads: "Leads",
-
-        assignments: "Assignments",
-
-        partners: "Partners",
-
-        technicians: "Technicians",
-
-        customers: "Customers",
-
-        services: "Services",
-
-        payments: "Payments",
-
-        reports: "Reports",
-
-        notifications: "Notifications",
-
-        activity: "Activity Logs",
-
-        settings: "Settings"
-
-      };
-
-
-      return labels[section] ||
-        "This";
+      return;
 
     }
 
 
-    document
-      .querySelectorAll(
-        ".sidebar-nav button"
-      )
-      .forEach(function(button) {
+    showNotice(
+      sectionLabel(section) +
+      " module will be connected in the next step."
+    );
+
+
+    window.scrollTo({
+
+      top: 0,
+
+      behavior: "smooth"
+
+    });
+
+  }
+
+
+  function sectionLabel(section) {
+
+    const labels = {
+
+      leads:
+        "Leads",
+
+      assignments:
+        "Assignments",
+
+      partners:
+        "Partners",
+
+      technicians:
+        "Technicians",
+
+      customers:
+        "Customers",
+
+      services:
+        "Services",
+
+      payments:
+        "Payments",
+
+      reports:
+        "Reports",
+
+      notifications:
+        "Notifications",
+
+      activity:
+        "Activity Logs",
+
+      settings:
+        "Settings"
+
+    };
+
+
+    return labels[section] ||
+      "This";
+
+  }
+
+
+  /* ==========================================
+     SIDEBAR NAVIGATION
+     ========================================== */
+
+  document
+    .querySelectorAll(
+      ".sidebar-nav button"
+    )
+    .forEach(
+      function(button) {
 
         button.addEventListener(
           "click",
@@ -1832,14 +1960,20 @@
           }
         );
 
-      });
+      }
+    );
 
 
-    document
-      .querySelectorAll(
-        "[data-section-link]"
-      )
-      .forEach(function(link) {
+  /* ==========================================
+     QUICK ACTION NAVIGATION
+     ========================================== */
+
+  document
+    .querySelectorAll(
+      "[data-section-link]"
+    )
+    .forEach(
+      function(link) {
 
         link.addEventListener(
           "click",
@@ -1854,28 +1988,41 @@
           }
         );
 
-      });
+      }
+    );
 
 
-    document
-      .getElementById(
-        "mobileNavigation"
-      )
-      .addEventListener(
-        "change",
-        function(event) {
+  /* ==========================================
+     MOBILE NAVIGATION
+     ========================================== */
 
-          activateSection(
-            event.target.value
-          );
-
-        }
-      );
+  const mobileNavigation =
+    document.getElementById(
+      "mobileNavigation"
+    );
 
 
-    /* ==========================================
-       NEW LEAD
-       ========================================== */
+  if (mobileNavigation) {
+
+    mobileNavigation.addEventListener(
+      "change",
+      function(event) {
+
+        activateSection(
+          event.target.value
+        );
+
+      }
+    );
+
+  }
+
+
+  /* ==========================================
+     NEW LEAD
+     ========================================== */
+
+  if (createLeadButton) {
 
     createLeadButton.addEventListener(
       "click",
@@ -1888,16 +2035,21 @@
       }
     );
 
+  }
 
-    /* ==========================================
-       REFRESH
-       ========================================== */
+
+  /* ==========================================
+     REFRESH
+     ========================================== */
+
+  if (refreshButton) {
 
     refreshButton.addEventListener(
       "click",
       async function() {
 
-        refreshButton.disabled = true;
+        refreshButton.disabled =
+          true;
 
         refreshButton.textContent =
           "Refreshing...";
@@ -1906,7 +2058,8 @@
         await loadDashboardData();
 
 
-        refreshButton.disabled = false;
+        refreshButton.disabled =
+          false;
 
         refreshButton.textContent =
           "Refresh";
@@ -1914,16 +2067,21 @@
       }
     );
 
+  }
 
-    /* ==========================================
-       LOGOUT
-       ========================================== */
+
+  /* ==========================================
+     LOGOUT
+     ========================================== */
+
+  if (logoutButton) {
 
     logoutButton.addEventListener(
       "click",
       async function() {
 
-        logoutButton.disabled = true;
+        logoutButton.disabled =
+          true;
 
         logoutButton.textContent =
           "Signing Out...";
@@ -1943,7 +2101,8 @@
             error
           );
 
-          logoutButton.disabled = false;
+          logoutButton.disabled =
+            false;
 
           logoutButton.textContent =
             "Sign Out";
@@ -1959,158 +2118,206 @@
       }
     );
 
+  }
 
-    /* ==========================================
-       AUTH CHECK
-       ========================================== */
 
-    async function initializeDashboard() {
+  /* ==========================================
+     AUTH CHECK
+     ========================================== */
 
-      try {
+  async function initializeDashboard() {
 
-        const {
-          data,
+    try {
+
+      const {
+        data,
+        error
+      } = await supabaseClient
+        .auth
+        .getSession();
+
+
+      if (error) {
+
+        console.error(
+          "Session error:",
           error
-        } = await supabaseClient
-          .auth
-          .getSession();
+        );
+
+        throw new Error(
+          "Unable to verify your login session."
+        );
+
+      }
 
 
-        if (error) {
-
-          throw error;
-
-        }
+      const session =
+        data.session;
 
 
-        const session =
-          data.session;
+      if (!session) {
+
+        window.location.href =
+          "support-login.html";
+
+        return;
+
+      }
 
 
-        if (!session) {
+      currentAuthUser =
+        session.user;
+
+
+      /*
+        Load BOTH:
+
+        app_users
+        +
+        support_members
+      */
+
+      currentAppUser =
+        await loadSupportUser(
+          currentAuthUser.id
+        );
+
+
+      /*
+        Update dashboard UI.
+      */
+
+      updateUserInterface(
+        currentAppUser
+      );
+
+
+      /*
+        Show dashboard.
+      */
+
+      loadingScreen.style.display =
+        "none";
+
+      dashboardLayout.style.display =
+        "flex";
+
+
+      /*
+        Load statistics.
+      */
+
+      await loadDashboardData();
+
+
+    } catch (error) {
+
+      console.error(
+        "Dashboard initialization error:",
+        error
+      );
+
+
+      loadingScreen.innerHTML = `
+
+        <div class="loading-box">
+
+          <div class="eyebrow">
+            ORACLIME Operations
+          </div>
+
+          <h2>
+            Access Denied
+          </h2>
+
+          <p style="margin-bottom:20px;">
+            ${escapeHtml(
+              error.message ||
+              "Unable to verify your Support account."
+            )}
+          </p>
+
+          <a
+            href="support-login.html"
+            class="btn primary"
+          >
+            Back to Support Login
+          </a>
+
+        </div>
+
+      `;
+
+    }
+
+  }
+
+
+  /* ==========================================
+     SECURITY HELPER
+     ========================================== */
+
+  function escapeHtml(value) {
+
+    return String(value)
+
+      .replace(
+        /&/g,
+        "&amp;"
+      )
+
+      .replace(
+        /</g,
+        "&lt;"
+      )
+
+      .replace(
+        />/g,
+        "&gt;"
+      )
+
+      .replace(
+        /"/g,
+        "&quot;"
+      )
+
+      .replace(
+        /'/g,
+        "&#039;"
+      );
+
+  }
+
+
+  /* ==========================================
+     AUTH STATE LISTENER
+     ========================================== */
+
+  supabaseClient
+    .auth
+    .onAuthStateChange(
+      function(event, session) {
+
+        if (
+          event === "SIGNED_OUT"
+        ) {
 
           window.location.href =
             "support-login.html";
 
-          return;
-
         }
-
-
-        currentAuthUser =
-          session.user;
-
-
-        currentAppUser =
-          await loadSupportUser(
-            currentAuthUser.id
-          );
-
-
-        updateUserInterface(
-          currentAppUser
-        );
-
-
-        loadingScreen.style.display =
-          "none";
-
-
-        dashboardLayout.style.display =
-          "flex";
-
-
-        await loadDashboardData();
-
-
-      } catch (error) {
-
-        console.error(
-          "Dashboard initialization error:",
-          error
-        );
-
-
-        loadingScreen.innerHTML = `
-
-          <div class="loading-box">
-
-            <div class="eyebrow">
-              ORACLIME Operations
-            </div>
-
-            <h2>
-              Access Denied
-            </h2>
-
-            <p style="margin-bottom:20px;">
-              ${escapeHtml(
-                error.message ||
-                "Unable to verify your Support account."
-              )}
-            </p>
-
-            <a
-              href="support-login.html"
-              class="btn primary"
-            >
-              Back to Support Login
-            </a>
-
-          </div>
-
-        `;
 
       }
-
-    }
-
-
-    /* ==========================================
-       SECURITY HELPER
-       ========================================== */
-
-    function escapeHtml(value) {
-
-      return String(value)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-
-    }
+    );
 
 
-    /* ==========================================
-       AUTH STATE LISTENER
-       ========================================== */
+  /* ==========================================
+     START DASHBOARD
+     ========================================== */
 
-    supabaseClient
-      .auth
-      .onAuthStateChange(
-        function(event, session) {
+  initializeDashboard();
 
-          if (
-            event === "SIGNED_OUT"
-          ) {
-
-            window.location.href =
-              "support-login.html";
-
-          }
-
-        }
-      );
-
-
-    /* ==========================================
-       START
-       ========================================== */
-
-    initializeDashboard();
-
-  </script>
+</script>
 
 </body>
 </html>
