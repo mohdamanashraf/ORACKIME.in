@@ -479,11 +479,6 @@
                 <option value="UPI">UPI</option>
               </select>
             </div>
-
-            <div class="file-field" style="grid-column:1/-1">
-              <label>Payment Proof</label>
-              <input id="paymentProof" type="file" accept="image/*,application/pdf">
-            </div>
           </div>
         </div>
         <div class="completion-section">
@@ -1315,7 +1310,7 @@ async function goToCompletion(leadId){
   const {data:serviceOrder,error:orderError} =
     await supabaseClient
       .from("service_orders")
-      .select("id,lead_id,approved_amount,approved_discount,final_amount")
+      .select("id,lead_id")
       .eq("lead_id",job.id)
       .maybeSingle();
 
@@ -1457,142 +1452,72 @@ async function verifyCompletionCode(code){
   }
 }
 
-async function savePayment(proofId){
-  const collected =
-    Number(
-      document.getElementById("amountCollected").value || 0
-    );
+async function savePayment(){
+  const collected = Number(
+    document.getElementById("amountCollected").value || 0
+  );
 
-  const mode =
-    document.getElementById("paymentMode").value;
+  const mode = document.getElementById("paymentMode").value;
 
   if(!Number.isFinite(collected) || collected < 0){
-    throw new Error(
-      "Please enter a valid Amount Collected."
-    );
+    throw new Error("Please enter a valid Amount Collected.");
   }
 
   if(!mode){
-    throw new Error(
-      "Please select a Payment Mode."
-    );
+    throw new Error("Please select Cash or UPI.");
   }
 
   if(!completionServiceOrder){
-    throw new Error(
-      "Service order details are missing."
-    );
+    throw new Error("Service order details are missing.");
   }
 
-  const finalAmount =
-    Number(completionServiceOrder.final_amount || 0);
-
-  // The technician UI does not show the approved amount.
-  // Internally we still keep the payment record consistent.
-  if(collected > finalAmount){
-    throw new Error(
-      "Amount Collected cannot be greater than the approved final amount."
-    );
-  }
-
-  const status =
-    collected >= finalAmount
-      ? "PAID"
-      : collected > 0
-        ? "PARTIAL"
-        : "PENDING";
-
-  const paymentData = {
-    service_order_id:completionServiceOrder.id,
-    service_amount:Number(completionServiceOrder.approved_amount || 0),
-    discount:Number(completionServiceOrder.approved_discount || 0),
-    final_amount:finalAmount,
-    amount_collected:collected,
-    status:status,
-    payment_mode:mode,
-    payment_proof_document_id:proofId || null,
-    collected_at:
-      collected > 0
-        ? new Date().toISOString()
-        : null,
-    updated_at:new Date().toISOString()
+  // Technician payment is completely independent of approved pricing.
+  // Only the collected amount and payment mode are stored.
+  const payload = {
+    service_order_id: completionServiceOrder.id,
+    amount_collected: collected,
+    payment_mode: mode
   };
 
-  // IMPORTANT:
-  // Do NOT send "outstanding".
-  // It is a PostgreSQL GENERATED ALWAYS column.
   const {
     data:existing,
     error:existingError
-  } =
-    await supabaseClient
-      .from("payments")
-      .select("id")
-      .eq(
-        "service_order_id",
-        completionServiceOrder.id
-      )
-      .maybeSingle();
+  } = await supabaseClient
+    .from("payments")
+    .select("id")
+    .eq("service_order_id", completionServiceOrder.id)
+    .maybeSingle();
 
   if(existingError){
     throw existingError;
   }
 
-  let paymentId;
-
   if(existing){
-    const {data:updated,error:updateError} =
-      await supabaseClient
-        .from("payments")
-        .update(paymentData)
-        .eq("id",existing.id)
-        .select("id")
-        .single();
+    const {data,error} = await supabaseClient
+      .from("payments")
+      .update(payload)
+      .eq("id",existing.id)
+      .select("id")
+      .single();
 
-    if(updateError){
-      throw updateError;
+    if(error){
+      throw error;
     }
 
-    paymentId = updated.id;
-
-  }else{
-    const {data:created,error:createError} =
-      await supabaseClient
-        .from("payments")
-        .insert(paymentData)
-        .select("id")
-        .single();
-
-    if(createError){
-      throw createError;
-    }
-
-    paymentId = created.id;
+    return data.id;
   }
 
-  // Record a transaction only when money was actually collected.
-  if(collected > 0){
+  const {data,error} = await supabaseClient
+    .from("payments")
+    .insert(payload)
+    .select("id")
+    .single();
 
-    const {error:transactionError} =
-      await supabaseClient
-        .from("payment_transactions")
-        .insert({
-          payment_id:paymentId,
-          amount:collected,
-          payment_mode:mode,
-          reference_number:null,
-          collected_by:currentUser.id,
-          proof_document_id:proofId || null,
-          transaction_time:new Date().toISOString(),
-          notes:"Technician completion submission"
-        });
-
-    if(transactionError){
-      throw transactionError;
-    }
+  if(error){
+    throw error;
   }
 
-  return paymentId;
+  return data.id;
 }
 
 
@@ -1682,27 +1607,10 @@ document.getElementById("completionForm").addEventListener("submit",async functi
       document.getElementById("acBill").files[0],
       "AC_BILL"
     );
+    // Payment: only Amount Collected + Payment Mode are stored.
+    await savePayment();
 
-    let proofId = null;
-
-    const paymentProofInput =
-      document.getElementById("paymentProof");
-
-    if(
-      paymentProofInput &&
-      paymentProofInput.files &&
-      paymentProofInput.files[0]
-    ){
-      proofId =
-        await uploadCompletionDocument(
-          paymentProofInput.files[0],
-          "PAYMENT_PROOF"
-        );
-    }
-
-    await savePayment(proofId);
-
-    const now =
+const now =
       new Date().toISOString();
 
     let {error} =
