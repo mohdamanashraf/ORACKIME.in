@@ -4202,6 +4202,33 @@ async function createLead(event) {
       data
     );
 
+    /*
+      Automatically prepare the service record and issue the
+      first Service Completion Code for every newly created lead.
+      The raw code is returned only to this authenticated Support
+      session; only its hash is stored in the database.
+    */
+    const { data: completionCode, error: completionCodeError } =
+      await supabaseClient.rpc(
+        "prepare_lead_completion_code",
+        { p_lead_id: data.id }
+      );
+
+    if (completionCodeError) {
+      throw new Error(
+        "Lead was created, but the Service Completion Code could not be generated: " +
+        completionCodeError.message
+      );
+    }
+
+    const cleanCompletionCode =
+      String(completionCode || "").trim();
+
+    if (!/^\d{6}$/.test(cleanCompletionCode)) {
+      throw new Error(
+        "Lead was created, but the Service Completion Code was not generated correctly."
+      );
+    }
 
     closeLeadModal();
 
@@ -4209,15 +4236,29 @@ async function createLead(event) {
     clearLeadValidation();
     setLeadDateMinimum();
 
+    selectedCompletionLead = {
+      id: data.id,
+      lead_number: leadNumber,
+      customer_name: customerName,
+      mobile: cleanMobile,
+      service_type: serviceType,
+      city: city,
+      state: state
+    };
+
+    showNewCompletionCode(
+      cleanCompletionCode,
+      cleanMobile,
+      null
+    );
 
     showNotice(
       "Lead " +
       leadNumber +
-      " created successfully.",
+      " created successfully. A Service Completion Code has been generated.",
       "success",
       leadsNotice
     );
-
 
     await loadLeads();
 
