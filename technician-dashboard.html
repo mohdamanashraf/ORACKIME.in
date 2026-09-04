@@ -1300,57 +1300,82 @@ async function goToCompletion(leadId){
   modal.classList.add("open");
   modal.setAttribute("aria-hidden","false");
 
-  document.getElementById("completionLeadNumber").textContent = job.lead_number || "—";
-  document.getElementById("completionCustomer").textContent = job.customer_name || "—";
-  document.getElementById("completionService").textContent = formatService(job.service_type);
+  document.getElementById("completionLeadNumber").textContent =
+    job.lead_number || "—";
 
-  completionMessage("success","Loading service details...");
+  document.getElementById("completionCustomer").textContent =
+    job.customer_name || "—";
+
+  document.getElementById("completionService").textContent =
+    formatService(job.service_type);
+
+  completionMessage(
+    "success",
+    "Preparing service record..."
+  );
+
   document.getElementById("submitCompletionBtn").disabled = true;
 
-  const {data:serviceOrder,error:orderError} =
-    await supabaseClient
-      .from("service_orders")
-      .select("id,lead_id")
-      .eq("lead_id",job.id)
-      .maybeSingle();
+  /*
+    IMPORTANT:
+    A technician does NOT need Support to create a service order.
 
-  if(orderError || !serviceOrder){
+    If the service order or technician visit does not exist,
+    Supabase creates it automatically for this assigned lead.
+  */
+
+  const {
+    data:recordData,
+    error:recordError
+  } = await supabaseClient.rpc(
+    "ensure_technician_service_records",
+    {
+      p_lead_id: leadId
+    }
+  );
+
+  if(recordError){
+    console.error(recordError);
+
     completionMessage(
       "error",
-      "No service order found for this lead. Support must create it first."
+      "Unable to prepare service record: " +
+      recordError.message
     );
+
     return;
   }
 
-  completionServiceOrder = serviceOrder;
-
-  const {data:visits,error:visitError} =
-    await supabaseClient
-      .from("visits")
-      .select("id,service_order_id,technician_id,status,visit_number")
-      .eq("service_order_id",serviceOrder.id)
-      .eq("technician_id",currentTechnician.id)
-      .order("visit_number",{ascending:false})
-      .limit(1);
-
-  if(visitError || !visits || !visits[0]){
+  if(
+    !recordData ||
+    !recordData.service_order_id ||
+    !recordData.visit_id
+  ){
     completionMessage(
       "error",
-      "No technician visit found for this service order."
+      "Service record could not be prepared."
     );
+
     return;
   }
 
-  completionVisit = visits[0];
+  completionServiceOrder = {
+    id: recordData.service_order_id,
+    lead_id: leadId
+  };
 
-  // Technician must enter the actual amount collected.
-  // Approved amount/discount/final amount remain internal only.
+  completionVisit = {
+    id: recordData.visit_id,
+    service_order_id: recordData.service_order_id,
+    technician_id: currentTechnician.id
+  };
+
   document.getElementById("amountCollected").value = "";
   document.getElementById("paymentMode").value = "";
 
   completionMessage(
     "success",
-    "Enter the amount collected and select Cash or UPI."
+    "Ready. Enter the amount collected and select Cash or UPI."
   );
 
   document.getElementById("submitCompletionBtn").disabled = false;
