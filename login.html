@@ -3,9 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
+
   <title>ORACLIME Login</title>
+
   <link rel="stylesheet" href="assets/style.css">
 
+  <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
@@ -119,7 +122,7 @@
           <div
             id="loginMessage"
             class="notice"
-            style="display:none;margin-top:16px"
+            style="display:none;margin-top:18px"
           ></div>
 
         </form>
@@ -144,7 +147,8 @@
         <h3>Partner</h3>
 
         <p>
-          Create and track service leads submitted to ORACLIME.
+          Create and track your service leads
+          through ORACLIME.
         </p>
 
       </div>
@@ -155,7 +159,8 @@
         <h3>Technician</h3>
 
         <p>
-          Access assigned service jobs and update service progress.
+          Manage assigned service work,
+          customer visits and completion.
         </p>
 
       </div>
@@ -173,16 +178,18 @@
 
     <div>
 
-      <div class="logo">ORACLIME</div>
+      <div class="logo">
+        ORACLIME
+      </div>
 
       <p>
-        Professional B2B + B2T service coordination for
-        businesses, partners and service professionals.
+        Professional B2B + B2T service coordination
+        for businesses, partners and service professionals.
       </p>
 
       <p class="small">
-        AC / Air Conditioner • Electrical • CCTV / Security •
-        Related Technical Services
+        AC / Air Conditioner • Electrical •
+        CCTV / Security • Related Technical Services
       </p>
 
     </div>
@@ -195,7 +202,9 @@
       <div class="footerlinks">
 
         <a href="about.html">About Us</a>
+
         <a href="contact.html">Contact Us</a>
+
         <a href="login.html">Login</a>
 
       </div>
@@ -209,9 +218,17 @@
 
       <div class="footerlinks">
 
-        <span>+91 9917306492 (WhatsApp Only)</span>
-        <span>Availability: 24/7</span>
-        <span>Oraclime@gmail.com</span>
+        <span>
+          +91 9917306492 (WhatsApp Only)
+        </span>
+
+        <span>
+          Availability: 24/7
+        </span>
+
+        <span>
+          Oraclime@gmail.com
+        </span>
 
       </div>
 
@@ -247,6 +264,9 @@ const loginButton =
 const loginMessage =
   document.getElementById("loginMessage");
 
+const roleSelect =
+  document.getElementById("role");
+
 
 function showMessage(message, type = "error") {
 
@@ -255,7 +275,9 @@ function showMessage(message, type = "error") {
   loginMessage.style.display = "block";
 
   loginMessage.className =
-    "notice " + type;
+    type === "success"
+      ? "notice success"
+      : "notice error";
 
 }
 
@@ -266,13 +288,19 @@ loginForm.addEventListener("submit", async function(event) {
 
 
   const email =
-    document.getElementById("email").value.trim();
+    document.getElementById("email")
+      .value
+      .trim()
+      .toLowerCase();
+
 
   const password =
-    document.getElementById("password").value;
+    document.getElementById("password")
+      .value;
+
 
   const selectedRole =
-    document.getElementById("role").value;
+    roleSelect.value;
 
 
   if (!email || !password) {
@@ -282,7 +310,6 @@ loginForm.addEventListener("submit", async function(event) {
     );
 
     return;
-
   }
 
 
@@ -296,9 +323,9 @@ loginForm.addEventListener("submit", async function(event) {
   try {
 
     /*
-      STEP 1
-      Authenticate with Supabase
-    */
+     * STEP 1
+     * Authenticate through Supabase Auth
+     */
 
     const {
       data,
@@ -314,24 +341,33 @@ loginForm.addEventListener("submit", async function(event) {
 
     if (error) {
 
-      throw error;
+      console.error(
+        "ORACLIME Auth Error:",
+        error
+      );
 
+      showMessage(
+        error.message || "Login failed."
+      );
+
+      return;
     }
 
 
-    if (!data.user) {
+    if (!data || !data.user) {
 
-      throw new Error(
+      showMessage(
         "Login failed. User account not found."
       );
 
+      return;
     }
 
 
     /*
-      STEP 2
-      Read ORACLIME application profile
-    */
+     * STEP 2
+     * Get ORACLIME application profile
+     */
 
     const {
       data: profile,
@@ -351,120 +387,110 @@ loginForm.addEventListener("submit", async function(event) {
 
     if (profileError) {
 
-      await supabaseClient.auth.signOut();
-
-      throw new Error(
-        "Your ORACLIME user profile could not be found."
+      console.error(
+        "ORACLIME Profile Error:",
+        profileError
       );
 
+      await supabaseClient.auth.signOut();
+
+      showMessage(
+        "Your account is authenticated, but the ORACLIME user profile is not configured."
+      );
+
+      return;
     }
 
 
     /*
-      STEP 3
-      Check account status
-    */
+     * STEP 3
+     * Check account status
+     */
 
     if (profile.status !== "ACTIVE") {
 
       await supabaseClient.auth.signOut();
 
-      throw new Error(
+      showMessage(
         "Your ORACLIME account is not active."
       );
 
+      return;
     }
 
 
     /*
-      STEP 4
-      Check selected role against DB role
-
-      The dropdown is NOT trusted.
-    */
+     * STEP 4
+     * Check selected role against database role
+     */
 
     if (profile.role !== selectedRole) {
 
       await supabaseClient.auth.signOut();
 
-      throw new Error(
+      showMessage(
         "Selected role does not match your account."
       );
 
+      return;
     }
 
 
     /*
-      STEP 5
-      Technician login
-    */
+     * STEP 5
+     * Redirect according to role
+     */
+
+    showMessage(
+      "Login successful. Opening your dashboard...",
+      "success"
+    );
+
 
     if (profile.role === "TECHNICIAN") {
 
-      showMessage(
-        "Login successful. Opening Technician Dashboard...",
-        "success"
-      );
-
-
-      setTimeout(function() {
-
-        window.location.href =
-          "technician-dashboard.html";
-
-      }, 500);
-
+      window.location.href =
+        "technician-dashboard.html";
 
       return;
-
     }
 
-
-    /*
-      STEP 6
-      Partner login
-    */
 
     if (profile.role === "PARTNER") {
 
-      showMessage(
-        "Login successful. Opening Partner Dashboard...",
-        "success"
-      );
-
-
-      setTimeout(function() {
-
-        window.location.href =
-          "partner-dashboard.html";
-
-      }, 500);
-
+      window.location.href =
+        "partner-dashboard.html";
 
       return;
-
     }
 
 
     /*
-      Unknown role protection
-    */
+     * Safety fallback
+     */
 
     await supabaseClient.auth.signOut();
 
-    throw new Error(
-      "Your account has an unsupported ORACLIME role."
+    showMessage(
+      "This account does not have a valid ORACLIME role."
     );
 
+  }
 
-  } catch (error) {
+  catch (error) {
 
-    console.error("ORACLIME Login Error:", error);
+    console.error(
+      "ORACLIME Login Error:",
+      error
+    );
 
     showMessage(
-      error.message ||
-      "Unable to login. Please try again."
+      "Something went wrong while signing in."
     );
+
+  }
+
+  finally {
 
     loginButton.disabled = false;
 
