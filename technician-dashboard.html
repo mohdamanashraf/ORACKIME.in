@@ -1,0 +1,1289 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ORACLIME Technician Dashboard</title>
+
+<link rel="stylesheet" href="assets/style.css">
+
+<style>
+.tech-page{
+  min-height:100vh;
+  background:#06101d;
+}
+
+.tech-header{
+  padding:24px 0;
+}
+
+.tech-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:20px;
+}
+
+.tech-profile{
+  display:flex;
+  align-items:center;
+  gap:14px;
+}
+
+.tech-avatar{
+  width:48px;
+  height:48px;
+  border-radius:14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#10263a;
+  border:1px solid rgba(99,169,255,.25);
+  font-weight:800;
+  color:#63a9ff;
+}
+
+.tech-name{
+  font-size:18px;
+  font-weight:800;
+}
+
+.tech-code{
+  font-size:13px;
+  opacity:.65;
+  margin-top:3px;
+}
+
+.tech-logout{
+  border:1px solid rgba(255,255,255,.15);
+  background:#0c1b2d;
+  color:#fff;
+  padding:10px 16px;
+  border-radius:10px;
+  cursor:pointer;
+}
+
+.tech-main{
+  padding:10px 0 60px;
+}
+
+.tech-welcome{
+  margin-bottom:25px;
+}
+
+.tech-welcome h1{
+  margin:0 0 8px;
+  font-size:32px;
+}
+
+.tech-welcome p{
+  margin:0;
+  opacity:.7;
+}
+
+.tech-stats{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:14px;
+  margin-bottom:28px;
+}
+
+.tech-stat{
+  background:#0c1b2d;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:16px;
+  padding:20px;
+}
+
+.tech-stat-number{
+  font-size:28px;
+  font-weight:900;
+  margin-bottom:5px;
+}
+
+.tech-stat-label{
+  font-size:13px;
+  opacity:.65;
+}
+
+.jobs-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:15px;
+}
+
+.jobs-head h2{
+  margin:0;
+}
+
+.refresh-btn{
+  border:1px solid rgba(255,255,255,.12);
+  background:#0c1b2d;
+  color:#fff;
+  padding:9px 14px;
+  border-radius:9px;
+  cursor:pointer;
+}
+
+.jobs{
+  display:grid;
+  gap:16px;
+}
+
+.job-card{
+  background:#0c1b2d;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:18px;
+  padding:20px;
+}
+
+.job-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:15px;
+}
+
+.job-number{
+  font-size:14px;
+  font-weight:800;
+  color:#63a9ff;
+}
+
+.job-customer{
+  font-size:21px;
+  font-weight:850;
+  margin-top:5px;
+}
+
+.status-badge{
+  padding:7px 11px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:800;
+  background:#132a3d;
+  color:#63a9ff;
+  white-space:nowrap;
+}
+
+.job-details{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  margin:20px 0;
+}
+
+.job-detail{
+  padding:13px;
+  border-radius:11px;
+  background:#081624;
+}
+
+.job-detail-label{
+  font-size:11px;
+  opacity:.5;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+  margin-bottom:4px;
+}
+
+.job-detail-value{
+  font-size:14px;
+  line-height:1.5;
+}
+
+.job-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:9px;
+}
+
+.job-btn{
+  border:0;
+  border-radius:10px;
+  padding:11px 15px;
+  cursor:pointer;
+  font-weight:800;
+  background:#173047;
+  color:#fff;
+}
+
+.job-btn.primary{
+  background:#35d1aa;
+  color:#04131e;
+}
+
+.job-btn.danger{
+  background:#45212a;
+  color:#ffb8c2;
+}
+
+.job-btn:disabled{
+  opacity:.45;
+  cursor:not-allowed;
+}
+
+.empty-state{
+  text-align:center;
+  padding:55px 20px;
+  background:#0c1b2d;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:18px;
+}
+
+.empty-icon{
+  font-size:40px;
+  margin-bottom:12px;
+}
+
+.loading{
+  text-align:center;
+  padding:60px 20px;
+  opacity:.7;
+}
+
+.notice-box{
+  display:none;
+  margin-bottom:20px;
+  padding:14px 16px;
+  border-radius:12px;
+  background:#45212a;
+  color:#ffd7dc;
+  border:1px solid rgba(255,120,140,.2);
+}
+
+@media(max-width:800px){
+  .tech-stats{
+    grid-template-columns:repeat(2,1fr);
+  }
+}
+
+@media(max-width:600px){
+  .container{
+    width:min(94%,1100px);
+  }
+
+  .tech-top{
+    align-items:flex-start;
+  }
+
+  .tech-welcome h1{
+    font-size:27px;
+  }
+
+  .tech-stats{
+    gap:10px;
+  }
+
+  .tech-stat{
+    padding:15px;
+  }
+
+  .tech-stat-number{
+    font-size:23px;
+  }
+
+  .job-card{
+    padding:16px;
+  }
+
+  .job-top{
+    flex-direction:column;
+  }
+
+  .job-details{
+    grid-template-columns:1fr;
+  }
+
+  .job-actions{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+  }
+
+  .job-btn{
+    width:100%;
+  }
+}
+</style>
+</head>
+
+<body class="tech-page">
+
+<div class="navwrap">
+  <div class="container nav">
+
+    <a class="logo" href="index.html">ORACLIME</a>
+
+    <div class="navlinks">
+      <a href="index.html">Home</a>
+      <a href="about.html">About Us</a>
+      <a href="contact.html">Contact Us</a>
+    </div>
+
+  </div>
+</div>
+
+
+<section class="tech-header">
+  <div class="container">
+
+    <div class="tech-top">
+
+      <div class="tech-profile">
+        <div class="tech-avatar" id="techAvatar">T</div>
+
+        <div>
+          <div class="tech-name" id="techName">
+            Technician
+          </div>
+
+          <div class="tech-code" id="techCode">
+            Loading technician...
+          </div>
+        </div>
+      </div>
+
+      <button class="tech-logout" id="logoutBtn">
+        Logout
+      </button>
+
+    </div>
+
+  </div>
+</section>
+
+
+<main class="tech-main">
+
+<div class="container">
+
+  <div id="errorBox" class="notice-box"></div>
+
+  <div class="tech-welcome">
+    <h1>Technician Dashboard</h1>
+    <p>Manage your assigned service jobs and update job progress.</p>
+  </div>
+
+
+  <div class="tech-stats">
+
+    <div class="tech-stat">
+      <div class="tech-stat-number" id="statAssigned">0</div>
+      <div class="tech-stat-label">Assigned</div>
+    </div>
+
+    <div class="tech-stat">
+      <div class="tech-stat-number" id="statAccepted">0</div>
+      <div class="tech-stat-label">Accepted</div>
+    </div>
+
+    <div class="tech-stat">
+      <div class="tech-stat-number" id="statProgress">0</div>
+      <div class="tech-stat-label">In Progress</div>
+    </div>
+
+    <div class="tech-stat">
+      <div class="tech-stat-number" id="statCompleted">0</div>
+      <div class="tech-stat-label">Completed</div>
+    </div>
+
+  </div>
+
+
+  <div class="jobs-head">
+
+    <h2>My Jobs</h2>
+
+    <button class="refresh-btn" id="refreshBtn">
+      Refresh
+    </button>
+
+  </div>
+
+
+  <div id="loading" class="loading">
+    Loading your jobs...
+  </div>
+
+  <div id="jobs" class="jobs"></div>
+
+</div>
+
+</main>
+
+
+<footer>
+  <div class="container footgrid">
+
+    <div>
+      <div class="logo">ORACLIME</div>
+      <p>
+        Professional B2B + B2T service coordination for businesses,
+        partners and service professionals.
+      </p>
+    </div>
+
+    <div>
+      <strong>Company</strong>
+
+      <div class="footerlinks">
+        <a href="about.html">About Us</a>
+        <a href="contact.html">Contact Us</a>
+      </div>
+    </div>
+
+    <div>
+      <strong>Contact</strong>
+
+      <div class="footerlinks">
+        <span>+91 9917306492 (WhatsApp Only)</span>
+        <span>Availability: 24/7</span>
+        <span>Oraclime@gmail.com</span>
+      </div>
+    </div>
+
+  </div>
+</footer>
+
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+
+const SUPABASE_URL =
+  "https://dmygjpkzuewnpxsispcm.supabase.co";
+
+const SUPABASE_ANON_KEY =
+  "sb_publishable_mQskIlYXBc4v8b8XwF1FxmA_HLgigkqi";
+
+const supabaseClient =
+  window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
+  );
+
+
+let currentUser = null;
+let currentTechnician = null;
+let currentJobs = [];
+
+
+const loading =
+  document.getElementById("loading");
+
+const jobsContainer =
+  document.getElementById("jobs");
+
+const errorBox =
+  document.getElementById("errorBox");
+
+
+function showError(message){
+
+  errorBox.textContent = message;
+  errorBox.style.display = "block";
+
+}
+
+
+function hideError(){
+
+  errorBox.style.display = "none";
+
+}
+
+
+function escapeHtml(value){
+
+  if(value === null || value === undefined){
+    return "";
+  }
+
+  return String(value)
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+
+}
+
+
+function formatDate(date){
+
+  if(!date){
+    return "Not scheduled";
+  }
+
+  const d = new Date(date + "T00:00:00");
+
+  return d.toLocaleDateString("en-IN",{
+    day:"2-digit",
+    month:"short",
+    year:"numeric"
+  });
+
+}
+
+
+function formatService(type){
+
+  const map = {
+
+    AC: "AC / Air Conditioner",
+
+    ELECTRICAL: "Electrical",
+
+    CCTV: "CCTV / Security",
+
+    OTHER: "Other Technical Service"
+
+  };
+
+  return map[type] || type || "Service";
+
+
+}
+
+
+function statusLabel(status){
+
+  const map = {
+
+    NEW: "New",
+
+    ASSIGNED: "Assigned",
+
+    ACCEPTED: "Accepted",
+
+    EN_ROUTE: "En Route",
+
+    ARRIVED: "Arrived",
+
+    IN_PROGRESS: "In Progress",
+
+    COMPLETION_SUBMITTED: "Completion Submitted",
+
+    COMPLETED: "Completed",
+
+    REJECTED: "Rejected",
+
+    RESCHEDULE_REQUESTED: "Reschedule Requested",
+
+    CUSTOMER_UNAVAILABLE: "Customer Unavailable",
+
+    CANCELLED: "Cancelled",
+
+    CORRECTION_REQUIRED: "Correction Required",
+
+    PAYMENT_PENDING: "Payment Pending"
+
+  };
+
+  return map[status] || status || "Unknown";
+
+}
+
+
+async function loadTechnician(){
+
+  hideError();
+
+  const {
+    data: { user },
+    error: authError
+  } = await supabaseClient.auth.getUser();
+
+
+  if(authError){
+
+    console.error(authError);
+
+    showError("Unable to verify your login session.");
+
+    setTimeout(() => {
+      window.location.href = "login.html";
+    },1500);
+
+    return false;
+  }
+
+
+  if(!user){
+
+    window.location.href = "login.html";
+
+    return false;
+  }
+
+
+  currentUser = user;
+
+
+  const {
+    data: technician,
+    error
+  } = await supabaseClient
+    .from("technicians")
+    .select(`
+      id,
+      user_id,
+      technician_code,
+      full_name,
+      mobile,
+      email,
+      city,
+      state,
+      service_area,
+      status,
+      availability_status
+    `)
+    .eq("user_id", user.id)
+    .single();
+
+
+  if(error){
+
+    console.error("Technician profile error:",error);
+
+    showError(
+      "Technician profile is not connected to this login account."
+    );
+
+    return false;
+  }
+
+
+  if(!technician){
+
+    showError("Technician profile not found.");
+
+    return false;
+  }
+
+
+  if(
+    technician.status &&
+    technician.status !== "ACTIVE"
+  ){
+
+    showError("Your technician account is not active.");
+
+    await supabaseClient.auth.signOut();
+
+    return false;
+  }
+
+
+  currentTechnician = technician;
+
+
+  document.getElementById("techName").textContent =
+    technician.full_name || "Technician";
+
+
+  document.getElementById("techCode").textContent =
+    technician.technician_code || "Technician";
+
+
+  const firstLetter =
+    (technician.full_name || "T")
+      .trim()
+      .charAt(0)
+      .toUpperCase();
+
+
+  document.getElementById("techAvatar").textContent =
+    firstLetter;
+
+
+  return true;
+
+}
+
+
+async function loadJobs(){
+
+  if(!currentTechnician){
+    return;
+  }
+
+
+  loading.style.display = "block";
+  jobsContainer.innerHTML = "";
+  hideError();
+
+
+  const {
+    data,
+    error
+  } = await supabaseClient
+    .from("leads")
+    .select(`
+      id,
+      lead_number,
+      customer_name,
+      mobile,
+      alternate_mobile,
+      address,
+      city,
+      state,
+      pincode,
+      service_type,
+      preferred_date,
+      preferred_time,
+      notes,
+      status,
+      assigned_technician_id,
+      created_at
+    `)
+    .eq(
+      "assigned_technician_id",
+      currentTechnician.id
+    )
+    .order(
+      "preferred_date",
+      {ascending:true}
+    );
+
+
+  loading.style.display = "none";
+
+
+  if(error){
+
+    console.error("Jobs error:",error);
+
+    showError(
+      "Unable to load assigned jobs. Please check the database permissions."
+    );
+
+    return;
+  }
+
+
+  currentJobs = data || [];
+
+  updateStats(currentJobs);
+
+  renderJobs(currentJobs);
+
+}
+
+
+function updateStats(jobs){
+
+  const assigned =
+    jobs.filter(j =>
+      ["ASSIGNED","ACCEPTED","EN_ROUTE","ARRIVED","IN_PROGRESS",
+       "COMPLETION_SUBMITTED"].includes(j.status)
+    ).length;
+
+
+  const accepted =
+    jobs.filter(j =>
+      j.status === "ACCEPTED"
+    ).length;
+
+
+  const progress =
+    jobs.filter(j =>
+      ["EN_ROUTE","ARRIVED","IN_PROGRESS"].includes(j.status)
+    ).length;
+
+
+  const completed =
+    jobs.filter(j =>
+      j.status === "COMPLETED"
+    ).length;
+
+
+  document.getElementById("statAssigned").textContent =
+    assigned;
+
+  document.getElementById("statAccepted").textContent =
+    accepted;
+
+  document.getElementById("statProgress").textContent =
+    progress;
+
+  document.getElementById("statCompleted").textContent =
+    completed;
+
+}
+
+
+function renderJobs(jobs){
+
+  if(!jobs.length){
+
+    jobsContainer.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">✓</div>
+        <h3>No Assigned Jobs</h3>
+        <p>
+          You currently have no service jobs assigned to you.
+        </p>
+      </div>
+    `;
+
+    return;
+  }
+
+
+  jobsContainer.innerHTML =
+    jobs.map(renderJob).join("");
+
+}
+
+
+function renderJob(job){
+
+  const status = job.status;
+
+
+  let buttons = "";
+
+
+  if(status === "ASSIGNED"){
+
+    buttons += `
+      <button
+        class="job-btn primary"
+        onclick="updateJobStatus('${job.id}','ACCEPTED')">
+        Accept Job
+      </button>
+
+      <button
+        class="job-btn danger"
+        onclick="rejectJob('${job.id}')">
+        Reject
+      </button>
+    `;
+
+  }
+
+
+  if(status === "ACCEPTED"){
+
+    buttons += `
+      <button
+        class="job-btn primary"
+        onclick="updateJobStatus('${job.id}','EN_ROUTE')">
+        Start Travel
+      </button>
+    `;
+
+  }
+
+
+  if(status === "EN_ROUTE"){
+
+    buttons += `
+      <button
+        class="job-btn primary"
+        onclick="updateJobStatus('${job.id}','ARRIVED')">
+        Mark Arrived
+      </button>
+    `;
+
+  }
+
+
+  if(status === "ARRIVED"){
+
+    buttons += `
+      <button
+        class="job-btn primary"
+        onclick="updateJobStatus('${job.id}','IN_PROGRESS')">
+        Start Service
+      </button>
+    `;
+
+  }
+
+
+  if(status === "IN_PROGRESS"){
+
+    buttons += `
+      <button
+        class="job-btn primary"
+        onclick="goToCompletion('${job.id}')">
+        Submit Completion
+      </button>
+    `;
+
+  }
+
+
+  if(status === "COMPLETION_SUBMITTED"){
+
+    buttons += `
+      <button
+        class="job-btn"
+        disabled>
+        Completion Submitted
+      </button>
+    `;
+
+  }
+
+
+  if(status === "COMPLETED"){
+
+    buttons += `
+      <button
+        class="job-btn"
+        disabled>
+        Job Completed
+      </button>
+    `;
+
+  }
+
+
+  if(
+    status === "CANCELLED" ||
+    status === "REJECTED"
+  ){
+
+    buttons += `
+      <button
+        class="job-btn"
+        disabled>
+        ${escapeHtml(statusLabel(status))}
+      </button>
+    `;
+
+  }
+
+
+  return `
+
+    <article class="job-card">
+
+      <div class="job-top">
+
+        <div>
+
+          <div class="job-number">
+            ${escapeHtml(job.lead_number)}
+          </div>
+
+          <div class="job-customer">
+            ${escapeHtml(job.customer_name)}
+          </div>
+
+        </div>
+
+        <div class="status-badge">
+          ${escapeHtml(statusLabel(status))}
+        </div>
+
+      </div>
+
+
+      <div class="job-details">
+
+        <div class="job-detail">
+
+          <div class="job-detail-label">
+            Service
+          </div>
+
+          <div class="job-detail-value">
+            ${escapeHtml(formatService(job.service_type))}
+          </div>
+
+        </div>
+
+
+        <div class="job-detail">
+
+          <div class="job-detail-label">
+            Customer Mobile
+          </div>
+
+          <div class="job-detail-value">
+            ${escapeHtml(job.mobile)}
+          </div>
+
+        </div>
+
+
+        <div class="job-detail">
+
+          <div class="job-detail-label">
+            Scheduled Date
+          </div>
+
+          <div class="job-detail-value">
+            ${escapeHtml(formatDate(job.preferred_date))}
+          </div>
+
+        </div>
+
+
+        <div class="job-detail">
+
+          <div class="job-detail-label">
+            Preferred Time
+          </div>
+
+          <div class="job-detail-value">
+            ${escapeHtml(job.preferred_time || "Not specified")}
+          </div>
+
+        </div>
+
+
+        <div class="job-detail" style="grid-column:1/-1">
+
+          <div class="job-detail-label">
+            Address
+          </div>
+
+          <div class="job-detail-value">
+            ${escapeHtml(job.address || "Address not available")}
+            ${job.city ? ", " + escapeHtml(job.city) : ""}
+            ${job.state ? ", " + escapeHtml(job.state) : ""}
+            ${job.pincode ? " - " + escapeHtml(job.pincode) : ""}
+          </div>
+
+        </div>
+
+
+        ${
+          job.notes
+          ? `
+          <div class="job-detail" style="grid-column:1/-1">
+
+            <div class="job-detail-label">
+              Notes
+            </div>
+
+            <div class="job-detail-value">
+              ${escapeHtml(job.notes)}
+            </div>
+
+          </div>
+          `
+          : ""
+        }
+
+      </div>
+
+
+      <div class="job-actions">
+
+        ${buttons}
+
+      </div>
+
+    </article>
+
+  `;
+
+}
+
+
+async function updateJobStatus(
+  leadId,
+  newStatus
+){
+
+  hideError();
+
+
+  const {
+    error
+  } = await supabaseClient
+    .from("leads")
+    .update({
+      status:newStatus,
+      updated_by:currentUser.id,
+      updated_at:new Date().toISOString()
+    })
+    .eq("id",leadId)
+    .eq(
+      "assigned_technician_id",
+      currentTechnician.id
+    );
+
+
+  if(error){
+
+    console.error(error);
+
+    showError(
+      "Unable to update job status: " +
+      error.message
+    );
+
+    return;
+  }
+
+
+  await loadJobs();
+
+}
+
+
+async function rejectJob(leadId){
+
+  const reason =
+    prompt(
+      "Why are you rejecting this job?\n\nExample: too far, wrong service, schedule conflict."
+    );
+
+
+  if(reason === null){
+    return;
+  }
+
+
+  const cleanReason =
+    reason.trim();
+
+
+  if(!cleanReason){
+
+    alert("Please enter a rejection reason.");
+
+    return;
+  }
+
+
+  const {
+    error
+  } = await supabaseClient
+    .from("leads")
+    .update({
+      status:"REJECTED",
+      updated_by:currentUser.id,
+      updated_at:new Date().toISOString()
+    })
+    .eq("id",leadId)
+    .eq(
+      "assigned_technician_id",
+      currentTechnician.id
+    );
+
+
+  if(error){
+
+    console.error(error);
+
+    showError(
+      "Unable to reject this job: " +
+      error.message
+    );
+
+    return;
+  }
+
+
+  await loadJobs();
+
+}
+
+
+function goToCompletion(leadId){
+
+  const job =
+    currentJobs.find(
+      j => j.id === leadId
+    );
+
+
+  if(!job){
+    return;
+  }
+
+
+  /*
+    Completion workflow will be connected
+    in the next step.
+
+    It will include:
+    1. Indoor location photo
+    2. Indoor serial photo
+    3. Outdoor location photo
+    4. Outdoor serial photo
+    5. AC bill photo
+    6. Payment details
+    7. Service Completion Code
+  */
+
+  alert(
+    "Completion workflow is the next step.\n\n" +
+    "Lead: " +
+    job.lead_number
+  );
+
+}
+
+
+document
+  .getElementById("refreshBtn")
+  .addEventListener(
+    "click",
+    loadJobs
+  );
+
+
+document
+  .getElementById("logoutBtn")
+  .addEventListener(
+    "click",
+    async function(){
+
+      await supabaseClient.auth.signOut();
+
+      window.location.href =
+        "login.html";
+
+    }
+  );
+
+
+async function init(){
+
+  const ok =
+    await loadTechnician();
+
+
+  if(!ok){
+    loading.style.display = "none";
+    return;
+  }
+
+
+  await loadJobs();
+
+}
+
+
+supabaseClient.auth.onAuthStateChange(
+  function(event){
+
+    if(
+      event === "SIGNED_OUT"
+    ){
+
+      window.location.href =
+        "login.html";
+
+    }
+
+  }
+);
+
+
+init();
+
+</script>
+
+</body>
+</html>
