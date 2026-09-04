@@ -3650,23 +3650,38 @@ function renderLeads() {
 
             <td>
 
-              ${
-                !lead.assigned_technician_id &&
-                ["NEW","RESCHEDULED","RESCHEDULE_REQUESTED"].includes(lead.status)
-                  ? `
-                    <button
-                      type="button"
-                      class="btn primary"
-                      data-assign-lead="${escapeHtml(lead.id)}"
-                    >
-                      Assign
-                    </button>
-                  `
-                  : `
-                    <span class="small">
-                      ${lead.assigned_technician_id ? "Assigned" : "—"}
-                    </span>
-                  `
+            ${
+  lead.status === "COMPLETION_SUBMITTED"
+    ? `
+      <button
+        type="button"
+        class="btn primary"
+        data-review-completion="${escapeHtml(lead.id)}"
+      >
+        Review Completion
+      </button>
+    `
+    : !lead.assigned_technician_id &&
+      ["NEW","RESCHEDULED","RESCHEDULE_REQUESTED"].includes(lead.status)
+      ? `
+        <button
+          type="button"
+          class="btn primary"
+          data-assign-lead="${escapeHtml(lead.id)}"
+        >
+          Assign
+        </button>
+      `
+      : lead.status === "COMPLETED"
+        ? `
+          <span class="small">Completed</span>
+        `
+        : `
+          <span class="small">
+            ${lead.assigned_technician_id ? "Assigned" : "—"}
+          </span>
+        `
+}
               }
 
             </td>
