@@ -1270,616 +1270,817 @@
        SUPABASE + DASHBOARD LOGIC
        ================================ -->
 
-  <script>
+ <script>
+/* =========================================================
+   ORACLIME — SUPPORT DASHBOARD
+   Supabase + Authentication + Dashboard Logic
+   ========================================================= */
 
-  /* ==========================================
-     SUPABASE CONFIGURATION
-     ========================================== */
 
-  const SUPABASE_URL =
-    "https://dmygjpkzuewnpxsispcm.supabase.co";
+/* =========================================================
+   1. SUPABASE CONFIG
+   ========================================================= */
 
-  const SUPABASE_ANON_KEY =
-    "sb_publishable_mQskIlYXBc4v8bXwF1FxmA_HLgigkqi";
+const SUPABASE_URL =
+  "https://dmygjpkzuewnpxsispcm.supabase.co";
 
-  const supabaseClient =
-    window.supabase.createClient(
-      SUPABASE_URL,
-      SUPABASE_ANON_KEY
+const SUPABASE_ANON_KEY =
+  "sb_publishable_mQskIlYXBc4v8bXwF1FxmA_HLgigkqi";
+
+const supabaseClient =
+  window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
+  );
+
+
+/* =========================================================
+   2. GLOBAL STATE
+   ========================================================= */
+
+let currentAuthUser = null;
+let currentAppUser = null;
+let dashboardReady = false;
+
+
+/* =========================================================
+   3. DOM ELEMENTS
+   ========================================================= */
+
+const loadingScreen =
+  document.getElementById("loadingScreen");
+
+const dashboardLayout =
+  document.getElementById("dashboardLayout");
+
+const dashboardNotice =
+  document.getElementById("dashboardNotice");
+
+const logoutButton =
+  document.getElementById("logoutButton");
+
+const refreshButton =
+  document.getElementById("refreshButton");
+
+const createLeadButton =
+  document.getElementById("createLeadButton");
+
+const mobileNavigation =
+  document.getElementById("mobileNavigation");
+
+
+/* =========================================================
+   4. NOTICE SYSTEM
+   ========================================================= */
+
+function showNotice(message, type = "error") {
+
+  if (!dashboardNotice) {
+    return;
+  }
+
+  dashboardNotice.textContent = message;
+
+  dashboardNotice.className =
+    "dashboard-notice";
+
+  if (type === "error") {
+    dashboardNotice.classList.add("error");
+  }
+
+  if (type === "success") {
+    dashboardNotice.style.display = "block";
+    dashboardNotice.style.borderColor =
+      "rgba(53, 209, 170, 0.35)";
+  }
+
+}
+
+
+function hideNotice() {
+
+  if (!dashboardNotice) {
+    return;
+  }
+
+  dashboardNotice.textContent = "";
+
+  dashboardNotice.className =
+    "dashboard-notice";
+
+  dashboardNotice.style.display = "none";
+
+}
+
+
+/* =========================================================
+   5. HTML ESCAPE
+   ========================================================= */
+
+function escapeHtml(value) {
+
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+
+}
+
+
+/* =========================================================
+   6. LOAD APPLICATION USER
+   ========================================================= */
+
+async function loadAppUser(userId) {
+
+  const {
+    data,
+    error
+  } = await supabaseClient
+    .from("app_users")
+    .select(
+      "id, full_name, email, role, status"
+    )
+    .eq("id", userId)
+    .maybeSingle();
+
+
+  if (error) {
+
+    console.error(
+      "app_users error:",
+      error
     );
 
-
-  /* ==========================================
-     GLOBAL USER
-     ========================================== */
-
-  let currentAuthUser = null;
-  let currentAppUser = null;
-
-
-  /* ==========================================
-     ELEMENTS
-     ========================================== */
-
-  const loadingScreen =
-    document.getElementById("loadingScreen");
-
-  const dashboardLayout =
-    document.getElementById("dashboardLayout");
-
-  const dashboardNotice =
-    document.getElementById("dashboardNotice");
-
-  const logoutButton =
-    document.getElementById("logoutButton");
-
-  const refreshButton =
-    document.getElementById("refreshButton");
-
-  const createLeadButton =
-    document.getElementById("createLeadButton");
-
-
-  /* ==========================================
-     NOTICE
-     ========================================== */
-
-  function showNotice(message) {
-
-    dashboardNotice.textContent = message;
-
-    dashboardNotice.className =
-      "dashboard-notice error";
+    throw new Error(
+      "Unable to load your ORACLIME account profile."
+    );
 
   }
 
 
-  function hideNotice() {
+  if (!data) {
 
-    dashboardNotice.textContent = "";
-
-    dashboardNotice.className =
-      "dashboard-notice";
+    throw new Error(
+      "Your ORACLIME account profile was not found."
+    );
 
   }
 
 
-  /* ==========================================
-     LOAD SUPPORT PROFILE
-     ========================================== */
+  return data;
 
-  async function loadSupportUser(userId) {
+}
+
+
+/* =========================================================
+   7. VERIFY SUPPORT ROLE
+   ========================================================= */
+
+function verifySupportRole(appUser) {
+
+  if (!appUser) {
+
+    throw new Error(
+      "Support account could not be verified."
+    );
+
+  }
+
+
+  if (appUser.role !== "SUPPORT") {
+
+    throw new Error(
+      "Access denied. This account is not a Support account."
+    );
+
+  }
+
+
+  if (appUser.status !== "ACTIVE") {
+
+    throw new Error(
+      "Your Support account is not active."
+    );
+
+  }
+
+
+  return true;
+
+}
+
+
+/* =========================================================
+   8. LOAD SUPPORT MEMBER
+   =========================================================
+   
+   IMPORTANT:
+   We first try id = auth.uid().
+   
+   If your support_members table uses another
+   relationship in the future, this will not crash
+   the whole dashboard.
+   ========================================================= */
+
+async function loadSupportMember(userId) {
+
+  const {
+    data,
+    error
+  } = await supabaseClient
+    .from("support_members")
+    .select(
+      "id, support_code, full_name, email, status"
+    )
+    .eq("id", userId)
+    .maybeSingle();
+
+
+  if (error) {
+
+    console.warn(
+      "support_members lookup warning:",
+      error
+    );
+
+    return null;
+
+  }
+
+
+  return data || null;
+
+}
+
+
+/* =========================================================
+   9. BUILD SUPPORT PROFILE
+   ========================================================= */
+
+async function loadSupportUser(userId) {
+
+  /* Load main application user */
+
+  const appUser =
+    await loadAppUser(userId);
+
+
+  /* Verify role + account status */
+
+  verifySupportRole(appUser);
+
+
+  /* Try loading support-specific profile */
+
+  const supportMember =
+    await loadSupportMember(userId);
+
+
+  /*
+    Support member is currently treated as
+    additional profile information.
+
+    The main security check remains:
+    app_users.role === SUPPORT
+    app_users.status === ACTIVE
+  */
+
+  return {
+
+    id:
+      appUser.id,
+
+    full_name:
+      supportMember?.full_name ||
+      appUser.full_name ||
+      "ORACLIME Support",
+
+    email:
+      supportMember?.email ||
+      appUser.email ||
+      "",
+
+    role:
+      appUser.role,
+
+    status:
+      appUser.status,
+
+    support_code:
+      supportMember?.support_code ||
+      "SUPPORT",
+
+    support_profile_exists:
+      !!supportMember
+
+  };
+
+}
+
+
+/* =========================================================
+   10. UPDATE USER INTERFACE
+   ========================================================= */
+
+function updateUserInterface(user) {
+
+  const displayName =
+    user.full_name ||
+    "ORACLIME Support";
+
+
+  const topUserName =
+    document.getElementById(
+      "topUserName"
+    );
+
+  if (topUserName) {
+
+    topUserName.textContent =
+      displayName;
+
+  }
+
+
+  const sidebarUserName =
+    document.getElementById(
+      "sidebarUserName"
+    );
+
+  if (sidebarUserName) {
+
+    sidebarUserName.textContent =
+      displayName;
+
+  }
+
+
+  const sidebarSupportCode =
+    document.getElementById(
+      "sidebarSupportCode"
+    );
+
+  if (sidebarSupportCode) {
+
+    sidebarSupportCode.textContent =
+      user.support_code ||
+      "SUPPORT";
+
+  }
+
+
+  const welcomeText =
+    document.getElementById(
+      "welcomeText"
+    );
+
+  if (welcomeText) {
+
+    welcomeText.textContent =
+      "Welcome " +
+      displayName +
+      ". Manage leads, technicians and service operations.";
+
+  }
+
+
+  const supportAccessStatus =
+    document.getElementById(
+      "supportAccessStatus"
+    );
+
+  if (supportAccessStatus) {
+
+    supportAccessStatus.textContent =
+      "● Verified — Support";
+
+  }
+
+}
+
+
+/* =========================================================
+   11. STAT HELPERS
+   ========================================================= */
+
+function setStat(elementId, value) {
+
+  const element =
+    document.getElementById(
+      elementId
+    );
+
+  if (!element) {
+    return;
+  }
+
+  element.textContent =
+    String(Number(value) || 0);
+
+}
+
+
+function setAllStatsToZero() {
+
+  const ids = [
+
+    "statNewLeads",
+    "statUnassigned",
+    "statAssigned",
+    "statInProgress",
+    "statCompletion",
+    "statCompleted",
+    "statRescheduled",
+    "statPaymentPending"
+
+  ];
+
+
+  ids.forEach(
+    function(id) {
+
+      setStat(id, 0);
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   12. DASHBOARD DATA
+   ========================================================= */
+
+async function loadDashboardData() {
+
+  if (!dashboardReady) {
+    return;
+  }
+
+
+  hideNotice();
+
+
+  try {
 
     /*
-      STEP 1
-      Load basic application profile
-      from app_users.
+      Fetch leads.
+
+      We intentionally fetch:
+      - id
+      - status
+      - assigned_technician_id
+
+      because "UNASSIGNED" is not necessarily
+      a lead status in the database.
     */
 
     const {
-      data: appUser,
-      error: appUserError
+      data: leads,
+      error
     } = await supabaseClient
-      .from("app_users")
+      .from("leads")
       .select(
-        "id, full_name, email, role, status"
-      )
-      .eq("id", userId)
-      .single();
+        "id, status, assigned_technician_id"
+      );
 
 
-    if (appUserError) {
+    if (error) {
 
       console.error(
-        "app_users profile error:",
-        appUserError
-      );
-
-      throw new Error(
-        "Unable to load your ORACLIME support profile."
-      );
-
-    }
-
-
-    if (!appUser) {
-
-      throw new Error(
-        "Your ORACLIME account profile was not found."
-      );
-
-    }
-
-
-    /*
-      STEP 2
-      Verify SUPPORT role.
-    */
-
-    if (appUser.role !== "SUPPORT") {
-
-      await supabaseClient.auth.signOut();
-
-      throw new Error(
-        "Access denied. This account is not a Support account."
-      );
-
-    }
-
-
-    /*
-      STEP 3
-      Verify ACTIVE account.
-    */
-
-    if (appUser.status !== "ACTIVE") {
-
-      await supabaseClient.auth.signOut();
-
-      throw new Error(
-        "Your Support account is inactive."
-      );
-
-    }
-
-
-    /*
-      STEP 4
-      Load support-specific profile
-      from support_members.
-    */
-
-    const {
-      data: supportMember,
-      error: supportMemberError
-    } = await supabaseClient
-      .from("support_members")
-      .select(
-        "id, support_code, full_name, email, status"
-      )
-      .eq("id", userId)
-      .single();
-
-
-    if (supportMemberError) {
-
-      console.error(
-        "support_members profile error:",
-        supportMemberError
-      );
-
-      throw new Error(
-        "Unable to load your ORACLIME support profile."
-      );
-
-    }
-
-
-    if (!supportMember) {
-
-      throw new Error(
-        "Your Support profile was not found."
-      );
-
-    }
-
-
-    /*
-      STEP 5
-      Verify Support profile is ACTIVE.
-    */
-
-    if (supportMember.status !== "ACTIVE") {
-
-      await supabaseClient.auth.signOut();
-
-      throw new Error(
-        "Your Support profile is inactive."
-      );
-
-    }
-
-
-    /*
-      STEP 6
-      Combine both profiles.
-    */
-
-    return {
-
-      id:
-        appUser.id,
-
-      full_name:
-        supportMember.full_name ||
-        appUser.full_name ||
-        "ORACLIME Support",
-
-      email:
-        supportMember.email ||
-        appUser.email ||
-        "",
-
-      role:
-        appUser.role,
-
-      status:
-        appUser.status,
-
-      support_code:
-        supportMember.support_code ||
-        "SUPPORT",
-
-      designation:
-        "Support"
-
-    };
-
-  }
-
-
-  /* ==========================================
-     UPDATE USER INTERFACE
-     ========================================== */
-
-  function updateUserInterface(user) {
-
-    const displayName =
-      user.full_name ||
-      "ORACLIME Support";
-
-
-    const topUserName =
-      document.getElementById(
-        "topUserName"
-      );
-
-    if (topUserName) {
-
-      topUserName.textContent =
-        displayName;
-
-    }
-
-
-    const sidebarUserName =
-      document.getElementById(
-        "sidebarUserName"
-      );
-
-    if (sidebarUserName) {
-
-      sidebarUserName.textContent =
-        displayName;
-
-    }
-
-
-    const sidebarSupportCode =
-      document.getElementById(
-        "sidebarSupportCode"
-      );
-
-    if (sidebarSupportCode) {
-
-      sidebarSupportCode.textContent =
-        user.support_code ||
-        "SUPPORT";
-
-    }
-
-
-    const welcomeText =
-      document.getElementById(
-        "welcomeText"
-      );
-
-    if (welcomeText) {
-
-      welcomeText.textContent =
-        "Welcome " +
-        displayName +
-        ". Manage leads, technicians and service operations.";
-
-    }
-
-
-    const supportAccessStatus =
-      document.getElementById(
-        "supportAccessStatus"
-      );
-
-    if (supportAccessStatus) {
-
-      supportAccessStatus.textContent =
-        "● Verified — Support";
-
-    }
-
-  }
-
-
-  /* ==========================================
-     DASHBOARD DATA
-     ========================================== */
-
-  async function loadDashboardData() {
-
-    hideNotice();
-
-    /*
-      Leads table already exists in Supabase.
-      Try to load current lead statistics.
-    */
-
-    try {
-
-      const {
-        data: leads,
-        error
-      } = await supabaseClient
-        .from("leads")
-        .select("id, status");
-
-
-      if (error) {
-
-        console.error(
-          "Lead statistics error:",
-          error
-        );
-
-        setAllStatsToZero();
-
-        return;
-
-      }
-
-
-      const list =
-        leads || [];
-
-
-      setStat(
-        "statNewLeads",
-        countStatus(
-          list,
-          ["NEW"]
-        )
-      );
-
-
-      setStat(
-        "statUnassigned",
-        countStatus(
-          list,
-          ["UNASSIGNED"]
-        )
-      );
-
-
-      setStat(
-        "statAssigned",
-        countStatus(
-          list,
-          ["ASSIGNED"]
-        )
-      );
-
-
-      setStat(
-        "statInProgress",
-        countStatus(
-          list,
-          [
-            "EN_ROUTE",
-            "ARRIVED",
-            "IN_PROGRESS"
-          ]
-        )
-      );
-
-
-      setStat(
-        "statCompletion",
-        countStatus(
-          list,
-          ["COMPLETION_SUBMITTED"]
-        )
-      );
-
-
-      setStat(
-        "statCompleted",
-        countStatus(
-          list,
-          ["COMPLETED"]
-        )
-      );
-
-
-      setStat(
-        "statRescheduled",
-        countStatus(
-          list,
-          [
-            "RESCHEDULED",
-            "RESCHEDULE_REQUESTED"
-          ]
-        )
-      );
-
-
-      setStat(
-        "statPaymentPending",
-        countStatus(
-          list,
-          ["PAYMENT_PENDING"]
-        )
-      );
-
-    } catch (error) {
-
-      console.error(
-        "Dashboard data error:",
+        "Lead statistics error:",
         error
       );
 
       setAllStatsToZero();
 
-    }
-
-  }
-
-
-  /* ==========================================
-     STAT HELPERS
-     ========================================== */
-
-  function countStatus(
-    rows,
-    statuses
-  ) {
-
-    return rows.filter(
-      function(row) {
-
-        return statuses.includes(
-          row.status
-        );
-
-      }
-    ).length;
-
-  }
-
-
-  function setStat(
-    elementId,
-    value
-  ) {
-
-    const element =
-      document.getElementById(
-        elementId
+      showNotice(
+        "Dashboard statistics could not be loaded. Please check your database access.",
+        "error"
       );
-
-    if (element) {
-
-      element.textContent =
-        String(value);
-
-    }
-
-  }
-
-
-  function setAllStatsToZero() {
-
-    setStat(
-      "statNewLeads",
-      0
-    );
-
-    setStat(
-      "statUnassigned",
-      0
-    );
-
-    setStat(
-      "statAssigned",
-      0
-    );
-
-    setStat(
-      "statInProgress",
-      0
-    );
-
-    setStat(
-      "statCompletion",
-      0
-    );
-
-    setStat(
-      "statCompleted",
-      0
-    );
-
-    setStat(
-      "statRescheduled",
-      0
-    );
-
-    setStat(
-      "statPaymentPending",
-      0
-    );
-
-  }
-
-
-  /* ==========================================
-     NAVIGATION
-     ========================================== */
-
-  function activateSection(section) {
-
-    document
-      .querySelectorAll(
-        ".sidebar-nav button"
-      )
-      .forEach(
-        function(button) {
-
-          button.classList.toggle(
-            "active",
-            button.dataset.section === section
-          );
-
-        }
-      );
-
-
-    const mobileNavigation =
-      document.getElementById(
-        "mobileNavigation"
-      );
-
-
-    if (
-      mobileNavigation &&
-      mobileNavigation.value !== section
-    ) {
-
-      mobileNavigation.value =
-        section;
-
-    }
-
-
-    if (section === "dashboard") {
-
-      hideNotice();
-
-      window.scrollTo({
-
-        top: 0,
-
-        behavior: "smooth"
-
-      });
 
       return;
 
     }
 
 
-    showNotice(
-      sectionLabel(section) +
-      " module will be connected in the next step."
+    const list =
+      Array.isArray(leads)
+        ? leads
+        : [];
+
+
+    /* -----------------------------------------
+       NEW LEADS
+       ----------------------------------------- */
+
+    const newLeads =
+      list.filter(
+        function(row) {
+
+          return row.status === "NEW";
+
+        }
+      ).length;
+
+
+    /* -----------------------------------------
+       UNASSIGNED
+       
+       A lead is unassigned when:
+       assigned_technician_id IS NULL
+       
+       We don't depend on a fake UNASSIGNED
+       enum value.
+       ----------------------------------------- */
+
+    const unassigned =
+      list.filter(
+        function(row) {
+
+          return (
+            row.assigned_technician_id === null ||
+            row.assigned_technician_id === undefined
+          );
+
+        }
+      ).length;
+
+
+    /* -----------------------------------------
+       ASSIGNED
+       ----------------------------------------- */
+
+    const assigned =
+      list.filter(
+        function(row) {
+
+          return (
+            row.assigned_technician_id !== null &&
+            row.assigned_technician_id !== undefined &&
+            [
+              "ASSIGNED",
+              "ACCEPTED"
+            ].includes(row.status)
+          );
+
+        }
+      ).length;
+
+
+    /* -----------------------------------------
+       IN PROGRESS
+       ----------------------------------------- */
+
+    const inProgress =
+      list.filter(
+        function(row) {
+
+          return [
+            "EN_ROUTE",
+            "ARRIVED",
+            "IN_PROGRESS"
+          ].includes(row.status);
+
+        }
+      ).length;
+
+
+    /* -----------------------------------------
+       COMPLETION SUBMITTED
+       ----------------------------------------- */
+
+    const completionSubmitted =
+      list.filter(
+        function(row) {
+
+          return (
+            row.status ===
+            "COMPLETION_SUBMITTED"
+          );
+
+        }
+      ).length;
+
+
+    /* -----------------------------------------
+       COMPLETED
+       ----------------------------------------- */
+
+    const completed =
+      list.filter(
+        function(row) {
+
+          return row.status === "COMPLETED";
+
+        }
+      ).length;
+
+
+    /* -----------------------------------------
+       RESCHEDULED
+       ----------------------------------------- */
+
+    const rescheduled =
+      list.filter(
+        function(row) {
+
+          return [
+            "RESCHEDULED",
+            "RESCHEDULE_REQUESTED"
+          ].includes(row.status);
+
+        }
+      ).length;
+
+
+    /* -----------------------------------------
+       PAYMENT PENDING
+       ----------------------------------------- */
+
+    const paymentPending =
+      list.filter(
+        function(row) {
+
+          return (
+            row.status ===
+            "PAYMENT_PENDING"
+          );
+
+        }
+      ).length;
+
+
+    /* -----------------------------------------
+       UPDATE UI
+       ----------------------------------------- */
+
+    setStat(
+      "statNewLeads",
+      newLeads
     );
 
+    setStat(
+      "statUnassigned",
+      unassigned
+    );
+
+    setStat(
+      "statAssigned",
+      assigned
+    );
+
+    setStat(
+      "statInProgress",
+      inProgress
+    );
+
+    setStat(
+      "statCompletion",
+      completionSubmitted
+    );
+
+    setStat(
+      "statCompleted",
+      completed
+    );
+
+    setStat(
+      "statRescheduled",
+      rescheduled
+    );
+
+    setStat(
+      "statPaymentPending",
+      paymentPending
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "Dashboard data exception:",
+      error
+    );
+
+    setAllStatsToZero();
+
+    showNotice(
+      error.message ||
+      "Unable to load dashboard data.",
+      "error"
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   13. NAVIGATION LABELS
+   ========================================================= */
+
+function sectionLabel(section) {
+
+  const labels = {
+
+    dashboard:
+      "Dashboard",
+
+    leads:
+      "Leads",
+
+    assignments:
+      "Assignments",
+
+    partners:
+      "Partners",
+
+    technicians:
+      "Technicians",
+
+    customers:
+      "Customers",
+
+    services:
+      "Services",
+
+    payments:
+      "Payments",
+
+    reports:
+      "Reports",
+
+    notifications:
+      "Notifications",
+
+    activity:
+      "Activity Logs",
+
+    settings:
+      "Settings"
+
+  };
+
+
+  return (
+    labels[section] ||
+    "Module"
+  );
+
+}
+
+
+/* =========================================================
+   14. NAVIGATION
+   ========================================================= */
+
+function activateSection(section) {
+
+  if (!section) {
+    return;
+  }
+
+
+  /* Update desktop sidebar */
+
+  document
+    .querySelectorAll(
+      ".sidebar-nav button"
+    )
+    .forEach(
+      function(button) {
+
+        button.classList.toggle(
+          "active",
+          button.dataset.section === section
+        );
+
+      }
+    );
+
+
+  /* Update mobile selector */
+
+  if (
+    mobileNavigation &&
+    mobileNavigation.value !== section
+  ) {
+
+    mobileNavigation.value =
+      section;
+
+  }
+
+
+  /* Dashboard */
+
+  if (section === "dashboard") {
+
+    hideNotice();
 
     window.scrollTo({
 
@@ -1889,433 +2090,482 @@
 
     });
 
-  }
-
-
-  function sectionLabel(section) {
-
-    const labels = {
-
-      leads:
-        "Leads",
-
-      assignments:
-        "Assignments",
-
-      partners:
-        "Partners",
-
-      technicians:
-        "Technicians",
-
-      customers:
-        "Customers",
-
-      services:
-        "Services",
-
-      payments:
-        "Payments",
-
-      reports:
-        "Reports",
-
-      notifications:
-        "Notifications",
-
-      activity:
-        "Activity Logs",
-
-      settings:
-        "Settings"
-
-    };
-
-
-    return labels[section] ||
-      "This";
+    return;
 
   }
 
 
-  /* ==========================================
-     SIDEBAR NAVIGATION
-     ========================================== */
+  /*
+    Other modules are intentionally not
+    pretending to work yet.
 
-  document
-    .querySelectorAll(
-      ".sidebar-nav button"
-    )
-    .forEach(
-      function(button) {
+    They will be connected one by one.
+  */
 
-        button.addEventListener(
-          "click",
-          function() {
+  showNotice(
+    sectionLabel(section) +
+    " module is ready for connection in the next development step.",
+    "success"
+  );
 
-            activateSection(
-              button.dataset.section
-            );
 
-          }
-        );
+  window.scrollTo({
 
+    top: 0,
+
+    behavior: "smooth"
+
+  });
+
+}
+
+
+/* =========================================================
+   15. SIDEBAR EVENTS
+   ========================================================= */
+
+document
+  .querySelectorAll(
+    ".sidebar-nav button"
+  )
+  .forEach(
+    function(button) {
+
+      button.addEventListener(
+        "click",
+        function() {
+
+          activateSection(
+            button.dataset.section
+          );
+
+        }
+      );
+
+    }
+  );
+
+
+/* =========================================================
+   16. QUICK ACTION EVENTS
+   ========================================================= */
+
+document
+  .querySelectorAll(
+    "[data-section-link]"
+  )
+  .forEach(
+    function(link) {
+
+      link.addEventListener(
+        "click",
+        function(event) {
+
+          event.preventDefault();
+
+          activateSection(
+            link.dataset.sectionLink
+          );
+
+        }
+      );
+
+    }
+  );
+
+
+/* =========================================================
+   17. MOBILE NAVIGATION
+   ========================================================= */
+
+if (mobileNavigation) {
+
+  mobileNavigation.addEventListener(
+    "change",
+    function(event) {
+
+      activateSection(
+        event.target.value
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   18. NEW LEAD BUTTON
+   ========================================================= */
+
+if (createLeadButton) {
+
+  createLeadButton.addEventListener(
+    "click",
+    function() {
+
+      /*
+        For now this opens the Leads module
+        placeholder.
+
+        Later:
+        -> lead creation form
+        -> customer search
+        -> duplicate detection
+        -> partner selection
+        -> service type
+        -> preferred date/time
+      */
+
+      activateSection(
+        "leads"
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   19. REFRESH BUTTON
+   ========================================================= */
+
+if (refreshButton) {
+
+  refreshButton.addEventListener(
+    "click",
+    async function() {
+
+      if (refreshButton.disabled) {
+        return;
       }
-    );
 
 
-  /* ==========================================
-     QUICK ACTION NAVIGATION
-     ========================================== */
+      refreshButton.disabled =
+        true;
 
-  document
-    .querySelectorAll(
-      "[data-section-link]"
-    )
-    .forEach(
-      function(link) {
-
-        link.addEventListener(
-          "click",
-          function(event) {
-
-            event.preventDefault();
-
-            activateSection(
-              link.dataset.sectionLink
-            );
-
-          }
-        );
-
-      }
-    );
+      const originalText =
+        refreshButton.textContent;
 
 
-  /* ==========================================
-     MOBILE NAVIGATION
-     ========================================== */
-
-  const mobileNavigation =
-    document.getElementById(
-      "mobileNavigation"
-    );
+      refreshButton.textContent =
+        "Refreshing...";
 
 
-  if (mobileNavigation) {
-
-    mobileNavigation.addEventListener(
-      "change",
-      function(event) {
-
-        activateSection(
-          event.target.value
-        );
-
-      }
-    );
-
-  }
-
-
-  /* ==========================================
-     NEW LEAD
-     ========================================== */
-
-  if (createLeadButton) {
-
-    createLeadButton.addEventListener(
-      "click",
-      function() {
-
-        showNotice(
-          "Lead creation module will be connected next."
-        );
-
-      }
-    );
-
-  }
-
-
-  /* ==========================================
-     REFRESH
-     ========================================== */
-
-  if (refreshButton) {
-
-    refreshButton.addEventListener(
-      "click",
-      async function() {
-
-        refreshButton.disabled =
-          true;
-
-        refreshButton.textContent =
-          "Refreshing...";
-
+      try {
 
         await loadDashboardData();
 
+      } catch (error) {
+
+        console.error(
+          "Refresh error:",
+          error
+        );
+
+      } finally {
 
         refreshButton.disabled =
           false;
 
         refreshButton.textContent =
+          originalText ||
           "Refresh";
 
       }
-    );
 
-  }
+    }
+  );
+
+}
 
 
-  /* ==========================================
-     LOGOUT
-     ========================================== */
+/* =========================================================
+   20. LOGOUT
+   ========================================================= */
 
-  if (logoutButton) {
+if (logoutButton) {
 
-    logoutButton.addEventListener(
-      "click",
-      async function() {
+  logoutButton.addEventListener(
+    "click",
+    async function() {
 
-        logoutButton.disabled =
-          true;
+      if (logoutButton.disabled) {
+        return;
+      }
 
-        logoutButton.textContent =
-          "Signing Out...";
 
+      logoutButton.disabled =
+        true;
+
+      logoutButton.textContent =
+        "Signing Out...";
+
+
+      try {
 
         const {
           error
-        } = await supabaseClient
-          .auth
-          .signOut();
+        } =
+          await supabaseClient
+            .auth
+            .signOut();
 
 
         if (error) {
 
-          console.error(
-            "Logout error:",
-            error
-          );
-
-          logoutButton.disabled =
-            false;
-
-          logoutButton.textContent =
-            "Sign Out";
-
-          return;
+          throw error;
 
         }
 
 
-        window.location.href =
-          "support-login.html";
+        window.location.replace(
+          "support-login.html"
+        );
+
+
+      } catch (error) {
+
+        console.error(
+          "Logout error:",
+          error
+        );
+
+
+        logoutButton.disabled =
+          false;
+
+        logoutButton.textContent =
+          "Sign Out";
+
+
+        showNotice(
+          "Unable to sign out. Please try again.",
+          "error"
+        );
 
       }
-    );
 
+    }
+  );
+
+}
+
+
+/* =========================================================
+   21. SHOW ACCESS DENIED SCREEN
+   ========================================================= */
+
+function showAccessDenied(message) {
+
+  if (!loadingScreen) {
+    return;
   }
 
 
-  /* ==========================================
-     AUTH CHECK
-     ========================================== */
+  loadingScreen.innerHTML = `
 
-  async function initializeDashboard() {
+    <div class="loading-box">
 
-    try {
+      <div class="eyebrow">
+        ORACLIME Operations
+      </div>
 
-      const {
-        data,
-        error
-      } = await supabaseClient
+      <h2>
+        Access Denied
+      </h2>
+
+      <p style="margin-bottom:20px;">
+        ${escapeHtml(
+          message ||
+          "Unable to verify your Support account."
+        )}
+      </p>
+
+      <a
+        href="support-login.html"
+        class="btn primary"
+      >
+        Back to Support Login
+      </a>
+
+    </div>
+
+  `;
+
+}
+
+
+/* =========================================================
+   22. INITIALIZE DASHBOARD
+   ========================================================= */
+
+async function initializeDashboard() {
+
+  try {
+
+    /* -----------------------------------------
+       Check current Supabase session
+       ----------------------------------------- */
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
         .auth
         .getSession();
 
 
-      if (error) {
+    if (error) {
 
-        console.error(
-          "Session error:",
-          error
-        );
+      console.error(
+        "Session error:",
+        error
+      );
 
-        throw new Error(
-          "Unable to verify your login session."
-        );
+      throw new Error(
+        "Unable to verify your login session."
+      );
 
-      }
-
-
-      const session =
-        data.session;
+    }
 
 
-      if (!session) {
-
-        window.location.href =
-          "support-login.html";
-
-        return;
-
-      }
+    const session =
+      data?.session;
 
 
-      currentAuthUser =
-        session.user;
+    /* -----------------------------------------
+       No session
+       ----------------------------------------- */
+
+    if (!session) {
+
+      window.location.replace(
+        "support-login.html"
+      );
+
+      return;
+
+    }
 
 
-      /*
-        Load BOTH:
-
-        app_users
-        +
-        support_members
-      */
-
-      currentAppUser =
-        await loadSupportUser(
-          currentAuthUser.id
-        );
+    currentAuthUser =
+      session.user;
 
 
-      /*
-        Update dashboard UI.
-      */
+    /* -----------------------------------------
+       Load + verify Support account
+       ----------------------------------------- */
 
-      updateUserInterface(
-        currentAppUser
+    currentAppUser =
+      await loadSupportUser(
+        currentAuthUser.id
       );
 
 
-      /*
-        Show dashboard.
-      */
+    /* -----------------------------------------
+       Update UI
+       ----------------------------------------- */
+
+    updateUserInterface(
+      currentAppUser
+    );
+
+
+    /* -----------------------------------------
+       Show dashboard
+       ----------------------------------------- */
+
+    if (loadingScreen) {
 
       loadingScreen.style.display =
         "none";
 
+    }
+
+
+    if (dashboardLayout) {
+
       dashboardLayout.style.display =
         "flex";
 
-
-      /*
-        Load statistics.
-      */
-
-      await loadDashboardData();
-
-
-    } catch (error) {
-
-      console.error(
-        "Dashboard initialization error:",
-        error
-      );
-
-
-      loadingScreen.innerHTML = `
-
-        <div class="loading-box">
-
-          <div class="eyebrow">
-            ORACLIME Operations
-          </div>
-
-          <h2>
-            Access Denied
-          </h2>
-
-          <p style="margin-bottom:20px;">
-            ${escapeHtml(
-              error.message ||
-              "Unable to verify your Support account."
-            )}
-          </p>
-
-          <a
-            href="support-login.html"
-            class="btn primary"
-          >
-            Back to Support Login
-          </a>
-
-        </div>
-
-      `;
-
     }
 
-  }
+
+    dashboardReady =
+      true;
 
 
-  /* ==========================================
-     SECURITY HELPER
-     ========================================== */
+    /* -----------------------------------------
+       Load statistics
+       ----------------------------------------- */
 
-  function escapeHtml(value) {
-
-    return String(value)
-
-      .replace(
-        /&/g,
-        "&amp;"
-      )
-
-      .replace(
-        /</g,
-        "&lt;"
-      )
-
-      .replace(
-        />/g,
-        "&gt;"
-      )
-
-      .replace(
-        /"/g,
-        "&quot;"
-      )
-
-      .replace(
-        /'/g,
-        "&#039;"
-      );
-
-  }
+    await loadDashboardData();
 
 
-  /* ==========================================
-     AUTH STATE LISTENER
-     ========================================== */
+  } catch (error) {
 
-  supabaseClient
-    .auth
-    .onAuthStateChange(
-      function(event, session) {
-
-        if (
-          event === "SIGNED_OUT"
-        ) {
-
-          window.location.href =
-            "support-login.html";
-
-        }
-
-      }
+    console.error(
+      "Dashboard initialization error:",
+      error
     );
 
 
-  /* ==========================================
-     START DASHBOARD
-     ========================================== */
+    dashboardReady =
+      false;
 
-  initializeDashboard();
+
+    if (dashboardLayout) {
+
+      dashboardLayout.style.display =
+        "none";
+
+    }
+
+
+    showAccessDenied(
+      error.message ||
+      "Unable to verify your Support account."
+    );
+
+  }
+
+}
+
+
+/* ========================================================= 23. AUTH STATE LISTENER ========================================================= */
+
+supabaseClient
+  .auth
+  .onAuthStateChange(
+    function(event, session) {
+
+      console.log(
+        "Auth event:",
+        event
+      );
+
+
+      if (event === "SIGNED_OUT") {
+
+        dashboardReady =
+          false;
+
+        window.location.replace(
+          "support-login.html"
+        );
+
+      }
+
+    }
+  );
+
+
+/* ========================================================= 24. START ========================================================= */
+
+initializeDashboard();
 
 </script>
 
