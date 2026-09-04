@@ -8,13 +8,12 @@
 
   <link rel="stylesheet" href="assets/style.css">
 
-  <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    /* ================================
+    /* =====================================================
        SUPPORT DASHBOARD
-       ================================ */
+       ===================================================== */
 
     body {
       min-height: 100vh;
@@ -25,13 +24,13 @@
       display: flex;
     }
 
-    /* Sidebar */
+    /* SIDEBAR */
 
     .support-sidebar {
       width: 250px;
       min-width: 250px;
       border-right: 1px solid var(--line);
-      background: rgba(6, 16, 29, 0.96);
+      background: rgba(6,16,29,.96);
       padding: 24px 16px;
       position: sticky;
       top: 72px;
@@ -63,7 +62,7 @@
       border-radius: 10px;
       cursor: pointer;
       font-size: 14px;
-      transition: 0.2s ease;
+      transition: .2s ease;
     }
 
     .sidebar-nav button:hover {
@@ -72,8 +71,8 @@
     }
 
     .sidebar-nav button.active {
-      background: rgba(53, 209, 170, 0.10);
-      border-color: rgba(53, 209, 170, 0.25);
+      background: rgba(53,209,170,.10);
+      border-color: rgba(53,209,170,.25);
       color: var(--green);
     }
 
@@ -101,7 +100,7 @@
       font-size: 12px;
     }
 
-    /* Main */
+    /* MAIN */
 
     .support-main {
       flex: 1;
@@ -134,11 +133,11 @@
       flex-wrap: wrap;
     }
 
-    /* Stats */
+    /* STATS */
 
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(4,1fr);
       gap: 16px;
       margin-bottom: 28px;
     }
@@ -168,7 +167,7 @@
       font-size: 12px;
     }
 
-    /* Sections */
+    /* SECTIONS */
 
     .dashboard-section {
       margin-bottom: 24px;
@@ -187,11 +186,11 @@
       font-size: 20px;
     }
 
-    /* Quick Actions */
+    /* QUICK ACTIONS */
 
     .quick-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(3,1fr);
       gap: 16px;
     }
 
@@ -203,12 +202,12 @@
       border: 1px solid var(--line);
       border-radius: 16px;
       padding: 20px;
-      transition: 0.2s ease;
+      transition: .2s ease;
     }
 
     .quick-card:hover {
       transform: translateY(-2px);
-      border-color: rgba(53, 209, 170, 0.35);
+      border-color: rgba(53,209,170,.35);
     }
 
     .quick-icon {
@@ -218,7 +217,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(99, 169, 255, 0.10);
+      background: rgba(99,169,255,.10);
       color: var(--blue);
       font-size: 20px;
       margin-bottom: 15px;
@@ -236,7 +235,7 @@
       line-height: 1.5;
     }
 
-    /* Workflow */
+    /* WORKFLOW */
 
     .workflow-card {
       background: var(--surface);
@@ -267,8 +266,8 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(53, 209, 170, 0.10);
-      border: 1px solid rgba(53, 209, 170, 0.25);
+      background: rgba(53,209,170,.10);
+      border: 1px solid rgba(53,209,170,.25);
       color: var(--green);
       font-weight: 800;
     }
@@ -290,7 +289,7 @@
       font-size: 20px;
     }
 
-    /* Notice */
+    /* NOTICE */
 
     .dashboard-notice {
       display: none;
@@ -304,10 +303,213 @@
 
     .dashboard-notice.error {
       display: block;
-      border-color: rgba(255, 90, 90, 0.35);
+      border-color: rgba(255,90,90,.35);
     }
 
-    /* Loading */
+    /* =====================================================
+       LEADS
+       ===================================================== */
+
+    #leadsSection {
+      display: none;
+    }
+
+    .lead-filter-grid {
+      display: grid;
+      grid-template-columns: minmax(0,2fr) minmax(180px,1fr) auto;
+      gap: 12px;
+      align-items: end;
+    }
+
+    .lead-field label {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 6px;
+    }
+
+    #leadsSection input,
+    #leadsSection select,
+    #leadForm input,
+    #leadForm select,
+    #leadForm textarea {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 11px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: var(--bg);
+      color: var(--text);
+      outline: none;
+      font: inherit;
+    }
+
+    #leadsSection input:focus,
+    #leadsSection select:focus,
+    #leadForm input:focus,
+    #leadForm select:focus,
+    #leadForm textarea:focus {
+      border-color: rgba(53,209,170,.5);
+    }
+
+    .leads-table-wrap {
+      overflow-x: auto;
+    }
+
+    .leads-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 950px;
+    }
+
+    .leads-table th {
+      text-align: left;
+      padding: 12px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+      border-bottom: 1px solid var(--line);
+      white-space: nowrap;
+    }
+
+    .leads-table td {
+      padding: 14px 12px;
+      border-bottom: 1px solid var(--line);
+      font-size: 13px;
+      vertical-align: middle;
+    }
+
+    .leads-table tbody tr:hover {
+      background: rgba(255,255,255,.025);
+    }
+
+    .lead-number {
+      color: var(--green);
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .lead-customer {
+      font-weight: 600;
+    }
+
+    .lead-mobile {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 3px;
+    }
+
+    .lead-status {
+      display: inline-flex;
+      padding: 5px 9px;
+      border-radius: 999px;
+      background: rgba(99,169,255,.10);
+      border: 1px solid rgba(99,169,255,.20);
+      font-size: 11px;
+      white-space: nowrap;
+    }
+
+    .lead-empty {
+      padding: 35px 10px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    /* =====================================================
+       MODAL
+       ===================================================== */
+
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(0,0,0,.72);
+      backdrop-filter: blur(6px);
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+    }
+
+    .modal {
+      width: min(760px,100%);
+      margin: 40px auto;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: 0 25px 80px rgba(0,0,0,.45);
+    }
+
+    .modal-header {
+      padding: 22px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      gap: 15px;
+      align-items: flex-start;
+    }
+
+    .modal-header h2 {
+      margin: 0 0 5px;
+    }
+
+    .modal-header p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .modal-close {
+      border: 1px solid var(--line);
+      background: transparent;
+      color: var(--text);
+      width: 36px;
+      height: 36px;
+      border-radius: 9px;
+      cursor: pointer;
+      font-size: 18px;
+    }
+
+    .modal-body {
+      padding: 22px;
+    }
+
+    .lead-form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .lead-form-full {
+      grid-column: 1 / -1;
+    }
+
+    .lead-form-field label {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .lead-form-field textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
+
+    .modal-footer {
+      padding: 18px 22px;
+      border-top: 1px solid var(--line);
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    /* LOADING */
 
     .loading-screen {
       min-height: 70vh;
@@ -330,24 +532,25 @@
       margin: 0;
     }
 
-    /* Mobile */
+    /* MOBILE */
 
     .mobile-topbar {
       display: none;
     }
 
-    @media (max-width: 1100px) {
+    @media (max-width:1100px) {
 
       .stats-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(2,1fr);
       }
 
       .quick-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(2,1fr);
       }
+
     }
 
-    @media (max-width: 760px) {
+    @media (max-width:760px) {
 
       .support-layout {
         display: block;
@@ -411,9 +614,22 @@
       .workflow {
         justify-content: flex-start;
       }
+
+      .lead-filter-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .lead-form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .lead-form-full {
+        grid-column: auto;
+      }
+
     }
 
-    @media (max-width: 430px) {
+    @media (max-width:430px) {
 
       .stats-grid {
         grid-template-columns: 1fr;
@@ -427,242 +643,218 @@
       .header-actions .btn {
         width: 100%;
       }
+
+      .modal-overlay {
+        padding: 10px;
+      }
+
+      .modal {
+        margin: 10px auto;
+      }
+
     }
   </style>
 </head>
 
 <body>
 
-  <!-- ================================
-       TOP NAVIGATION
-       ================================ -->
+<!-- =====================================================
+     TOP NAV
+     ===================================================== -->
 
-  <div class="navwrap">
+<div class="navwrap">
 
-    <div class="container nav">
+  <div class="container nav">
 
-      <a class="logo" href="index.html">
-        ORACLIME
-      </a>
+    <a class="logo" href="index.html">
+      ORACLIME
+    </a>
 
-      <div style="display:flex;align-items:center;gap:12px;">
+    <div style="display:flex;align-items:center;gap:12px;">
 
-        <span
-          class="small"
-          id="topUserName"
-        >
-          Support
-        </span>
+      <span class="small" id="topUserName">
+        Support
+      </span>
 
-        <button
-          id="logoutButton"
-          class="btn"
-          type="button"
-        >
-          Sign Out
-        </button>
-
-      </div>
+      <button
+        id="logoutButton"
+        class="btn"
+        type="button"
+      >
+        Sign Out
+      </button>
 
     </div>
 
   </div>
 
+</div>
 
-  <!-- ================================
-       MOBILE MENU
-       ================================ -->
 
-  <div class="mobile-topbar">
+<!-- =====================================================
+     MOBILE NAV
+     ===================================================== -->
 
-    <strong>Support Operations</strong>
+<div class="mobile-topbar">
 
-    <select id="mobileNavigation">
+  <strong>Support Operations</strong>
 
-      <option value="dashboard">
+  <select id="mobileNavigation">
+
+    <option value="dashboard">Dashboard</option>
+    <option value="leads">Leads</option>
+    <option value="assignments">Assignments</option>
+    <option value="partners">Partners</option>
+    <option value="technicians">Technicians</option>
+    <option value="customers">Customers</option>
+    <option value="services">Services</option>
+    <option value="payments">Payments</option>
+    <option value="reports">Reports</option>
+    <option value="notifications">Notifications</option>
+    <option value="activity">Activity Logs</option>
+    <option value="settings">Settings</option>
+
+  </select>
+
+</div>
+
+
+<!-- =====================================================
+     LOADING
+     ===================================================== -->
+
+<div
+  id="loadingScreen"
+  class="loading-screen"
+>
+
+  <div class="loading-box">
+
+    <div class="eyebrow">
+      ORACLIME Operations
+    </div>
+
+    <h2>
+      Checking Support Access...
+    </h2>
+
+    <p>
+      Please wait while we verify your session.
+    </p>
+
+  </div>
+
+</div>
+
+
+<!-- =====================================================
+     DASHBOARD LAYOUT
+     ===================================================== -->
+
+<div
+  id="dashboardLayout"
+  class="support-layout"
+  style="display:none;"
+>
+
+  <!-- SIDEBAR -->
+
+  <aside class="support-sidebar">
+
+    <div class="sidebar-label">
+      Operations
+    </div>
+
+    <nav class="sidebar-nav">
+
+      <button class="active" data-section="dashboard">
         Dashboard
-      </option>
+      </button>
 
-      <option value="leads">
+      <button data-section="leads">
         Leads
-      </option>
+      </button>
 
-      <option value="assignments">
+      <button data-section="assignments">
         Assignments
-      </option>
+      </button>
 
-      <option value="partners">
+      <button data-section="partners">
         Partners
-      </option>
+      </button>
 
-      <option value="technicians">
+      <button data-section="technicians">
         Technicians
-      </option>
+      </button>
 
-      <option value="customers">
+      <button data-section="customers">
         Customers
-      </option>
+      </button>
 
-      <option value="services">
+      <button data-section="services">
         Services
-      </option>
+      </button>
 
-      <option value="payments">
+      <button data-section="payments">
         Payments
-      </option>
+      </button>
 
-      <option value="reports">
+      <button data-section="reports">
         Reports
-      </option>
+      </button>
 
-      <option value="notifications">
+      <button data-section="notifications">
         Notifications
-      </option>
+      </button>
 
-      <option value="activity">
+      <button data-section="activity">
         Activity Logs
-      </option>
+      </button>
 
-      <option value="settings">
+      <button data-section="settings">
         Settings
-      </option>
+      </button>
 
-    </select>
-
-  </div>
+    </nav>
 
 
-  <!-- ================================
-       MAIN LAYOUT
-       ================================ -->
+    <div class="sidebar-bottom">
 
-  <div
-    id="loadingScreen"
-    class="loading-screen"
-  >
+      <div class="user-mini">
 
-    <div class="loading-box">
-
-      <div class="eyebrow">
-        ORACLIME Operations
-      </div>
-
-      <h2>
-        Checking Support Access...
-      </h2>
-
-      <p>
-        Please wait while we verify your session.
-      </p>
-
-    </div>
-
-  </div>
-
-
-  <div
-    id="dashboardLayout"
-    class="support-layout"
-    style="display:none;"
-  >
-
-
-    <!-- ================================
-         SIDEBAR
-         ================================ -->
-
-    <aside class="support-sidebar">
-
-      <div class="sidebar-label">
-        Operations
-      </div>
-
-      <nav class="sidebar-nav">
-
-        <button
-          class="active"
-          data-section="dashboard"
+        <div
+          class="user-mini-name"
+          id="sidebarUserName"
         >
-          Dashboard
-        </button>
+          ORACLIME Support
+        </div>
 
-        <button data-section="leads">
-          Leads
-        </button>
-
-        <button data-section="assignments">
-          Assignments
-        </button>
-
-        <button data-section="partners">
-          Partners
-        </button>
-
-        <button data-section="technicians">
-          Technicians
-        </button>
-
-        <button data-section="customers">
-          Customers
-        </button>
-
-        <button data-section="services">
-          Services
-        </button>
-
-        <button data-section="payments">
-          Payments
-        </button>
-
-        <button data-section="reports">
-          Reports
-        </button>
-
-        <button data-section="notifications">
-          Notifications
-        </button>
-
-        <button data-section="activity">
-          Activity Logs
-        </button>
-
-        <button data-section="settings">
-          Settings
-        </button>
-
-      </nav>
-
-
-      <div class="sidebar-bottom">
-
-        <div class="user-mini">
-
-          <div
-            class="user-mini-name"
-            id="sidebarUserName"
-          >
-            ORACLIME Support
-          </div>
-
-          <div
-            class="user-mini-role"
-            id="sidebarSupportCode"
-          >
-            SUPPORT
-          </div>
-
+        <div
+          class="user-mini-role"
+          id="sidebarSupportCode"
+        >
+          SUPPORT
         </div>
 
       </div>
 
-    </aside>
+    </div>
+
+  </aside>
 
 
-    <!-- ================================
-         MAIN CONTENT
-         ================================ -->
+  <!-- ===================================================
+       MAIN
+       =================================================== -->
 
-    <main class="support-main">
+  <main class="support-main">
+
+
+    <!-- =================================================
+         DASHBOARD SECTION
+         ================================================= -->
+
+    <section id="dashboardSection">
 
       <div class="dashboard-header">
 
@@ -681,7 +873,6 @@
           </p>
 
         </div>
-
 
         <div class="header-actions">
 
@@ -712,9 +903,7 @@
       ></div>
 
 
-      <!-- ================================
-           STATISTICS
-           ================================ -->
+      <!-- STATS -->
 
       <section class="dashboard-section">
 
@@ -740,10 +929,7 @@
               New Leads
             </div>
 
-            <div
-              class="stat-number"
-              id="statNewLeads"
-            >
+            <div class="stat-number" id="statNewLeads">
               0
             </div>
 
@@ -760,10 +946,7 @@
               Unassigned
             </div>
 
-            <div
-              class="stat-number"
-              id="statUnassigned"
-            >
+            <div class="stat-number" id="statUnassigned">
               0
             </div>
 
@@ -780,10 +963,7 @@
               Assigned
             </div>
 
-            <div
-              class="stat-number"
-              id="statAssigned"
-            >
+            <div class="stat-number" id="statAssigned">
               0
             </div>
 
@@ -800,10 +980,7 @@
               In Progress
             </div>
 
-            <div
-              class="stat-number"
-              id="statInProgress"
-            >
+            <div class="stat-number" id="statInProgress">
               0
             </div>
 
@@ -820,10 +997,7 @@
               Completion Submitted
             </div>
 
-            <div
-              class="stat-number"
-              id="statCompletion"
-            >
+            <div class="stat-number" id="statCompletion">
               0
             </div>
 
@@ -840,10 +1014,7 @@
               Completed
             </div>
 
-            <div
-              class="stat-number"
-              id="statCompleted"
-            >
+            <div class="stat-number" id="statCompleted">
               0
             </div>
 
@@ -860,10 +1031,7 @@
               Rescheduled
             </div>
 
-            <div
-              class="stat-number"
-              id="statRescheduled"
-            >
+            <div class="stat-number" id="statRescheduled">
               0
             </div>
 
@@ -880,10 +1048,7 @@
               Payment Pending
             </div>
 
-            <div
-              class="stat-number"
-              id="statPaymentPending"
-            >
+            <div class="stat-number" id="statPaymentPending">
               0
             </div>
 
@@ -899,9 +1064,7 @@
       </section>
 
 
-      <!-- ================================
-           QUICK ACTIONS
-           ================================ -->
+      <!-- QUICK ACTIONS -->
 
       <section class="dashboard-section">
 
@@ -917,11 +1080,7 @@
         <div class="quick-grid">
 
 
-          <a
-            href="#"
-            class="quick-card"
-            data-section-link="leads"
-          >
+          <a href="#" class="quick-card" data-section-link="leads">
 
             <div class="quick-icon">
               +
@@ -938,11 +1097,7 @@
           </a>
 
 
-          <a
-            href="#"
-            class="quick-card"
-            data-section-link="assignments"
-          >
+          <a href="#" class="quick-card" data-section-link="assignments">
 
             <div class="quick-icon">
               →
@@ -959,11 +1114,7 @@
           </a>
 
 
-          <a
-            href="#"
-            class="quick-card"
-            data-section-link="technicians"
-          >
+          <a href="#" class="quick-card" data-section-link="technicians">
 
             <div class="quick-icon">
               ✓
@@ -980,11 +1131,7 @@
           </a>
 
 
-          <a
-            href="#"
-            class="quick-card"
-            data-section-link="partners"
-          >
+          <a href="#" class="quick-card" data-section-link="partners">
 
             <div class="quick-icon">
               B
@@ -1001,11 +1148,7 @@
           </a>
 
 
-          <a
-            href="#"
-            class="quick-card"
-            data-section-link="customers"
-          >
+          <a href="#" class="quick-card" data-section-link="customers">
 
             <div class="quick-icon">
               C
@@ -1022,11 +1165,7 @@
           </a>
 
 
-          <a
-            href="#"
-            class="quick-card"
-            data-section-link="reports"
-          >
+          <a href="#" class="quick-card" data-section-link="reports">
 
             <div class="quick-icon">
               #
@@ -1048,9 +1187,7 @@
       </section>
 
 
-      <!-- ================================
-           SERVICE WORKFLOW
-           ================================ -->
+      <!-- WORKFLOW -->
 
       <section class="dashboard-section">
 
@@ -1070,9 +1207,7 @@
 
             <div class="workflow-step">
 
-              <div class="workflow-circle">
-                1
-              </div>
+              <div class="workflow-circle">1</div>
 
               <strong>
                 Lead Received
@@ -1085,16 +1220,12 @@
             </div>
 
 
-            <div class="workflow-arrow">
-              →
-            </div>
+            <div class="workflow-arrow">→</div>
 
 
             <div class="workflow-step">
 
-              <div class="workflow-circle">
-                2
-              </div>
+              <div class="workflow-circle">2</div>
 
               <strong>
                 Technician Assigned
@@ -1107,16 +1238,12 @@
             </div>
 
 
-            <div class="workflow-arrow">
-              →
-            </div>
+            <div class="workflow-arrow">→</div>
 
 
             <div class="workflow-step">
 
-              <div class="workflow-circle">
-                3
-              </div>
+              <div class="workflow-circle">3</div>
 
               <strong>
                 Service Executed
@@ -1129,16 +1256,12 @@
             </div>
 
 
-            <div class="workflow-arrow">
-              →
-            </div>
+            <div class="workflow-arrow">→</div>
 
 
             <div class="workflow-step">
 
-              <div class="workflow-circle">
-                4
-              </div>
+              <div class="workflow-circle">4</div>
 
               <strong>
                 Completion Verified
@@ -1151,16 +1274,12 @@
             </div>
 
 
-            <div class="workflow-arrow">
-              →
-            </div>
+            <div class="workflow-arrow">→</div>
 
 
             <div class="workflow-step">
 
-              <div class="workflow-circle">
-                5
-              </div>
+              <div class="workflow-circle">5</div>
 
               <strong>
                 Lead Closed
@@ -1180,9 +1299,7 @@
       </section>
 
 
-      <!-- ================================
-           SYSTEM STATUS
-           ================================ -->
+      <!-- SYSTEM STATUS -->
 
       <section class="dashboard-section">
 
@@ -1198,7 +1315,6 @@
 
 
           <div class="g2">
-
 
             <div>
 
@@ -1232,54 +1348,564 @@
 
             </div>
 
-
           </div>
 
         </div>
 
       </section>
 
-
-    </main>
-
-  </div>
+    </section>
 
 
-  <!-- ================================
-       FOOTER
-       ================================ -->
+    <!-- =================================================
+         LEADS SECTION
+         ================================================= -->
 
-  <footer>
+    <section
+      id="leadsSection"
+      class="dashboard-section"
+    >
 
-    <div class="container">
+      <div class="dashboard-header">
 
-      <div class="logo">
-        ORACLIME
+        <div>
+
+          <div class="eyebrow">
+            ORACLIME Operations
+          </div>
+
+          <h1>
+            Leads
+          </h1>
+
+          <p>
+            Manage incoming service requests and coordinate execution.
+          </p>
+
+        </div>
+
+
+        <div class="header-actions">
+
+          <button
+            class="btn primary"
+            type="button"
+            id="leadsNewButton"
+          >
+            + New Lead
+          </button>
+
+          <button
+            class="btn"
+            type="button"
+            id="leadsRefreshButton"
+          >
+            Refresh
+          </button>
+
+        </div>
+
       </div>
 
-      <p class="small">
-        Support and operations access for ORACLIME.
-      </p>
+
+      <div
+        id="leadsNotice"
+        class="dashboard-notice"
+      ></div>
+
+
+      <!-- FILTERS -->
+
+      <div
+        class="card"
+        style="margin-bottom:20px;"
+      >
+
+        <div class="lead-filter-grid">
+
+
+          <div class="lead-field">
+
+            <label>
+              Search Leads
+            </label>
+
+            <input
+              type="text"
+              id="leadSearch"
+              placeholder="Lead ID, customer name or mobile"
+              autocomplete="off"
+            >
+
+          </div>
+
+
+          <div class="lead-field">
+
+            <label>
+              Status
+            </label>
+
+            <select id="leadStatusFilter">
+
+              <option value="ALL">
+                All Statuses
+              </option>
+
+              <option value="NEW">
+                New
+              </option>
+
+              <option value="ASSIGNED">
+                Assigned
+              </option>
+
+              <option value="ACCEPTED">
+                Accepted
+              </option>
+
+              <option value="EN_ROUTE">
+                En Route
+              </option>
+
+              <option value="ARRIVED">
+                Arrived
+              </option>
+
+              <option value="IN_PROGRESS">
+                In Progress
+              </option>
+
+              <option value="COMPLETION_SUBMITTED">
+                Completion Submitted
+              </option>
+
+              <option value="COMPLETED">
+                Completed
+              </option>
+
+              <option value="RESCHEDULED">
+                Rescheduled
+              </option>
+
+              <option value="CANCELLED">
+                Cancelled
+              </option>
+
+            </select>
+
+          </div>
+
+
+          <button
+            type="button"
+            class="btn"
+            id="clearLeadFilters"
+          >
+            Clear
+          </button>
+
+
+        </div>
+
+      </div>
+
+
+      <!-- LEADS TABLE -->
+
+      <div class="card">
+
+        <div class="section-title-row">
+
+          <h2>
+            Service Leads
+          </h2>
+
+          <span
+            class="small"
+            id="leadCount"
+          >
+            0 leads
+          </span>
+
+        </div>
+
+
+        <div
+          id="leadsLoading"
+          class="small"
+          style="padding:25px 0;"
+        >
+          Loading leads...
+        </div>
+
+
+        <div
+          id="leadsEmpty"
+          class="lead-empty"
+          style="display:none;"
+        >
+          No leads found.
+        </div>
+
+
+        <div
+          id="leadsTableWrap"
+          class="leads-table-wrap"
+          style="display:none;"
+        >
+
+          <table class="leads-table">
+
+            <thead>
+
+              <tr>
+
+                <th>
+                  Lead
+                </th>
+
+                <th>
+                  Customer
+                </th>
+
+                <th>
+                  Service
+                </th>
+
+                <th>
+                  Location
+                </th>
+
+                <th>
+                  Preferred
+                </th>
+
+                <th>
+                  Status
+                </th>
+
+                <th>
+                  Created
+                </th>
+
+              </tr>
+
+            </thead>
+
+            <tbody id="leadsTableBody">
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+  </main>
+
+</div>
+
+
+<!-- =====================================================
+     NEW LEAD MODAL
+     ===================================================== -->
+
+<div
+  id="leadModal"
+  class="modal-overlay"
+>
+
+  <div
+    class="modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="leadModalTitle"
+  >
+
+    <div class="modal-header">
+
+      <div>
+
+        <h2 id="leadModalTitle">
+          Create New Lead
+        </h2>
+
+        <p>
+          Enter the customer and service requirement details.
+        </p>
+
+      </div>
+
+      <button
+        type="button"
+        class="modal-close"
+        id="closeLeadModal"
+        aria-label="Close"
+      >
+        ×
+      </button>
 
     </div>
 
-  </footer>
+
+    <form id="leadForm">
+
+      <div class="modal-body">
+
+        <div class="lead-form-grid">
 
 
-  <!-- ================================
-       SUPABASE + DASHBOARD LOGIC
-       ================================ -->
+          <!-- CUSTOMER -->
 
- <script>
-/* =========================================================
-   ORACLIME — SUPPORT DASHBOARD
-   Supabase + Authentication + Dashboard Logic
-   ========================================================= */
+          <div class="lead-form-field">
+
+            <label>
+              Customer Name *
+            </label>
+
+            <input
+              type="text"
+              id="leadCustomerName"
+              required
+              maxlength="120"
+              autocomplete="name"
+            >
+
+          </div>
 
 
-/* =========================================================
-   1. SUPABASE CONFIG
-   ========================================================= */
+          <div class="lead-form-field">
+
+            <label>
+              Mobile *
+            </label>
+
+            <input
+              type="tel"
+              id="leadMobile"
+              required
+              maxlength="15"
+              autocomplete="tel"
+              placeholder="10-digit mobile"
+            >
+
+          </div>
+
+
+          <div class="lead-form-field">
+
+            <label>
+              Alternate Mobile
+            </label>
+
+            <input
+              type="tel"
+              id="leadAlternateMobile"
+              maxlength="15"
+            >
+
+          </div>
+
+
+          <!-- SERVICE -->
+
+          <div class="lead-form-field">
+
+            <label>
+              Service Type *
+            </label>
+
+            <select
+              id="leadServiceType"
+              required
+            >
+
+              <option value="AC">
+                AC / Air Conditioner
+              </option>
+
+            </select>
+
+          </div>
+
+
+          <!-- ADDRESS -->
+
+          <div class="lead-form-field lead-form-full">
+
+            <label>
+              Address
+            </label>
+
+            <input
+              type="text"
+              id="leadAddress"
+              maxlength="300"
+              autocomplete="street-address"
+            >
+
+          </div>
+
+
+          <div class="lead-form-field">
+
+            <label>
+              City
+            </label>
+
+            <input
+              type="text"
+              id="leadCity"
+              maxlength="80"
+              autocomplete="address-level2"
+            >
+
+          </div>
+
+
+          <div class="lead-form-field">
+
+            <label>
+              State
+            </label>
+
+            <input
+              type="text"
+              id="leadState"
+              maxlength="80"
+              autocomplete="address-level1"
+            >
+
+          </div>
+
+
+          <div class="lead-form-field">
+
+            <label>
+              Pincode
+            </label>
+
+            <input
+              type="text"
+              id="leadPincode"
+              maxlength="10"
+              autocomplete="postal-code"
+            >
+
+          </div>
+
+
+          <div class="lead-form-field">
+
+            <label>
+              Preferred Date
+            </label>
+
+            <input
+              type="date"
+              id="leadPreferredDate"
+            >
+
+          </div>
+
+
+          <div class="lead-form-field">
+
+            <label>
+              Preferred Time
+            </label>
+
+            <input
+              type="text"
+              id="leadPreferredTime"
+              maxlength="50"
+              placeholder="e.g. 10 AM – 12 PM"
+            >
+
+          </div>
+
+
+          <div class="lead-form-field lead-form-full">
+
+            <label>
+              Notes
+            </label>
+
+            <textarea
+              id="leadNotes"
+              maxlength="1000"
+              placeholder="Customer requirement, AC issue, special instructions..."
+            ></textarea>
+
+          </div>
+
+
+        </div>
+
+      </div>
+
+
+      <div class="modal-footer">
+
+        <button
+          type="button"
+          class="btn"
+          id="cancelLeadButton"
+        >
+          Cancel
+        </button>
+
+        <button
+          type="submit"
+          class="btn primary"
+          id="saveLeadButton"
+        >
+          Create Lead
+        </button>
+
+      </div>
+
+    </form>
+
+  </div>
+
+</div>
+
+
+<!-- =====================================================
+     FOOTER
+     ===================================================== -->
+
+<footer>
+
+  <div class="container">
+
+    <div class="logo">
+      ORACLIME
+    </div>
+
+    <p class="small">
+      Support and operations access for ORACLIME.
+    </p>
+
+  </div>
+
+</footer>
+
+
+<!-- =====================================================
+     JAVASCRIPT
+     ===================================================== -->
+
+<script>
+
+/* =====================================================
+   1. SUPABASE
+   ===================================================== */
 
 const SUPABASE_URL =
   "https://dmygjpkzuewnpxsispcm.supabase.co";
@@ -1294,18 +1920,21 @@ const supabaseClient =
   );
 
 
-/* =========================================================
-   2. GLOBAL STATE
-   ========================================================= */
+/* =====================================================
+   2. STATE
+   ===================================================== */
 
 let currentAuthUser = null;
 let currentAppUser = null;
 let dashboardReady = false;
 
+let allLeads = [];
+let filteredLeads = [];
 
-/* =========================================================
-   3. DOM ELEMENTS
-   ========================================================= */
+
+/* =====================================================
+   3. DOM
+   ===================================================== */
 
 const loadingScreen =
   document.getElementById("loadingScreen");
@@ -1313,8 +1942,17 @@ const loadingScreen =
 const dashboardLayout =
   document.getElementById("dashboardLayout");
 
+const dashboardSection =
+  document.getElementById("dashboardSection");
+
+const leadsSection =
+  document.getElementById("leadsSection");
+
 const dashboardNotice =
   document.getElementById("dashboardNotice");
+
+const leadsNotice =
+  document.getElementById("leadsNotice");
 
 const logoutButton =
   document.getElementById("logoutButton");
@@ -1325,86 +1963,146 @@ const refreshButton =
 const createLeadButton =
   document.getElementById("createLeadButton");
 
+const leadsNewButton =
+  document.getElementById("leadsNewButton");
+
+const leadsRefreshButton =
+  document.getElementById("leadsRefreshButton");
+
 const mobileNavigation =
   document.getElementById("mobileNavigation");
 
+const leadModal =
+  document.getElementById("leadModal");
 
-/* =========================================================
-   4. NOTICE SYSTEM
-   ========================================================= */
+const leadForm =
+  document.getElementById("leadForm");
 
-function showNotice(message, type = "error") {
 
-  if (!dashboardNotice) {
+/* =====================================================
+   4. NOTICE
+   ===================================================== */
+
+function showNotice(message, type = "error", target = dashboardNotice) {
+
+  if (!target) {
     return;
   }
 
-  dashboardNotice.textContent = message;
+  target.textContent = message;
 
-  dashboardNotice.className =
+  target.className =
     "dashboard-notice";
 
   if (type === "error") {
-    dashboardNotice.classList.add("error");
-  }
-
-  if (type === "success") {
-    dashboardNotice.style.display = "block";
-    dashboardNotice.style.borderColor =
-      "rgba(53, 209, 170, 0.35)";
+    target.classList.add("error");
+  } else {
+    target.style.display = "block";
+    target.style.borderColor =
+      "rgba(53,209,170,.35)";
   }
 
 }
 
 
-function hideNotice() {
+function hideNotice(target = dashboardNotice) {
 
-  if (!dashboardNotice) {
+  if (!target) {
     return;
   }
 
-  dashboardNotice.textContent = "";
+  target.textContent = "";
 
-  dashboardNotice.className =
+  target.className =
     "dashboard-notice";
 
-  dashboardNotice.style.display = "none";
+  target.style.display = "none";
 
 }
 
 
-/* =========================================================
-   5. HTML ESCAPE
-   ========================================================= */
+/* =====================================================
+   5. ESCAPE HTML
+   ===================================================== */
 
 function escapeHtml(value) {
 
   return String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
 
 }
 
 
-/* =========================================================
-   6. LOAD APPLICATION USER
-   ========================================================= */
+/* =====================================================
+   6. FORMAT STATUS
+   ===================================================== */
+
+function formatStatus(status) {
+
+  if (!status) {
+    return "Unknown";
+  }
+
+  return String(status)
+    .replaceAll("_"," ")
+    .toLowerCase()
+    .replace(/\b\w/g, function(letter) {
+      return letter.toUpperCase();
+    });
+
+}
+
+
+/* =====================================================
+   7. FORMAT DATE
+   ===================================================== */
+
+function formatDate(value) {
+
+  if (!value) {
+    return "—";
+  }
+
+  const date =
+    new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return date.toLocaleDateString(
+    "en-IN",
+    {
+      day: "2-digit",
+      month: "short",
+      year: "numeric"
+    }
+  );
+
+}
+
+
+/* =====================================================
+   8. LOAD APP USER
+   ===================================================== */
 
 async function loadAppUser(userId) {
 
   const {
     data,
     error
-  } = await supabaseClient
-    .from("app_users")
-    .select(
-      "id, full_name, email, role, status"
-    )
-    .eq("id", userId)
-    .maybeSingle();
+  } =
+    await supabaseClient
+      .from("app_users")
+      .select(
+        "id,full_name,email,role,status"
+      )
+      .eq("id",userId)
+      .maybeSingle();
 
 
   if (error) {
@@ -1435,9 +2133,9 @@ async function loadAppUser(userId) {
 }
 
 
-/* =========================================================
-   7. VERIFY SUPPORT ROLE
-   ========================================================= */
+/* =====================================================
+   9. VERIFY SUPPORT
+   ===================================================== */
 
 function verifySupportRole(appUser) {
 
@@ -1473,36 +2171,29 @@ function verifySupportRole(appUser) {
 }
 
 
-/* =========================================================
-   8. LOAD SUPPORT MEMBER
-   =========================================================
-   
-   IMPORTANT:
-   We first try id = auth.uid().
-   
-   If your support_members table uses another
-   relationship in the future, this will not crash
-   the whole dashboard.
-   ========================================================= */
+/* =====================================================
+   10. SUPPORT MEMBER
+   ===================================================== */
 
 async function loadSupportMember(userId) {
 
   const {
     data,
     error
-  } = await supabaseClient
-    .from("support_members")
-    .select(
-      "id, support_code, full_name, email, status"
-    )
-    .eq("id", userId)
-    .maybeSingle();
+  } =
+    await supabaseClient
+      .from("support_members")
+      .select(
+        "id,support_code,full_name,email,status"
+      )
+      .eq("id",userId)
+      .maybeSingle();
 
 
   if (error) {
 
     console.warn(
-      "support_members lookup warning:",
+      "support_members lookup:",
       error
     );
 
@@ -1516,37 +2207,20 @@ async function loadSupportMember(userId) {
 }
 
 
-/* =========================================================
-   9. BUILD SUPPORT PROFILE
-   ========================================================= */
+/* =====================================================
+   11. SUPPORT PROFILE
+   ===================================================== */
 
 async function loadSupportUser(userId) {
-
-  /* Load main application user */
 
   const appUser =
     await loadAppUser(userId);
 
-
-  /* Verify role + account status */
-
   verifySupportRole(appUser);
-
-
-  /* Try loading support-specific profile */
 
   const supportMember =
     await loadSupportMember(userId);
 
-
-  /*
-    Support member is currently treated as
-    additional profile information.
-
-    The main security check remains:
-    app_users.role === SUPPORT
-    app_users.status === ACTIVE
-  */
 
   return {
 
@@ -1571,107 +2245,82 @@ async function loadSupportUser(userId) {
 
     support_code:
       supportMember?.support_code ||
-      "SUPPORT",
-
-    support_profile_exists:
-      !!supportMember
+      "SUPPORT"
 
   };
 
 }
 
 
-/* =========================================================
-   10. UPDATE USER INTERFACE
-   ========================================================= */
+/* =====================================================
+   12. UPDATE USER UI
+   ===================================================== */
 
 function updateUserInterface(user) {
 
-  const displayName =
+  const name =
     user.full_name ||
     "ORACLIME Support";
 
 
-  const topUserName =
-    document.getElementById(
-      "topUserName"
-    );
+  const top =
+    document.getElementById("topUserName");
 
-  if (topUserName) {
-
-    topUserName.textContent =
-      displayName;
-
+  if (top) {
+    top.textContent = name;
   }
 
 
-  const sidebarUserName =
-    document.getElementById(
-      "sidebarUserName"
-    );
+  const side =
+    document.getElementById("sidebarUserName");
 
-  if (sidebarUserName) {
-
-    sidebarUserName.textContent =
-      displayName;
-
+  if (side) {
+    side.textContent = name;
   }
 
 
-  const sidebarSupportCode =
-    document.getElementById(
-      "sidebarSupportCode"
-    );
+  const code =
+    document.getElementById("sidebarSupportCode");
 
-  if (sidebarSupportCode) {
-
-    sidebarSupportCode.textContent =
+  if (code) {
+    code.textContent =
       user.support_code ||
       "SUPPORT";
-
   }
 
 
-  const welcomeText =
-    document.getElementById(
-      "welcomeText"
-    );
+  const welcome =
+    document.getElementById("welcomeText");
 
-  if (welcomeText) {
+  if (welcome) {
 
-    welcomeText.textContent =
+    welcome.textContent =
       "Welcome " +
-      displayName +
+      name +
       ". Manage leads, technicians and service operations.";
 
   }
 
 
-  const supportAccessStatus =
-    document.getElementById(
-      "supportAccessStatus"
-    );
+  const access =
+    document.getElementById("supportAccessStatus");
 
-  if (supportAccessStatus) {
-
-    supportAccessStatus.textContent =
+  if (access) {
+    access.textContent =
       "● Verified — Support";
-
   }
 
 }
 
 
-/* =========================================================
-   11. STAT HELPERS
-   ========================================================= */
+/* =====================================================
+   13. STATS
+   ===================================================== */
 
-function setStat(elementId, value) {
+function setStat(id,value) {
 
   const element =
-    document.getElementById(
-      elementId
-    );
+    document.getElementById(id);
 
   if (!element) {
     return;
@@ -1685,8 +2334,7 @@ function setStat(elementId, value) {
 
 function setAllStatsToZero() {
 
-  const ids = [
-
+  [
     "statNewLeads",
     "statUnassigned",
     "statAssigned",
@@ -1695,24 +2343,18 @@ function setAllStatsToZero() {
     "statCompleted",
     "statRescheduled",
     "statPaymentPending"
+  ].forEach(function(id) {
 
-  ];
+    setStat(id,0);
 
-
-  ids.forEach(
-    function(id) {
-
-      setStat(id, 0);
-
-    }
-  );
+  });
 
 }
 
 
-/* =========================================================
-   12. DASHBOARD DATA
-   ========================================================= */
+/* =====================================================
+   14. LOAD DASHBOARD STATS
+   ===================================================== */
 
 async function loadDashboardData() {
 
@@ -1721,267 +2363,913 @@ async function loadDashboardData() {
   }
 
 
-  hideNotice();
-
-
-  try {
-
-    /*
-      Fetch leads.
-
-      We intentionally fetch:
-      - id
-      - status
-      - assigned_technician_id
-
-      because "UNASSIGNED" is not necessarily
-      a lead status in the database.
-    */
-
-    const {
-      data: leads,
-      error
-    } = await supabaseClient
+  const {
+    data: leads,
+    error
+  } =
+    await supabaseClient
       .from("leads")
       .select(
-        "id, status, assigned_technician_id"
+        "id,status,assigned_technician_id"
       );
 
 
-    if (error) {
-
-      console.error(
-        "Lead statistics error:",
-        error
-      );
-
-      setAllStatsToZero();
-
-      showNotice(
-        "Dashboard statistics could not be loaded. Please check your database access.",
-        "error"
-      );
-
-      return;
-
-    }
-
-
-    const list =
-      Array.isArray(leads)
-        ? leads
-        : [];
-
-
-    /* -----------------------------------------
-       NEW LEADS
-       ----------------------------------------- */
-
-    const newLeads =
-      list.filter(
-        function(row) {
-
-          return row.status === "NEW";
-
-        }
-      ).length;
-
-
-    /* -----------------------------------------
-       UNASSIGNED
-       
-       A lead is unassigned when:
-       assigned_technician_id IS NULL
-       
-       We don't depend on a fake UNASSIGNED
-       enum value.
-       ----------------------------------------- */
-
-    const unassigned =
-      list.filter(
-        function(row) {
-
-          return (
-            row.assigned_technician_id === null ||
-            row.assigned_technician_id === undefined
-          );
-
-        }
-      ).length;
-
-
-    /* -----------------------------------------
-       ASSIGNED
-       ----------------------------------------- */
-
-    const assigned =
-      list.filter(
-        function(row) {
-
-          return (
-            row.assigned_technician_id !== null &&
-            row.assigned_technician_id !== undefined &&
-            [
-              "ASSIGNED",
-              "ACCEPTED"
-            ].includes(row.status)
-          );
-
-        }
-      ).length;
-
-
-    /* -----------------------------------------
-       IN PROGRESS
-       ----------------------------------------- */
-
-    const inProgress =
-      list.filter(
-        function(row) {
-
-          return [
-            "EN_ROUTE",
-            "ARRIVED",
-            "IN_PROGRESS"
-          ].includes(row.status);
-
-        }
-      ).length;
-
-
-    /* -----------------------------------------
-       COMPLETION SUBMITTED
-       ----------------------------------------- */
-
-    const completionSubmitted =
-      list.filter(
-        function(row) {
-
-          return (
-            row.status ===
-            "COMPLETION_SUBMITTED"
-          );
-
-        }
-      ).length;
-
-
-    /* -----------------------------------------
-       COMPLETED
-       ----------------------------------------- */
-
-    const completed =
-      list.filter(
-        function(row) {
-
-          return row.status === "COMPLETED";
-
-        }
-      ).length;
-
-
-    /* -----------------------------------------
-       RESCHEDULED
-       ----------------------------------------- */
-
-    const rescheduled =
-      list.filter(
-        function(row) {
-
-          return [
-            "RESCHEDULED",
-            "RESCHEDULE_REQUESTED"
-          ].includes(row.status);
-
-        }
-      ).length;
-
-
-    /* -----------------------------------------
-       PAYMENT PENDING
-       ----------------------------------------- */
-
-    const paymentPending =
-      list.filter(
-        function(row) {
-
-          return (
-            row.status ===
-            "PAYMENT_PENDING"
-          );
-
-        }
-      ).length;
-
-
-    /* -----------------------------------------
-       UPDATE UI
-       ----------------------------------------- */
-
-    setStat(
-      "statNewLeads",
-      newLeads
-    );
-
-    setStat(
-      "statUnassigned",
-      unassigned
-    );
-
-    setStat(
-      "statAssigned",
-      assigned
-    );
-
-    setStat(
-      "statInProgress",
-      inProgress
-    );
-
-    setStat(
-      "statCompletion",
-      completionSubmitted
-    );
-
-    setStat(
-      "statCompleted",
-      completed
-    );
-
-    setStat(
-      "statRescheduled",
-      rescheduled
-    );
-
-    setStat(
-      "statPaymentPending",
-      paymentPending
-    );
-
-
-  } catch (error) {
+  if (error) {
 
     console.error(
-      "Dashboard data exception:",
+      "Dashboard lead error:",
       error
     );
 
     setAllStatsToZero();
 
     showNotice(
-      error.message ||
-      "Unable to load dashboard data.",
+      "Dashboard statistics could not be loaded. Please check database access.",
       "error"
     );
+
+    return;
+
+  }
+
+
+  const list =
+    Array.isArray(leads)
+      ? leads
+      : [];
+
+
+  setStat(
+    "statNewLeads",
+    list.filter(
+      row => row.status === "NEW"
+    ).length
+  );
+
+
+  setStat(
+    "statUnassigned",
+    list.filter(
+      row =>
+        !row.assigned_technician_id &&
+        row.status !== "COMPLETED" &&
+        row.status !== "CANCELLED"
+    ).length
+  );
+
+
+  setStat(
+    "statAssigned",
+    list.filter(
+      row =>
+        row.assigned_technician_id &&
+        ["ASSIGNED","ACCEPTED"]
+          .includes(row.status)
+    ).length
+  );
+
+
+  setStat(
+    "statInProgress",
+    list.filter(
+      row =>
+        [
+          "EN_ROUTE",
+          "ARRIVED",
+          "IN_PROGRESS"
+        ].includes(row.status)
+    ).length
+  );
+
+
+  setStat(
+    "statCompletion",
+    list.filter(
+      row =>
+        row.status ===
+        "COMPLETION_SUBMITTED"
+    ).length
+  );
+
+
+  setStat(
+    "statCompleted",
+    list.filter(
+      row =>
+        row.status === "COMPLETED"
+    ).length
+  );
+
+
+  setStat(
+    "statRescheduled",
+    list.filter(
+      row =>
+        [
+          "RESCHEDULED",
+          "RESCHEDULE_REQUESTED"
+        ].includes(row.status)
+    ).length
+  );
+
+
+  setStat(
+    "statPaymentPending",
+    list.filter(
+      row =>
+        row.status ===
+        "PAYMENT_PENDING"
+    ).length
+  );
+
+}
+
+
+/* =====================================================
+   15. LEAD NUMBER
+   ===================================================== */
+
+function generateLeadNumber() {
+
+  const year =
+    new Date().getFullYear();
+
+  const random =
+    Math.floor(
+      100000 +
+      Math.random() * 900000
+    );
+
+  return (
+    "ORC-" +
+    year +
+    "-" +
+    random
+  );
+
+}
+
+
+/* =====================================================
+   16. LOAD LEADS
+   ===================================================== */
+
+async function loadLeads() {
+
+  const loading =
+    document.getElementById(
+      "leadsLoading"
+    );
+
+  const empty =
+    document.getElementById(
+      "leadsEmpty"
+    );
+
+  const tableWrap =
+    document.getElementById(
+      "leadsTableWrap"
+    );
+
+
+  loading.style.display =
+    "block";
+
+  empty.style.display =
+    "none";
+
+  tableWrap.style.display =
+    "none";
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .from("leads")
+      .select(
+        `
+        id,
+        lead_number,
+        customer_name,
+        mobile,
+        alternate_mobile,
+        address,
+        city,
+        state,
+        pincode,
+        service_type,
+        preferred_date,
+        preferred_time,
+        notes,
+        status,
+        assigned_technician_id,
+        created_at,
+        updated_at
+        `
+      )
+      .order(
+        "created_at",
+        {
+          ascending:false
+        }
+      );
+
+
+  loading.style.display =
+    "none";
+
+
+  if (error) {
+
+    console.error(
+      "Leads error:",
+      error
+    );
+
+    allLeads = [];
+    filteredLeads = [];
+
+    empty.textContent =
+      "Unable to load leads. Please check database access.";
+
+    empty.style.display =
+      "block";
+
+    showNotice(
+      "Leads could not be loaded.",
+      "error",
+      leadsNotice
+    );
+
+    return;
+
+  }
+
+
+  allLeads =
+    Array.isArray(data)
+      ? data
+      : [];
+
+
+  applyLeadFilters();
+
+}
+
+
+/* =====================================================
+   17. FILTER LEADS
+   ===================================================== */
+
+function applyLeadFilters() {
+
+  const searchInput =
+    document.getElementById(
+      "leadSearch"
+    );
+
+  const statusInput =
+    document.getElementById(
+      "leadStatusFilter"
+    );
+
+
+  const search =
+    (
+      searchInput?.value ||
+      ""
+    )
+    .trim()
+    .toLowerCase();
+
+
+  const status =
+    statusInput?.value ||
+    "ALL";
+
+
+  filteredLeads =
+    allLeads.filter(function(lead) {
+
+      const matchesSearch =
+        !search ||
+        String(
+          lead.lead_number || ""
+        )
+        .toLowerCase()
+        .includes(search) ||
+
+        String(
+          lead.customer_name || ""
+        )
+        .toLowerCase()
+        .includes(search) ||
+
+        String(
+          lead.mobile || ""
+        )
+        .toLowerCase()
+        .includes(search);
+
+
+      const matchesStatus =
+        status === "ALL" ||
+        lead.status === status;
+
+
+      return (
+        matchesSearch &&
+        matchesStatus
+      );
+
+    });
+
+
+  renderLeads();
+
+}
+
+
+/* =====================================================
+   18. RENDER LEADS
+   ===================================================== */
+
+function renderLeads() {
+
+  const tbody =
+    document.getElementById(
+      "leadsTableBody"
+    );
+
+  const loading =
+    document.getElementById(
+      "leadsLoading"
+    );
+
+  const empty =
+    document.getElementById(
+      "leadsEmpty"
+    );
+
+  const tableWrap =
+    document.getElementById(
+      "leadsTableWrap"
+    );
+
+  const count =
+    document.getElementById(
+      "leadCount"
+    );
+
+
+  loading.style.display =
+    "none";
+
+
+  count.textContent =
+    filteredLeads.length +
+    (
+      filteredLeads.length === 1
+        ? " lead"
+        : " leads"
+    );
+
+
+  if (!filteredLeads.length) {
+
+    tbody.innerHTML = "";
+
+    tableWrap.style.display =
+      "none";
+
+    empty.style.display =
+      "block";
+
+    return;
+
+  }
+
+
+  empty.style.display =
+    "none";
+
+  tableWrap.style.display =
+    "block";
+
+
+  tbody.innerHTML =
+    filteredLeads
+      .map(function(lead) {
+
+        const location =
+          [
+            lead.city,
+            lead.state
+          ]
+          .filter(Boolean)
+          .join(", ") ||
+          "—";
+
+
+        const preferred =
+          [
+            lead.preferred_date
+              ? formatDate(
+                  lead.preferred_date
+                )
+              : "",
+            lead.preferred_time || ""
+          ]
+          .filter(Boolean)
+          .join(" • ") ||
+          "—";
+
+
+        return `
+
+          <tr>
+
+            <td>
+
+              <div class="lead-number">
+                ${escapeHtml(
+                  lead.lead_number
+                )}
+              </div>
+
+            </td>
+
+
+            <td>
+
+              <div class="lead-customer">
+                ${escapeHtml(
+                  lead.customer_name
+                )}
+              </div>
+
+              <div class="lead-mobile">
+                ${escapeHtml(
+                  lead.mobile
+                )}
+              </div>
+
+            </td>
+
+
+            <td>
+              ${escapeHtml(
+                lead.service_type || "AC"
+              )}
+            </td>
+
+
+            <td>
+              ${escapeHtml(location)}
+            </td>
+
+
+            <td>
+              ${escapeHtml(preferred)}
+            </td>
+
+
+            <td>
+
+              <span class="lead-status">
+                ${escapeHtml(
+                  formatStatus(
+                    lead.status
+                  )
+                )}
+              </span>
+
+            </td>
+
+
+            <td>
+              ${escapeHtml(
+                formatDate(
+                  lead.created_at
+                )
+              )}
+            </td>
+
+          </tr>
+
+        `;
+
+      })
+      .join("");
+
+}
+
+
+/* =====================================================
+   19. OPEN LEAD MODAL
+   ===================================================== */
+
+function openLeadModal() {
+
+  if (!leadModal) {
+    return;
+  }
+
+  hideNotice(leadsNotice);
+
+  leadModal.classList.add("open");
+
+  document.body.style.overflow =
+    "hidden";
+
+
+  setTimeout(function() {
+
+    const input =
+      document.getElementById(
+        "leadCustomerName"
+      );
+
+    if (input) {
+      input.focus();
+    }
+
+  },100);
+
+}
+
+
+/* =====================================================
+   20. CLOSE LEAD MODAL
+   ===================================================== */
+
+function closeLeadModal() {
+
+  if (!leadModal) {
+    return;
+  }
+
+  leadModal.classList.remove("open");
+
+  document.body.style.overflow =
+    "";
+
+}
+
+
+/* =====================================================
+   21. CREATE LEAD
+   ===================================================== */
+
+async function createLead(event) {
+
+  event.preventDefault();
+
+
+  const saveButton =
+    document.getElementById(
+      "saveLeadButton"
+    );
+
+
+  if (
+    !currentAuthUser ||
+    !currentAppUser
+  ) {
+
+    showNotice(
+      "Your Support session is not ready.",
+      "error",
+      leadsNotice
+    );
+
+    return;
+
+  }
+
+
+  const customerName =
+    document.getElementById(
+      "leadCustomerName"
+    ).value.trim();
+
+
+  const mobile =
+    document.getElementById(
+      "leadMobile"
+    ).value.trim();
+
+
+  const alternateMobile =
+    document.getElementById(
+      "leadAlternateMobile"
+    ).value.trim();
+
+
+  const serviceType =
+    document.getElementById(
+      "leadServiceType"
+    ).value;
+
+
+  const address =
+    document.getElementById(
+      "leadAddress"
+    ).value.trim();
+
+
+  const city =
+    document.getElementById(
+      "leadCity"
+    ).value.trim();
+
+
+  const state =
+    document.getElementById(
+      "leadState"
+    ).value.trim();
+
+
+  const pincode =
+    document.getElementById(
+      "leadPincode"
+    ).value.trim();
+
+
+  const preferredDate =
+    document.getElementById(
+      "leadPreferredDate"
+    ).value;
+
+
+  const preferredTime =
+    document.getElementById(
+      "leadPreferredTime"
+    ).value.trim();
+
+
+  const notes =
+    document.getElementById(
+      "leadNotes"
+    ).value.trim();
+
+
+  if (!customerName || !mobile) {
+
+    showNotice(
+      "Customer name and mobile are required.",
+      "error",
+      leadsNotice
+    );
+
+    return;
+
+  }
+
+
+  const cleanMobile =
+    mobile.replace(/\D/g,"");
+
+
+  if (
+    cleanMobile.length < 10 ||
+    cleanMobile.length > 15
+  ) {
+
+    showNotice(
+      "Please enter a valid customer mobile number.",
+      "error",
+      leadsNotice
+    );
+
+    return;
+
+  }
+
+
+  /*
+    Duplicate warning.
+
+    We do NOT block creation.
+    Support can still intentionally create
+    another service request.
+  */
+
+  const possibleDuplicate =
+    allLeads.find(function(lead) {
+
+      const existingMobile =
+        String(
+          lead.mobile || ""
+        )
+        .replace(/\D/g,"");
+
+      return (
+        existingMobile ===
+        cleanMobile
+      );
+
+    });
+
+
+  if (possibleDuplicate) {
+
+    const confirmed =
+      window.confirm(
+        "A previous lead already exists for this mobile number.\n\n" +
+        "Lead: " +
+        (
+          possibleDuplicate.lead_number ||
+          "Existing lead"
+        ) +
+        "\n\nCreate this new lead anyway?"
+      );
+
+
+    if (!confirmed) {
+      return;
+    }
+
+  }
+
+
+  saveButton.disabled =
+    true;
+
+  saveButton.textContent =
+    "Creating...";
+
+
+  try {
+
+    const leadNumber =
+      generateLeadNumber();
+
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
+        .from("leads")
+        .insert({
+
+          lead_number:
+            leadNumber,
+
+          partner_id:
+            null,
+
+          customer_id:
+            null,
+
+          service_type:
+            serviceType,
+
+          customer_name:
+            customerName,
+
+          mobile:
+            cleanMobile,
+
+          alternate_mobile:
+            alternateMobile ||
+            null,
+
+          address:
+            address ||
+            null,
+
+          city:
+            city ||
+            null,
+
+          state:
+            state ||
+            null,
+
+          pincode:
+            pincode ||
+            null,
+
+          preferred_date:
+            preferredDate ||
+            null,
+
+          preferred_time:
+            preferredTime ||
+            null,
+
+          notes:
+            notes ||
+            null,
+
+          status:
+            "NEW",
+
+          assigned_technician_id:
+            null,
+
+          created_by:
+            currentAuthUser.id,
+
+          updated_by:
+            currentAuthUser.id
+
+        })
+        .select()
+        .single();
+
+
+    if (error) {
+
+      console.error(
+        "Create lead error:",
+        error
+      );
+
+      /*
+        Rare lead number collision.
+        User can retry.
+      */
+
+      if (
+        error.code === "23505"
+      ) {
+
+        throw new Error(
+          "Lead ID collision occurred. Please click Create Lead again."
+        );
+
+      }
+
+
+      throw new Error(
+        error.message ||
+        "Unable to create lead."
+      );
+
+    }
+
+
+    console.log(
+      "Lead created:",
+      data
+    );
+
+
+    closeLeadModal();
+
+    leadForm.reset();
+
+
+    showNotice(
+      "Lead " +
+      leadNumber +
+      " created successfully.",
+      "success",
+      leadsNotice
+    );
+
+
+    await loadLeads();
+
+    await loadDashboardData();
+
+
+  } catch (error) {
+
+    console.error(
+      "Lead creation exception:",
+      error
+    );
+
+
+    showNotice(
+      error.message ||
+      "Unable to create lead.",
+      "error",
+      leadsNotice
+    );
+
+  } finally {
+
+    saveButton.disabled =
+      false;
+
+    saveButton.textContent =
+      "Create Lead";
 
   }
 
 }
 
 
-/* =========================================================
-   13. NAVIGATION LABELS
-   ========================================================= */
+/* =====================================================
+   22. NAVIGATION
+   ===================================================== */
 
 function sectionLabel(section) {
 
@@ -2026,17 +3314,15 @@ function sectionLabel(section) {
   };
 
 
-  return (
-    labels[section] ||
-    "Module"
-  );
+  return labels[section] ||
+    "Module";
 
 }
 
 
-/* =========================================================
-   14. NAVIGATION
-   ========================================================= */
+/* =====================================================
+   23. ACTIVATE SECTION
+   ===================================================== */
 
 function activateSection(section) {
 
@@ -2045,30 +3331,21 @@ function activateSection(section) {
   }
 
 
-  /* Update desktop sidebar */
-
   document
     .querySelectorAll(
       ".sidebar-nav button"
     )
-    .forEach(
-      function(button) {
+    .forEach(function(button) {
 
-        button.classList.toggle(
-          "active",
-          button.dataset.section === section
-        );
+      button.classList.toggle(
+        "active",
+        button.dataset.section === section
+      );
 
-      }
-    );
+    });
 
 
-  /* Update mobile selector */
-
-  if (
-    mobileNavigation &&
-    mobileNavigation.value !== section
-  ) {
+  if (mobileNavigation) {
 
     mobileNavigation.value =
       section;
@@ -2076,18 +3353,19 @@ function activateSection(section) {
   }
 
 
-  /* Dashboard */
-
   if (section === "dashboard") {
 
-    hideNotice();
+    dashboardSection.style.display =
+      "block";
+
+    leadsSection.style.display =
+      "none";
+
+    hideNotice(leadsNotice);
 
     window.scrollTo({
-
-      top: 0,
-
-      behavior: "smooth"
-
+      top:0,
+      behavior:"smooth"
     });
 
     return;
@@ -2095,88 +3373,103 @@ function activateSection(section) {
   }
 
 
-  /*
-    Other modules are intentionally not
-    pretending to work yet.
+  if (section === "leads") {
 
-    They will be connected one by one.
-  */
+    dashboardSection.style.display =
+      "none";
+
+    leadsSection.style.display =
+      "block";
+
+    hideNotice(dashboardNotice);
+
+    loadLeads();
+
+    window.scrollTo({
+      top:0,
+      behavior:"smooth"
+    });
+
+    return;
+
+  }
+
+
+  dashboardSection.style.display =
+    "block";
+
+  leadsSection.style.display =
+    "none";
+
 
   showNotice(
     sectionLabel(section) +
-    " module is ready for connection in the next development step.",
+    " module will be connected in the next development step.",
     "success"
   );
 
 
   window.scrollTo({
-
-    top: 0,
-
-    behavior: "smooth"
-
-  });
+    top:0,
+    behavior:"smooth"
+  );
 
 }
 
 
-/* =========================================================
-   15. SIDEBAR EVENTS
-   ========================================================= */
+/* =====================================================
+   24. SIDEBAR
+   ===================================================== */
 
 document
   .querySelectorAll(
     ".sidebar-nav button"
   )
-  .forEach(
-    function(button) {
+  .forEach(function(button) {
 
-      button.addEventListener(
-        "click",
-        function() {
+    button.addEventListener(
+      "click",
+      function() {
 
-          activateSection(
-            button.dataset.section
-          );
+        activateSection(
+          button.dataset.section
+        );
 
-        }
-      );
+      }
+    );
 
-    }
-  );
+  });
 
 
-/* =========================================================
-   16. QUICK ACTION EVENTS
-   ========================================================= */
+/* =====================================================
+   25. QUICK ACTIONS
+   ===================================================== */
 
 document
   .querySelectorAll(
     "[data-section-link]"
   )
-  .forEach(
-    function(link) {
+  .forEach(function(link) {
 
-      link.addEventListener(
-        "click",
-        function(event) {
+    link.addEventListener(
+      "click",
+      function(event) {
 
-          event.preventDefault();
+        event.preventDefault();
 
-          activateSection(
-            link.dataset.sectionLink
-          );
+        activateSection(
+          link.dataset.sectionLink
+        );
 
-        }
-      );
+      }
+    );
 
-    }
-  );
+  });
 
 
-/* =========================================================
-   17. MOBILE NAVIGATION
-   ========================================================= */
+/* =====================================================
+   26. MOBILE NAV
+   ===================================================== */
 
 if (mobileNavigation) {
 
@@ -2194,9 +3487,9 @@ if (mobileNavigation) {
 }
 
 
-/* =========================================================
-   18. NEW LEAD BUTTON
-   ========================================================= */
+/* =====================================================
+   27. NEW LEAD BUTTONS
+   ===================================================== */
 
 if (createLeadButton) {
 
@@ -2204,21 +3497,11 @@ if (createLeadButton) {
     "click",
     function() {
 
-      /*
-        For now this opens the Leads module
-        placeholder.
+      activateSection("leads");
 
-        Later:
-        -> lead creation form
-        -> customer search
-        -> duplicate detection
-        -> partner selection
-        -> service type
-        -> preferred date/time
-      */
-
-      activateSection(
-        "leads"
+      setTimeout(
+        openLeadModal,
+        100
       );
 
     }
@@ -2227,9 +3510,158 @@ if (createLeadButton) {
 }
 
 
-/* =========================================================
-   19. REFRESH BUTTON
-   ========================================================= */
+if (leadsNewButton) {
+
+  leadsNewButton.addEventListener(
+    "click",
+    openLeadModal
+  );
+
+}
+
+
+/* =====================================================
+   28. CLOSE MODAL
+   ===================================================== */
+
+document
+  .getElementById(
+    "closeLeadModal"
+  )
+  .addEventListener(
+    "click",
+    closeLeadModal
+  );
+
+
+document
+  .getElementById(
+    "cancelLeadButton"
+  )
+  .addEventListener(
+    "click",
+    closeLeadModal
+  );
+
+
+leadModal.addEventListener(
+  "click",
+  function(event) {
+
+    if (
+      event.target ===
+      leadModal
+    ) {
+
+      closeLeadModal();
+
+    }
+
+  }
+);
+
+
+/* =====================================================
+   29. LEAD FORM
+   ===================================================== */
+
+leadForm.addEventListener(
+  "submit",
+  createLead
+);
+
+
+/* =====================================================
+   30. LEAD SEARCH
+   ===================================================== */
+
+document
+  .getElementById(
+    "leadSearch"
+  )
+  .addEventListener(
+    "input",
+    applyLeadFilters
+  );
+
+
+document
+  .getElementById(
+    "leadStatusFilter"
+  )
+  .addEventListener(
+    "change",
+    applyLeadFilters
+  );
+
+
+document
+  .getElementById(
+    "clearLeadFilters"
+  )
+  .addEventListener(
+    "click",
+    function() {
+
+      document.getElementById(
+        "leadSearch"
+      ).value = "";
+
+      document.getElementById(
+        "leadStatusFilter"
+      ).value = "ALL";
+
+      applyLeadFilters();
+
+    }
+  );
+
+
+/* =====================================================
+   31. LEADS REFRESH
+   ===================================================== */
+
+if (leadsRefreshButton) {
+
+  leadsRefreshButton.addEventListener(
+    "click",
+    async function() {
+
+      leadsRefreshButton.disabled =
+        true;
+
+      const original =
+        leadsRefreshButton.textContent;
+
+      leadsRefreshButton.textContent =
+        "Refreshing...";
+
+
+      try {
+
+        await loadLeads();
+
+        await loadDashboardData();
+
+      } finally {
+
+        leadsRefreshButton.disabled =
+          false;
+
+        leadsRefreshButton.textContent =
+          original;
+
+      }
+
+    }
+  );
+
+}
+
+
+/* =====================================================
+   32. DASHBOARD REFRESH
+   ===================================================== */
 
 if (refreshButton) {
 
@@ -2237,17 +3669,11 @@ if (refreshButton) {
     "click",
     async function() {
 
-      if (refreshButton.disabled) {
-        return;
-      }
-
-
       refreshButton.disabled =
         true;
 
-      const originalText =
+      const original =
         refreshButton.textContent;
-
 
       refreshButton.textContent =
         "Refreshing...";
@@ -2257,12 +3683,14 @@ if (refreshButton) {
 
         await loadDashboardData();
 
-      } catch (error) {
+        if (
+          leadsSection.style.display !==
+          "none"
+        ) {
 
-        console.error(
-          "Refresh error:",
-          error
-        );
+          await loadLeads();
+
+        }
 
       } finally {
 
@@ -2270,8 +3698,7 @@ if (refreshButton) {
           false;
 
         refreshButton.textContent =
-          originalText ||
-          "Refresh";
+          original;
 
       }
 
@@ -2281,20 +3708,15 @@ if (refreshButton) {
 }
 
 
-/* =========================================================
-   20. LOGOUT
-   ========================================================= */
+/* =====================================================
+   33. LOGOUT
+   ===================================================== */
 
 if (logoutButton) {
 
   logoutButton.addEventListener(
     "click",
     async function() {
-
-      if (logoutButton.disabled) {
-        return;
-      }
-
 
       logoutButton.disabled =
         true;
@@ -2314,9 +3736,7 @@ if (logoutButton) {
 
 
         if (error) {
-
           throw error;
-
         }
 
 
@@ -2353,16 +3773,11 @@ if (logoutButton) {
 }
 
 
-/* =========================================================
-   21. SHOW ACCESS DENIED SCREEN
-   ========================================================= */
+/* =====================================================
+   34. ACCESS DENIED
+   ===================================================== */
 
 function showAccessDenied(message) {
-
-  if (!loadingScreen) {
-    return;
-  }
-
 
   loadingScreen.innerHTML = `
 
@@ -2397,17 +3812,13 @@ function showAccessDenied(message) {
 }
 
 
-/* =========================================================
-   22. INITIALIZE DASHBOARD
-   ========================================================= */
+/* =====================================================
+   35. INITIALIZE
+   ===================================================== */
 
 async function initializeDashboard() {
 
   try {
-
-    /* -----------------------------------------
-       Check current Supabase session
-       ----------------------------------------- */
 
     const {
       data,
@@ -2420,11 +3831,6 @@ async function initializeDashboard() {
 
     if (error) {
 
-      console.error(
-        "Session error:",
-        error
-      );
-
       throw new Error(
         "Unable to verify your login session."
       );
@@ -2435,10 +3841,6 @@ async function initializeDashboard() {
     const session =
       data?.session;
 
-
-    /* -----------------------------------------
-       No session
-       ----------------------------------------- */
 
     if (!session) {
 
@@ -2455,52 +3857,28 @@ async function initializeDashboard() {
       session.user;
 
 
-    /* -----------------------------------------
-       Load + verify Support account
-       ----------------------------------------- */
-
     currentAppUser =
       await loadSupportUser(
         currentAuthUser.id
       );
 
 
-    /* -----------------------------------------
-       Update UI
-       ----------------------------------------- */
-
     updateUserInterface(
       currentAppUser
     );
 
 
-    /* -----------------------------------------
-       Show dashboard
-       ----------------------------------------- */
-
-    if (loadingScreen) {
-
-      loadingScreen.style.display =
-        "none";
-
-    }
+    loadingScreen.style.display =
+      "none";
 
 
-    if (dashboardLayout) {
-
-      dashboardLayout.style.display =
-        "flex";
-
-    }
+    dashboardLayout.style.display =
+      "flex";
 
 
     dashboardReady =
       true;
 
-
-    /* -----------------------------------------
-       Load statistics
-       ----------------------------------------- */
 
     await loadDashboardData();
 
@@ -2508,7 +3886,7 @@ async function initializeDashboard() {
   } catch (error) {
 
     console.error(
-      "Dashboard initialization error:",
+      "Dashboard initialization:",
       error
     );
 
@@ -2517,17 +3895,12 @@ async function initializeDashboard() {
       false;
 
 
-    if (dashboardLayout) {
-
-      dashboardLayout.style.display =
-        "none";
-
-    }
+    dashboardLayout.style.display =
+      "none";
 
 
     showAccessDenied(
-      error.message ||
-      "Unable to verify your Support account."
+      error.message
     );
 
   }
@@ -2535,12 +3908,14 @@ async function initializeDashboard() {
 }
 
 
-/* ========================================================= 23. AUTH STATE LISTENER ========================================================= */
+/* =====================================================
+   36. AUTH LISTENER
+   ===================================================== */
 
 supabaseClient
   .auth
   .onAuthStateChange(
-    function(event, session) {
+    function(event) {
 
       console.log(
         "Auth event:",
@@ -2548,7 +3923,10 @@ supabaseClient
       );
 
 
-      if (event === "SIGNED_OUT") {
+      if (
+        event ===
+        "SIGNED_OUT"
+      ) {
 
         dashboardReady =
           false;
@@ -2563,7 +3941,9 @@ supabaseClient
   );
 
 
-/* ========================================================= 24. START ========================================================= */
+/* =====================================================
+   37. START
+   ===================================================== */
 
 initializeDashboard();
 
