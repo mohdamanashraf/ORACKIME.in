@@ -335,6 +335,8 @@
   background:#081624;color:#fff;border-radius:10px;padding:12px;outline:none
 }
 .profile-field input:focus,.profile-field select:focus{border-color:#63a9ff}
+.profile-field input[readonly]{opacity:.62;cursor:not-allowed;background:#091827}
+.profile-locked{font-size:11px;opacity:.55;margin-top:5px}
 .profile-field small{display:block;margin-top:6px;opacity:.5;line-height:1.4}
 .profile-note{padding:12px 14px;border-radius:10px;background:#10263a;font-size:13px;line-height:1.5;opacity:.88}
 .profile-error,.profile-success{display:none;margin-bottom:14px;padding:12px 14px;border-radius:10px}
@@ -504,24 +506,28 @@
           <div class="profile-grid">
             <div class="profile-field">
               <label>Full Name</label>
-              <input id="profileFullName" type="text" required>
+              <input id="profileFullName" type="text" readonly>
+              <div class="profile-locked">Only ORACLIME Support can change this.</div>
             </div>
             <div class="profile-field">
               <label>Technician ID</label>
               <input id="profileCode" type="text" readonly>
+              <div class="profile-locked">Only ORACLIME Support can change this.</div>
             </div>
             <div class="profile-field">
-              <label>Mobile</label>
-              <input id="profileMobile" type="tel">
+              <label>Mobile Number</label>
+              <input id="profileMobile" type="tel" inputmode="numeric" maxlength="15">
+              <div class="profile-locked">You can update your mobile number.</div>
             </div>
             <div class="profile-field">
-              <label>Alternate Mobile</label>
-              <input id="profileAlternateMobile" type="tel">
+              <label>Alternative Email</label>
+              <input id="profileAlternateEmail" type="email" autocomplete="email">
+              <div class="profile-locked">You can update your alternative email.</div>
             </div>
             <div class="profile-field">
               <label>Login Email</label>
-              <input id="profileEmail" type="email">
-              <small>Changing login email may require email confirmation from Supabase.</small>
+              <input id="profileEmail" type="email" readonly>
+              <div class="profile-locked">Only ORACLIME Support can change the login email.</div>
             </div>
           </div>
         </div>
@@ -531,23 +537,25 @@
           <div class="profile-grid">
             <div class="profile-field" style="grid-column:1/-1">
               <label>Address</label>
-              <input id="profileAddress" type="text">
+              <input id="profileAddress" type="text" readonly>
+              <div class="profile-locked">Managed by ORACLIME Support.</div>
             </div>
             <div class="profile-field">
               <label>City</label>
-              <input id="profileCity" type="text">
+              <input id="profileCity" type="text" readonly>
             </div>
             <div class="profile-field">
               <label>State</label>
-              <input id="profileState" type="text">
+              <input id="profileState" type="text" readonly>
             </div>
             <div class="profile-field">
               <label>Pincode</label>
-              <input id="profilePincode" type="text">
+              <input id="profilePincode" type="text" readonly>
             </div>
             <div class="profile-field">
               <label>Service Area</label>
-              <input id="profileServiceArea" type="text">
+              <input id="profileServiceArea" type="text" readonly>
+              <div class="profile-locked">Managed by ORACLIME Support.</div>
             </div>
             <div class="profile-field">
               <label>Availability</label>
@@ -556,14 +564,41 @@
                 <option value="BUSY">Busy</option>
                 <option value="OFFLINE">Offline</option>
               </select>
+              <div class="profile-locked">You can update your availability.</div>
             </div>
           </div>
         </div>
 
         <div class="profile-section">
           <h3>Bank Information</h3>
-          <div class="profile-note">
-            Bank details will be added after the dedicated secure bank-details table is enabled in the ORACLIME database. Bank information should not be stored in the technician profile or notes field.
+          <div class="profile-note" style="margin-bottom:14px">
+            Add the bank account you want ORACLIME to use for technician payments. These details are stored separately from your technician profile.
+          </div>
+          <div class="profile-grid">
+            <div class="profile-field">
+              <label>Account Holder Name</label>
+              <input id="bankAccountHolder" type="text" autocomplete="name">
+            </div>
+            <div class="profile-field">
+              <label>Bank Name</label>
+              <input id="bankName" type="text" autocomplete="organization">
+            </div>
+            <div class="profile-field">
+              <label>Account Number</label>
+              <input id="bankAccountNumber" type="password" inputmode="numeric" autocomplete="off">
+            </div>
+            <div class="profile-field">
+              <label>Confirm Account Number</label>
+              <input id="bankAccountNumberConfirm" type="password" inputmode="numeric" autocomplete="off">
+            </div>
+            <div class="profile-field">
+              <label>IFSC Code</label>
+              <input id="bankIfsc" type="text" maxlength="11" autocomplete="off">
+            </div>
+            <div class="profile-field">
+              <label>UPI ID <span style="opacity:.55">(Optional)</span></label>
+              <input id="bankUpiId" type="text" autocomplete="off">
+            </div>
           </div>
         </div>
 
@@ -686,6 +721,7 @@ const supabaseClient =
 
 let currentUser = null;
 let currentTechnician = null;
+let currentBankDetails = null;
 let currentJobs = [];
 
 
@@ -834,8 +870,8 @@ function openProfile(){
     currentTechnician.technician_code || "";
   document.getElementById("profileMobile").value =
     currentTechnician.mobile || "";
-  document.getElementById("profileAlternateMobile").value =
-    currentTechnician.alternate_mobile || "";
+  document.getElementById("profileAlternateEmail").value =
+    currentTechnician.alternate_email || "";
   document.getElementById("profileEmail").value =
     currentTechnician.email || currentUser?.email || "";
   document.getElementById("profileAddress").value =
@@ -850,6 +886,13 @@ function openProfile(){
     currentTechnician.service_area || "";
   document.getElementById("profileAvailability").value =
     currentTechnician.availability_status || "AVAILABLE";
+
+  document.getElementById("bankAccountHolder").value = currentBankDetails?.account_holder_name || "";
+  document.getElementById("bankName").value = currentBankDetails?.bank_name || "";
+  document.getElementById("bankAccountNumber").value = currentBankDetails?.account_number || "";
+  document.getElementById("bankAccountNumberConfirm").value = currentBankDetails?.account_number || "";
+  document.getElementById("bankIfsc").value = currentBankDetails?.ifsc_code || "";
+  document.getElementById("bankUpiId").value = currentBankDetails?.upi_id || "";
 
   profileMessage("success","");
   document.getElementById("profileSuccess").style.display="none";
@@ -873,35 +916,47 @@ async function saveProfile(){
     throw new Error("Technician profile is not ready.");
   }
 
-  const fullName=document.getElementById("profileFullName").value.trim();
   const mobile=document.getElementById("profileMobile").value.trim();
-  const alternateMobile=document.getElementById("profileAlternateMobile").value.trim();
-  const newEmail=document.getElementById("profileEmail").value.trim();
-  const address=document.getElementById("profileAddress").value.trim();
-  const city=document.getElementById("profileCity").value.trim();
-  const state=document.getElementById("profileState").value.trim();
-  const pincode=document.getElementById("profilePincode").value.trim();
-  const serviceArea=document.getElementById("profileServiceArea").value.trim();
+  const alternateEmail=document.getElementById("profileAlternateEmail").value.trim();
   const availability=document.getElementById("profileAvailability").value;
 
-  if(!fullName){
-    throw new Error("Full Name is required.");
+  const accountHolder=document.getElementById("bankAccountHolder").value.trim();
+  const bankName=document.getElementById("bankName").value.trim();
+  const accountNumber=document.getElementById("bankAccountNumber").value.trim();
+  const accountNumberConfirm=document.getElementById("bankAccountNumberConfirm").value.trim();
+  const ifsc=document.getElementById("bankIfsc").value.trim().toUpperCase();
+  const upiId=document.getElementById("bankUpiId").value.trim();
+
+  if(mobile && !/^[0-9+()\-\s]{7,15}$/.test(mobile)){
+    throw new Error("Please enter a valid mobile number.");
   }
 
-  if(newEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)){
-    throw new Error("Please enter a valid email address.");
+  if(alternateEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(alternateEmail)){
+    throw new Error("Please enter a valid alternative email address.");
+  }
+
+  const bankHasAny = [accountHolder,bankName,accountNumber,accountNumberConfirm,ifsc,upiId].some(Boolean);
+  if(bankHasAny){
+    if(!accountHolder || !bankName || !accountNumber || !accountNumberConfirm || !ifsc){
+      throw new Error("Please complete all required bank details.");
+    }
+    if(accountNumber !== accountNumberConfirm){
+      throw new Error("Account numbers do not match.");
+    }
+    if(!/^[0-9]{6,20}$/.test(accountNumber)){
+      throw new Error("Please enter a valid bank account number.");
+    }
+    if(!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(ifsc)){
+      throw new Error("Please enter a valid 11-character IFSC code.");
+    }
+    if(upiId && !/^[^\s@]+@[^\s@]+$/.test(upiId)){
+      throw new Error("Please enter a valid UPI ID.");
+    }
   }
 
   const payload={
-    full_name:fullName,
     mobile:mobile || null,
-    alternate_mobile:alternateMobile || null,
-    email:newEmail || null,
-    address:address || null,
-    city:city || null,
-    state:state || null,
-    pincode:pincode || null,
-    service_area:serviceArea || null,
+    alternate_email:alternateEmail || null,
     availability_status:availability,
     updated_at:new Date().toISOString()
   };
@@ -916,42 +971,33 @@ async function saveProfile(){
     throw error;
   }
 
-  // Keep the authenticated login email in sync when changed.
-  if(newEmail && newEmail !== (currentUser.email || "")){
-    const {data:authData,error:authError}=await supabaseClient.auth.updateUser({
-      email:newEmail
-    });
+  const bankPayload={
+    technician_id:currentTechnician.id,
+    account_holder_name:accountHolder || null,
+    bank_name:bankName || null,
+    account_number:accountNumber || null,
+    ifsc_code:ifsc || null,
+    upi_id:upiId || null,
+    updated_at:new Date().toISOString()
+  };
 
-    if(authError){
-      throw new Error(
-        "Profile saved, but login email could not be changed: " +
-        authError.message
-      );
-    }
+  const {data:bankRow,error:bankError}=await supabaseClient
+    .from("technician_bank_details")
+    .upsert(bankPayload,{onConflict:"technician_id"})
+    .select("technician_id,account_holder_name,bank_name,account_number,ifsc_code,upi_id")
+    .single();
 
-    if(authData?.user){
-      currentUser=authData.user;
-    }
+  if(bankError){
+    throw new Error("Profile saved, but bank details could not be saved: " + bankError.message);
   }
 
   currentTechnician={
     ...currentTechnician,
     ...payload
   };
+  currentBankDetails=bankRow || bankPayload;
 
-  document.getElementById("techName").textContent =
-    currentTechnician.full_name || "Technician";
-
-  const firstLetter=(currentTechnician.full_name || "T")
-    .trim().charAt(0).toUpperCase();
-
-  document.getElementById("techAvatar").textContent=firstLetter;
-
-  profileMessage(
-    "success",
-    "Profile updated successfully."
-  );
-
+  profileMessage("success","Profile and bank details updated successfully.");
   setTimeout(closeProfile,900);
 }
 
@@ -1025,7 +1071,6 @@ async function loadTechnician(){
       technician_code,
       full_name,
       mobile,
-      alternate_mobile,
       email,
       address,
       city,
@@ -1121,7 +1166,6 @@ async function loadJobs(){
       lead_number,
       customer_name,
       mobile,
-      alternate_mobile,
       address,
       city,
       state,
