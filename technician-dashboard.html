@@ -875,9 +875,7 @@ function updateStats(jobs){
 
 
   const completed =
-    jobs.filter(j =>
-      j.status === "COMPLETED"
-    ).length;
+    jobs.filter(j => j.status === "COMPLETED" || j.status === "COMPLETION_SUBMITTED").length;
 
 
   document.getElementById("statAssigned").textContent =
