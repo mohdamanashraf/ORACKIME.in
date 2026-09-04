@@ -2656,7 +2656,7 @@ let dashboardReady = false;
 let allLeads = [];
 let filteredLeads = [];
 
-/* Lead loading / submit guards */
+/* Lead request guards */
 let leadsLoadInProgress = false;
 let leadsReloadQueued = false;
 let isCreatingLead = false;
@@ -3316,6 +3316,11 @@ async function loadLeads(force = false) {
     return;
   }
 
+  /*
+    Prevent overlapping Supabase requests.
+    The old dashboard can call loadLeads from navigation,
+    refresh and post-create refresh at nearly the same time.
+  */
   if (leadsLoadInProgress) {
     leadsReloadQueued = true;
     return;
@@ -3411,7 +3416,6 @@ async function loadLeads(force = false) {
     }
 
   }
-
 }
 
 
@@ -4161,22 +4165,26 @@ async function createLead(event) {
   let firstInvalidField = null;
 
   if (!customerName) {
+
     setFieldError(
       "leadCustomerName",
       "",
       "Customer name is required."
     );
+
     firstInvalidField =
       firstInvalidField ||
       document.getElementById("leadCustomerName");
   }
 
   if (!/^\d{10}$/.test(cleanMobile)) {
+
     setFieldError(
       "leadMobile",
       "leadMobileError",
       "Mobile number must contain exactly 10 digits."
     );
+
     firstInvalidField =
       firstInvalidField ||
       document.getElementById("leadMobile");
@@ -4186,11 +4194,13 @@ async function createLead(event) {
     alternateMobile &&
     !/^\d{10}$/.test(cleanAlternateMobile)
   ) {
+
     setFieldError(
       "leadAlternateMobile",
       "leadAlternateMobileError",
       "Alternate mobile must contain exactly 10 digits."
     );
+
     firstInvalidField =
       firstInvalidField ||
       document.getElementById("leadAlternateMobile");
@@ -4200,11 +4210,13 @@ async function createLead(event) {
     cleanPincode &&
     !/^\d{6}$/.test(cleanPincode)
   ) {
+
     setFieldError(
       "leadPincode",
       "leadPincodeError",
       "Pincode must contain exactly 6 digits."
     );
+
     firstInvalidField =
       firstInvalidField ||
       document.getElementById("leadPincode");
@@ -4214,11 +4226,13 @@ async function createLead(event) {
     preferredDate &&
     preferredDate < todayString
   ) {
+
     setFieldError(
       "leadPreferredDate",
       "leadPreferredDateError",
       "Preferred date cannot be earlier than today."
     );
+
     firstInvalidField =
       firstInvalidField ||
       document.getElementById("leadPreferredDate");
@@ -4259,10 +4273,10 @@ async function createLead(event) {
     if (!confirmed) {
       return;
     }
-
   }
 
   isCreatingLead = true;
+
   saveButton.disabled = true;
   saveButton.textContent = "Creating...";
 
@@ -4277,6 +4291,7 @@ async function createLead(event) {
     } = await supabaseClient
       .from("leads")
       .insert({
+
         lead_number: leadNumber,
         partner_id: null,
         customer_id: null,
@@ -4295,36 +4310,33 @@ async function createLead(event) {
         assigned_technician_id: null,
         created_by: currentAuthUser.id,
         updated_by: currentAuthUser.id
+
       })
       .select()
       .single();
 
     if (error) {
 
-      console.error("Create lead error:", error);
-
-      if (error.code === "23505") {
-        throw new Error(
-          "Lead ID collision occurred. Please try again."
-        );
-      }
+      console.error(
+        "Create lead error:",
+        error
+      );
 
       throw new Error(
-        error.message || "Unable to create lead."
+        error.message ||
+        "Unable to create lead."
       );
     }
 
     if (!data || !data.id) {
+
       throw new Error(
-        "Lead was created but the database did not return the new lead."
+        "Lead was not returned by the database."
       );
     }
 
-    console.log("Lead created:", data);
-
     /*
-      Immediate UI update: the new lead appears without waiting
-      for another network request.
+      Immediately show the new lead in the current UI.
     */
     allLeads = [
       data,
@@ -4350,7 +4362,8 @@ async function createLead(event) {
     );
 
     /*
-      Server refresh: makes the list authoritative after creation.
+      Then fetch from Supabase again so the screen is
+      authoritative and stays in sync.
     */
     await loadLeads(true);
     await loadDashboardData();
@@ -4372,11 +4385,11 @@ async function createLead(event) {
   } finally {
 
     isCreatingLead = false;
+
     saveButton.disabled = false;
     saveButton.textContent = "Create Lead";
 
   }
-
 }
 
 
@@ -6623,8 +6636,126 @@ if (refreshButton) {
    38. LOGOUT
    ===================================================== */
 
+
 /* =====================================================
-   40.5 LEAD LIST AUTO-REFRESH
+   COMPLETION ACTION NORMALIZER
+   ===================================================== */
+
+function normalizeLeadCompletionActions() {
+
+  /*
+    The old renderer labels the final column "Assigned" for
+    some statuses. We replace that label/action only for
+    completion-related statuses. Other statuses remain untouched.
+  */
+
+  const rows =
+    document.querySelectorAll(
+      "#leadsTableBody tr"
+    );
+
+  rows.forEach(function(row) {
+
+    const leadCell =
+      row.querySelector("td");
+
+    if (!leadCell) {
+      return;
+    }
+
+    const leadText =
+      leadCell.textContent.trim();
+
+    const lead =
+      allLeads.find(function(item) {
+        return (
+          item.lead_number === leadText ||
+          item.id === leadText
+        );
+      });
+
+    if (!lead) {
+      return;
+    }
+
+    const actionCells =
+      row.querySelectorAll("td");
+
+    if (!actionCells.length) {
+      return;
+    }
+
+    const actionCell =
+      actionCells[actionCells.length - 1];
+
+    if (!actionCell) {
+      return;
+    }
+
+    if (lead.status === "COMPLETION_SUBMITTED") {
+
+      actionCell.innerHTML = `
+        <button
+          class="table-action primary"
+          onclick="openCompletionReview('${lead.id}')">
+          Review Completion
+        </button>
+      `;
+
+    } else if (lead.status === "CORRECTION_REQUIRED") {
+
+      actionCell.innerHTML = `
+        <button
+          class="table-action primary"
+          onclick="openCompletionReview('${lead.id}')">
+          Review Correction
+        </button>
+      `;
+
+    } else if (lead.status === "COMPLETED") {
+
+      actionCell.innerHTML = `
+        <span class="status-complete-action">
+          Completed
+        </span>
+      `;
+
+    }
+
+  });
+}
+
+/* Run normalizer after each lead render. */
+const _originalApplyLeadFilters =
+  typeof applyLeadFilters === "function"
+    ? applyLeadFilters
+    : null;
+
+if (_originalApplyLeadFilters) {
+
+  const _applyLeadFiltersFixed =
+    applyLeadFilters;
+
+  applyLeadFilters = function() {
+
+    _applyLeadFiltersFixed.apply(
+      this,
+      arguments
+    );
+
+    setTimeout(
+      normalizeLeadCompletionActions,
+      0
+    );
+
+  };
+
+}
+
+
+
+/* =====================================================
+   LEAD LIST AUTO-REFRESH
    ===================================================== */
 
 setInterval(function() {
@@ -6636,11 +6767,12 @@ setInterval(function() {
     !isCreatingLead &&
     !leadsLoadInProgress
   ) {
+
     loadLeads(true);
+
   }
 
 }, 15000);
-
 
 if (logoutButton) {
 
