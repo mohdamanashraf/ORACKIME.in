@@ -305,6 +305,30 @@
     width:100%;
   }
 }
+
+/* ===== Completion Workflow ===== */
+.completion-modal{position:fixed;inset:0;z-index:9999;display:none;align-items:flex-start;justify-content:center;padding:24px 12px;overflow:auto;background:rgba(2,8,14,.82);backdrop-filter:blur(8px)}
+.completion-modal.open{display:flex}
+.completion-panel{width:min(920px,100%);background:#0c1b2d;border:1px solid rgba(255,255,255,.10);border-radius:20px;box-shadow:0 22px 70px rgba(0,0,0,.45);overflow:hidden}
+.completion-head{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;padding:22px;border-bottom:1px solid rgba(255,255,255,.08)}
+.completion-head h2{margin:0 0 5px}.completion-head p{margin:0;opacity:.65;font-size:14px}
+.close-completion{border:1px solid rgba(255,255,255,.12);background:#10263a;color:#fff;width:40px;height:40px;border-radius:10px;cursor:pointer;font-size:22px}
+.completion-body{padding:22px}
+.completion-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+.summary-item{background:#081624;border-radius:12px;padding:12px}.summary-item small{display:block;opacity:.55;margin-bottom:5px;text-transform:uppercase;font-size:10px;letter-spacing:.05em}.summary-item strong{font-size:14px}
+.completion-section{margin-top:22px;padding-top:18px;border-top:1px solid rgba(255,255,255,.08)}.completion-section h3{margin:0 0 14px;font-size:17px}
+.completion-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.field label{display:block;font-size:12px;font-weight:800;margin-bottom:7px;opacity:.82}
+.field input,.field select,.field textarea{width:100%;box-sizing:border-box;border:1px solid rgba(255,255,255,.12);background:#081624;color:#fff;border-radius:10px;padding:12px;outline:none}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:#63a9ff}.field input[readonly]{opacity:.8;cursor:not-allowed}
+.file-field{padding:13px;border:1px dashed rgba(99,169,255,.28);border-radius:12px;background:#081624}.file-field input{margin-top:8px;border:0;padding:0;background:transparent}
+.required{color:#ff9eaa}.completion-note{padding:12px 14px;border-radius:10px;background:#10263a;font-size:13px;line-height:1.5;opacity:.88}
+.completion-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:22px}
+.submit-completion{border:0;border-radius:10px;padding:12px 18px;cursor:pointer;font-weight:900;background:#35d1aa;color:#04131e}.submit-completion:disabled{opacity:.5;cursor:not-allowed}
+.cancel-completion{border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:12px 18px;cursor:pointer;font-weight:800;background:#10263a;color:#fff}
+.completion-error,.completion-success{display:none;margin-bottom:14px;padding:12px 14px;border-radius:10px}.completion-error{background:#45212a;color:#ffd7dc}.completion-success{background:#12392f;color:#baf5e3}
+@media(max-width:700px){.completion-summary,.completion-grid{grid-template-columns:1fr}.completion-body,.completion-head{padding:16px}.completion-actions{display:grid;grid-template-columns:1fr 1fr}.completion-actions button{width:100%}}
+
 </style>
 </head>
 
@@ -412,6 +436,62 @@
 
 </main>
 
+
+
+<div class="completion-modal" id="completionModal" aria-hidden="true">
+  <div class="completion-panel">
+    <div class="completion-head">
+      <div><h2>Submit Service Completion</h2><p>Upload required proof, payment details and customer Completion Code.</p></div>
+      <button class="close-completion" type="button" onclick="closeCompletion()">×</button>
+    </div>
+    <div class="completion-body">
+      <div id="completionError" class="completion-error"></div>
+      <div id="completionSuccess" class="completion-success"></div>
+      <div class="completion-summary">
+        <div class="summary-item"><small>Lead</small><strong id="completionLeadNumber">—</strong></div>
+        <div class="summary-item"><small>Customer</small><strong id="completionCustomer">—</strong></div>
+        <div class="summary-item"><small>Service</small><strong id="completionService">—</strong></div>
+      </div>
+      <form id="completionForm">
+        <div class="completion-section">
+          <h3>Required Service Photos</h3>
+          <div class="completion-grid">
+            <div class="file-field"><label>Indoor Location Photo <span class="required">*</span></label><input id="indoorLocation" type="file" accept="image/*" capture="environment" required></div>
+            <div class="file-field"><label>Indoor Serial Number Photo <span class="required">*</span></label><input id="indoorSerial" type="file" accept="image/*" capture="environment" required></div>
+            <div class="file-field"><label>Outdoor Location Photo <span class="required">*</span></label><input id="outdoorLocation" type="file" accept="image/*" capture="environment" required></div>
+            <div class="file-field"><label>Outdoor Serial Number Photo <span class="required">*</span></label><input id="outdoorSerial" type="file" accept="image/*" capture="environment" required></div>
+            <div class="file-field"><label>AC Bill Photo <span class="required">*</span></label><input id="acBill" type="file" accept="image/*,application/pdf" required></div>
+          </div>
+        </div>
+        <div class="completion-section">
+          <h3>Payment Details</h3>
+          <div class="completion-grid">
+            <div class="field"><label>Approved Service Amount</label><input id="serviceAmount" type="number" step="0.01" min="0" readonly></div>
+            <div class="field"><label>Approved Discount</label><input id="approvedDiscount" type="number" step="0.01" min="0" readonly></div>
+            <div class="field"><label>Final Amount</label><input id="finalAmount" type="number" step="0.01" min="0" readonly></div>
+            <div class="field"><label>Amount Collected <span class="required">*</span></label><input id="amountCollected" type="number" step="0.01" min="0" required></div>
+            <div class="field"><label>Outstanding</label><input id="outstanding" type="number" step="0.01" min="0" readonly></div>
+            <div class="field"><label>Payment Status</label><input id="paymentStatus" type="text" readonly></div>
+            <div class="field"><label>Payment Mode <span class="required">*</span></label>
+              <select id="paymentMode" required><option value="">Select mode</option><option value="CASH">Cash</option><option value="UPI">UPI</option><option value="BANK_TRANSFER">Bank Transfer</option><option value="CARD">Card</option><option value="OTHER">Other</option></select>
+            </div>
+            <div class="field"><label>Reference Number</label><input id="referenceNumber" type="text" maxlength="120" placeholder="UPI / Bank / Card reference"></div>
+            <div class="file-field" style="grid-column:1/-1"><label>Payment Proof</label><input id="paymentProof" type="file" accept="image/*,application/pdf"></div>
+          </div>
+        </div>
+        <div class="completion-section">
+          <h3>Customer Verification</h3>
+          <div class="completion-note">Ask the customer for the 6-digit Service Completion Code provided by ORACLIME Support.</div>
+          <div class="field" style="margin-top:14px"><label>Service Completion Code <span class="required">*</span></label><input id="completionCode" type="text" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" placeholder="6-digit code" required></div>
+        </div>
+        <div class="completion-actions">
+          <button class="cancel-completion" type="button" onclick="closeCompletion()">Cancel</button>
+          <button class="submit-completion" id="submitCompletionBtn" type="submit">Submit Completion</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 
 <footer>
   <div class="container footgrid">
@@ -1189,40 +1269,161 @@ async function rejectJob(leadId){
 }
 
 
-function goToCompletion(leadId){
 
-  const job =
-    currentJobs.find(
-      j => j.id === leadId
-    );
+let completionJob=null,completionServiceOrder=null,completionVisit=null;
 
+function completionMessage(type,message){
+  const e=document.getElementById("completionError"),s=document.getElementById("completionSuccess");
+  e.style.display="none";s.style.display="none";
+  if(type==="error"){e.textContent=message;e.style.display="block";}
+  else{s.textContent=message;s.style.display="block";}
+}
 
-  if(!job){
-    return;
+function closeCompletion(){
+  document.getElementById("completionModal").classList.remove("open");
+  document.getElementById("completionModal").setAttribute("aria-hidden","true");
+  completionJob=null;completionServiceOrder=null;completionVisit=null;
+  document.getElementById("completionForm").reset();
+  document.getElementById("completionError").style.display="none";
+  document.getElementById("completionSuccess").style.display="none";
+}
+
+async function goToCompletion(leadId){
+  const job=currentJobs.find(j=>j.id===leadId); if(!job)return;
+  completionJob=job;
+  const modal=document.getElementById("completionModal");
+  modal.classList.add("open");modal.setAttribute("aria-hidden","false");
+  document.getElementById("completionLeadNumber").textContent=job.lead_number||"—";
+  document.getElementById("completionCustomer").textContent=job.customer_name||"—";
+  document.getElementById("completionService").textContent=formatService(job.service_type);
+  completionMessage("success","Loading approved service details...");
+  document.getElementById("submitCompletionBtn").disabled=true;
+
+  const {data:serviceOrder,error:orderError}=await supabaseClient.from("service_orders")
+    .select("id,lead_id,approved_amount,approved_discount,final_amount").eq("lead_id",job.id).maybeSingle();
+
+  if(orderError||!serviceOrder){completionMessage("error","No service order found for this lead. Support must create it first.");return;}
+  completionServiceOrder=serviceOrder;
+
+  const {data:visits,error:visitError}=await supabaseClient.from("visits")
+    .select("id,service_order_id,technician_id,status,visit_number")
+    .eq("service_order_id",serviceOrder.id).eq("technician_id",currentTechnician.id)
+    .order("visit_number",{ascending:false}).limit(1);
+
+  if(visitError||!visits||!visits[0]){completionMessage("error","No technician visit found for this service order.");return;}
+  completionVisit=visits[0];
+
+  document.getElementById("serviceAmount").value=Number(serviceOrder.approved_amount||0).toFixed(2);
+  document.getElementById("approvedDiscount").value=Number(serviceOrder.approved_discount||0).toFixed(2);
+  document.getElementById("finalAmount").value=Number(serviceOrder.final_amount||0).toFixed(2);
+  document.getElementById("amountCollected").value=Number(serviceOrder.final_amount||0).toFixed(2);
+  updateOutstanding();
+  completionMessage("success","Approved service details loaded.");
+  document.getElementById("submitCompletionBtn").disabled=false;
+}
+
+function updateOutstanding(){
+  const f=Number(document.getElementById("finalAmount").value||0);
+  let c=Number(document.getElementById("amountCollected").value||0);
+  c=Math.max(0,Math.min(c,f));
+  document.getElementById("amountCollected").value=c.toFixed(2);
+  const o=Math.max(0,f-c);
+  document.getElementById("outstanding").value=o.toFixed(2);
+  document.getElementById("paymentStatus").value=c>=f?"PAID":(c>0?"PARTIAL":"PENDING");
+}
+document.getElementById("amountCollected").addEventListener("input",updateOutstanding);
+
+function safeFileName(name){return String(name||"file").replace(/[^a-zA-Z0-9._-]/g,"_").slice(-120);}
+
+async function uploadCompletionDocument(file,documentType){
+  const path="private/"+currentTechnician.id+"/"+completionJob.id+"/"+Date.now()+"-"+crypto.randomUUID()+"-"+safeFileName(file.name);
+  const {error:uploadError}=await supabaseClient.storage.from("service-documents").upload(path,file,{cacheControl:"3600",upsert:false,contentType:file.type||undefined});
+  if(uploadError)throw new Error("Upload failed for "+documentType+": "+uploadError.message);
+  const {data:row,error}=await supabaseClient.from("documents").insert({
+    service_order_id:completionServiceOrder.id,visit_id:completionVisit.id,uploaded_by:currentUser.id,
+    document_type:documentType,storage_path:path,original_filename:file.name,mime_type:file.type||null,file_size:file.size||null
+  }).select("id").single();
+  if(error)throw new Error("Document record failed: "+error.message);
+  return row.id;
+}
+
+async function verifyCompletionCode(code){
+  const {data,error}=await supabaseClient.rpc("verify_service_completion_code",{p_lead_id:completionJob.id,p_code:code});
+  if(error)throw new Error("Completion Code verification failed: "+error.message);
+  if(data!==true)throw new Error("Invalid, expired or already-used Service Completion Code.");
+}
+
+async function savePayment(proofId){
+  const serviceAmount=Number(document.getElementById("serviceAmount").value||0);
+  const discount=Number(document.getElementById("approvedDiscount").value||0);
+  const finalAmount=Number(document.getElementById("finalAmount").value||0);
+  const collected=Number(document.getElementById("amountCollected").value||0);
+  const outstanding=Number(document.getElementById("outstanding").value||0);
+  const status=document.getElementById("paymentStatus").value;
+  const mode=document.getElementById("paymentMode").value;
+  const reference=document.getElementById("referenceNumber").value.trim()||null;
+  if(!mode)throw new Error("Please select a payment mode.");
+
+  const {data:existing,error:exErr}=await supabaseClient.from("payments").select("id").eq("service_order_id",completionServiceOrder.id).maybeSingle();
+  if(exErr)throw exErr;
+  let paymentId;
+
+  const payload={service_amount:serviceAmount,discount,final_amount:finalAmount,amount_collected:collected,outstanding,status,payment_mode:mode,reference_number:reference,payment_proof_document_id:proofId||null,collected_at:collected>0?new Date().toISOString():null,updated_at:new Date().toISOString()};
+
+  if(existing){
+    const {data:u,error}=await supabaseClient.from("payments").update(payload).eq("id",existing.id).select("id").single();
+    if(error)throw error;paymentId=u.id;
+  }else{
+    delete payload.updated_at;
+    const {data:c,error}=await supabaseClient.from("payments").insert({...payload,service_order_id:completionServiceOrder.id}).select("id").single();
+    if(error)throw error;paymentId=c.id;
   }
 
-
-  /*
-    Completion workflow will be connected
-    in the next step.
-
-    It will include:
-    1. Indoor location photo
-    2. Indoor serial photo
-    3. Outdoor location photo
-    4. Outdoor serial photo
-    5. AC bill photo
-    6. Payment details
-    7. Service Completion Code
-  */
-
-  alert(
-    "Completion workflow is the next step.\n\n" +
-    "Lead: " +
-    job.lead_number
-  );
-
+  if(collected>0){
+    const {error}=await supabaseClient.from("payment_transactions").insert({
+      payment_id:paymentId,amount:collected,payment_mode:mode,reference_number:reference,collected_by:currentUser.id,
+      proof_document_id:proofId||null,transaction_time:new Date().toISOString(),notes:"Technician completion submission"
+    });
+    if(error)throw error;
+  }
 }
+
+document.getElementById("completionForm").addEventListener("submit",async function(e){
+  e.preventDefault();
+  const btn=document.getElementById("submitCompletionBtn");
+  btn.disabled=true;btn.textContent="Submitting...";
+  try{
+    const required=[["indoorLocation","Indoor location photo"],["indoorSerial","Indoor serial photo"],["outdoorLocation","Outdoor location photo"],["outdoorSerial","Outdoor serial photo"],["acBill","AC bill photo"]];
+    for(const [id,label] of required){if(!document.getElementById(id).files[0])throw new Error(label+" is required.");}
+    const code=document.getElementById("completionCode").value.trim();
+    if(!/^\d{6}$/.test(code))throw new Error("Enter the valid 6-digit Service Completion Code.");
+    await verifyCompletionCode(code);
+
+    await uploadCompletionDocument(document.getElementById("indoorLocation").files[0],"INDOOR_LOCATION");
+    await uploadCompletionDocument(document.getElementById("indoorSerial").files[0],"INDOOR_SERIAL");
+    await uploadCompletionDocument(document.getElementById("outdoorLocation").files[0],"OUTDOOR_LOCATION");
+    await uploadCompletionDocument(document.getElementById("outdoorSerial").files[0],"OUTDOOR_SERIAL");
+    await uploadCompletionDocument(document.getElementById("acBill").files[0],"AC_BILL");
+
+    let proofId=null;
+    if(document.getElementById("paymentProof").files[0])proofId=await uploadCompletionDocument(document.getElementById("paymentProof").files[0],"PAYMENT_PROOF");
+
+    await savePayment(proofId);
+
+    const now=new Date().toISOString();
+    let {error}=await supabaseClient.from("visits").update({status:"COMPLETION_SUBMITTED",service_completed_at:now,updated_at:now}).eq("id",completionVisit.id).eq("technician_id",currentTechnician.id);
+    if(error)throw error;
+    ({error}=await supabaseClient.from("leads").update({status:"COMPLETION_SUBMITTED",updated_by:currentUser.id,updated_at:now}).eq("id",completionJob.id).eq("assigned_technician_id",currentTechnician.id).eq("status","IN_PROGRESS"));
+    if(error)throw error;
+
+    completionMessage("success","Completion submitted successfully. ORACLIME Support will verify and close the job.");
+    btn.textContent="Submitted";
+    setTimeout(async()=>{closeCompletion();await loadJobs();},1400);
+  }catch(err){
+    console.error(err);completionMessage("error",err.message||"Unable to submit completion.");
+    btn.disabled=false;btn.textContent="Submit Completion";
+  }
+});
 
 
 document
