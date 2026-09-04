@@ -1,0 +1,1387 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+
+  <title>ORACLIME — Support Dashboard</title>
+
+  <link rel="stylesheet" href="assets/style.css">
+
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+
+  <!-- =========================
+       NAVIGATION
+  ========================== -->
+
+  <div class="navwrap">
+
+    <div class="container nav">
+
+      <a class="logo" href="index.html">
+        ORACLIME
+      </a>
+
+      <div style="display:flex;align-items:center;gap:14px;">
+
+        <span
+          id="supportBadge"
+          class="small"
+          style="opacity:.8;"
+        >
+          Support
+        </span>
+
+        <button
+          id="logoutButton"
+          class="btn"
+          type="button"
+        >
+          Logout
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =========================
+       DASHBOARD
+  ========================== -->
+
+  <main class="dashboard">
+
+    <div class="container">
+
+      <!-- Header -->
+
+      <div
+        style="
+          display:flex;
+          justify-content:space-between;
+          align-items:flex-end;
+          gap:20px;
+          margin-bottom:30px;
+          flex-wrap:wrap;
+        "
+      >
+
+        <div>
+
+          <div class="eyebrow">
+            ORACLIME Operations
+          </div>
+
+          <h1 style="margin:10px 0 8px;">
+            Support Dashboard
+          </h1>
+
+          <p
+            id="welcomeText"
+            class="small"
+          >
+            Loading support account...
+          </p>
+
+        </div>
+
+        <div
+          id="accountInfo"
+          class="small"
+          style="text-align:right;"
+        >
+          Loading...
+        </div>
+
+      </div>
+
+
+      <!-- Loading message -->
+
+      <div
+        id="dashboardMessage"
+        class="notice"
+        style="display:none;margin-bottom:24px;"
+      ></div>
+
+
+      <!-- =========================
+           QUICK ACTIONS
+      ========================== -->
+
+      <section>
+
+        <div class="eyebrow">
+          Operations
+        </div>
+
+        <h2 style="margin-top:8px;">
+          Quick Actions
+        </h2>
+
+
+        <div class="g4 grid-4">
+
+          <a
+            href="#leads"
+            class="card"
+            style="text-decoration:none;"
+          >
+
+            <div
+              style="
+                font-size:28px;
+                margin-bottom:12px;
+              "
+            >
+              📋
+            </div>
+
+            <h3>
+              Leads
+            </h3>
+
+            <p class="small">
+              View and manage service leads.
+            </p>
+
+          </a>
+
+
+          <a
+            href="#assignments"
+            class="card"
+            style="text-decoration:none;"
+          >
+
+            <div
+              style="
+                font-size:28px;
+                margin-bottom:12px;
+              "
+            >
+              🔧
+            </div>
+
+            <h3>
+              Assignments
+            </h3>
+
+            <p class="small">
+              Assign leads to technicians.
+            </p>
+
+          </a>
+
+
+          <a
+            href="#partners"
+            class="card"
+            style="text-decoration:none;"
+          >
+
+            <div
+              style="
+                font-size:28px;
+                margin-bottom:12px;
+              "
+            >
+              🤝
+            </div>
+
+            <h3>
+              Partners
+            </h3>
+
+            <p class="small">
+              Manage business partners.
+            </p>
+
+          </a>
+
+
+          <a
+            href="#technicians"
+            class="card"
+            style="text-decoration:none;"
+          >
+
+            <div
+              style="
+                font-size:28px;
+                margin-bottom:12px;
+              "
+            >
+              👨‍🔧
+            </div>
+
+            <h3>
+              Technicians
+            </h3>
+
+            <p class="small">
+              Manage technician network.
+            </p>
+
+          </a>
+
+        </div>
+
+      </section>
+
+
+      <!-- =========================
+           LIVE OPERATIONS
+      ========================== -->
+
+      <section
+        style="margin-top:50px;"
+      >
+
+        <div class="eyebrow">
+          Live Operations
+        </div>
+
+        <h2 style="margin-top:8px;">
+          Lead Overview
+        </h2>
+
+
+        <div class="g4 grid-4">
+
+          <div class="card">
+
+            <p class="small">
+              Total Leads
+            </p>
+
+            <div
+              id="totalLeads"
+              style="
+                font-size:34px;
+                font-weight:700;
+                margin-top:8px;
+              "
+            >
+              —
+            </div>
+
+          </div>
+
+
+          <div class="card">
+
+            <p class="small">
+              New Leads
+            </p>
+
+            <div
+              id="newLeads"
+              style="
+                font-size:34px;
+                font-weight:700;
+                margin-top:8px;
+              "
+            >
+              —
+            </div>
+
+          </div>
+
+
+          <div class="card">
+
+            <p class="small">
+              Assigned
+            </p>
+
+            <div
+              id="assignedLeads"
+              style="
+                font-size:34px;
+                font-weight:700;
+                margin-top:8px;
+              "
+            >
+              —
+            </div>
+
+          </div>
+
+
+          <div class="card">
+
+            <p class="small">
+              Completed
+            </p>
+
+            <div
+              id="completedLeads"
+              style="
+                font-size:34px;
+                font-weight:700;
+                margin-top:8px;
+              "
+            >
+              —
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- =========================
+           WORKFLOW STATUS
+      ========================== -->
+
+      <section
+        style="margin-top:50px;"
+      >
+
+        <div class="eyebrow">
+          Service Workflow
+        </div>
+
+        <h2 style="margin-top:8px;">
+          Current Operations
+        </h2>
+
+
+        <div class="g4 grid-4">
+
+          <div class="card">
+
+            <p class="small">
+              Unassigned
+            </p>
+
+            <strong
+              id="unassignedLeads"
+              style="font-size:25px;"
+            >
+              —
+            </strong>
+
+          </div>
+
+
+          <div class="card">
+
+            <p class="small">
+              Accepted
+            </p>
+
+            <strong
+              id="acceptedLeads"
+              style="font-size:25px;"
+            >
+              —
+            </strong>
+
+          </div>
+
+
+          <div class="card">
+
+            <p class="small">
+              In Progress
+            </p>
+
+            <strong
+              id="inProgressLeads"
+              style="font-size:25px;"
+            >
+              —
+            </strong>
+
+          </div>
+
+
+          <div class="card">
+
+            <p class="small">
+              Completion Submitted
+            </p>
+
+            <strong
+              id="completionSubmittedLeads"
+              style="font-size:25px;"
+            >
+              —
+            </strong>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- =========================
+           MANAGEMENT MODULES
+      ========================== -->
+
+      <section
+        style="margin-top:50px;"
+      >
+
+        <div class="eyebrow">
+          Management
+        </div>
+
+        <h2 style="margin-top:8px;">
+          ORACLIME Operations
+        </h2>
+
+
+        <div class="g3 grid-3">
+
+          <a
+            id="leads"
+            href="#"
+            class="card"
+            style="text-decoration:none;"
+          >
+
+            <h3>
+              📋 Leads
+            </h3>
+
+            <p class="small">
+              Create, review, assign and track incoming service leads.
+            </p>
+
+          </a>
+
+
+          <a
+            id="assignments"
+            href="#"
+            class="card"
+            style="text-decoration:none;"
+          >
+
+            <h3>
+              🔧 Assignments
+            </h3>
+
+            <p class="small">
+              Coordinate technician assignments and service visits.
+            </p>
+
+          </a>
+
+
+          <a
+            id="partners"
+            href="#"
+            class="card"
+            style="text-decoration:none;"
+          >
+
+            <h3>
+              🤝 Partners
+            </h3>
+
+            <p class="small">
+              Manage businesses, contractors and service partners.
+            </p>
+
+          </a>
+
+
+          <a
+            id="technicians"
+            href="#"
+            class="card"
+            style="text-decoration:none;"
+          >
+
+            <h3>
+              👨‍🔧 Technicians
+            </h3>
+
+            <p class="small">
+              Manage technician profiles, availability and service network.
+            </p>
+
+          </a>
+
+
+          <a
+            href="#"
+            class="card"
+            style="text-decoration:none;"
+          >
+
+            <h3>
+              👤 Customers
+            </h3>
+
+            <p class="small">
+              View customer information and service history.
+            </p>
+
+          </a>
+
+
+          <a
+            href="#"
+            class="card"
+            style="text-decoration:none;"
+          >
+
+            <h3>
+              💰 Payments
+            </h3>
+
+            <p class="small">
+              Track service amounts, collections and outstanding payments.
+            </p>
+
+          </a>
+
+
+          <a
+            href="#"
+            class="card"
+            style="text-decoration:none;"
+          >
+
+            <h3>
+              📊 Reports
+            </h3>
+
+            <p class="small">
+              Operations, partner, technician and finance reports.
+            </p>
+
+          </a>
+
+
+          <a
+            href="#"
+            class="card"
+            style="text-decoration:none;"
+          >
+
+            <h3>
+              🔔 Notifications
+            </h3>
+
+            <p class="small">
+              Operational notifications and important updates.
+            </p>
+
+          </a>
+
+
+          <a
+            href="#"
+            class="card"
+            style="text-decoration:none;"
+          >
+
+            <h3>
+              📝 Activity Logs
+            </h3>
+
+            <p class="small">
+              Track important operational actions and changes.
+            </p>
+
+          </a>
+
+        </div>
+
+      </section>
+
+
+      <!-- =========================
+           ACCOUNT
+      ========================== -->
+
+      <section
+        style="margin-top:50px;"
+      >
+
+        <div class="card">
+
+          <div class="eyebrow">
+            Current Support Account
+          </div>
+
+          <h2 style="margin-top:8px;">
+            Account Information
+          </h2>
+
+
+          <div
+            class="g3 grid-3"
+            style="margin-top:20px;"
+          >
+
+            <div>
+
+              <p class="small">
+                Name
+              </p>
+
+              <strong id="accountName">
+                —
+              </strong>
+
+            </div>
+
+
+            <div>
+
+              <p class="small">
+                Email
+              </p>
+
+              <strong id="accountEmail">
+                —
+              </strong>
+
+            </div>
+
+
+            <div>
+
+              <p class="small">
+                Support Code
+              </p>
+
+              <strong id="accountCode">
+                —
+              </strong>
+
+            </div>
+
+          </div>
+
+
+          <div
+            style="
+              margin-top:22px;
+              padding-top:18px;
+              border-top:1px solid var(--line);
+            "
+          >
+
+            <p class="small" style="margin:0;">
+              Role:
+              <strong id="accountRole">
+                SUPPORT
+              </strong>
+              &nbsp; • &nbsp;
+              Status:
+              <strong id="accountStatus">
+                ACTIVE
+              </strong>
+            </p>
+
+          </div>
+
+        </div>
+
+      </section>
+
+    </div>
+
+  </main>
+
+
+  <!-- =========================
+       FOOTER
+  ========================== -->
+
+  <footer>
+
+    <div class="container">
+
+      <div class="logo">
+        ORACLIME
+      </div>
+
+      <p class="small">
+        Support and operations access for ORACLIME.
+      </p>
+
+    </div>
+
+  </footer>
+
+
+  <!-- =========================
+       SUPABASE
+  ========================== -->
+
+  <script>
+
+    /*
+      ============================================
+      ORACLIME SUPABASE CONFIGURATION
+      ============================================
+
+      IMPORTANT:
+      This is the PUBLIC/PUBLISHABLE key.
+
+      NEVER put the Supabase secret/service_role
+      key in this file.
+    */
+
+    const SUPABASE_URL =
+      "https://dmygjpkzuewnpxsispcm.supabase.co";
+
+    const SUPABASE_ANON_KEY =
+      "sb_publishable_mQskIlYXBc4v8bXwF1FxmA_HLgigkqi";
+
+
+    const supabaseClient =
+      window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_ANON_KEY
+      );
+
+
+    /*
+      ============================================
+      ELEMENTS
+      ============================================
+    */
+
+    const welcomeText =
+      document.getElementById("welcomeText");
+
+    const accountInfo =
+      document.getElementById("accountInfo");
+
+    const supportBadge =
+      document.getElementById("supportBadge");
+
+    const dashboardMessage =
+      document.getElementById("dashboardMessage");
+
+    const logoutButton =
+      document.getElementById("logoutButton");
+
+
+    /*
+      ============================================
+      MESSAGE
+      ============================================
+    */
+
+    function showMessage(message, type = "notice") {
+
+      dashboardMessage.className =
+        "notice " + type;
+
+      dashboardMessage.style.display =
+        "block";
+
+      dashboardMessage.textContent =
+        message;
+    }
+
+
+    /*
+      ============================================
+      LOAD SUPPORT ACCOUNT
+      ============================================
+    */
+
+    async function loadSupportDashboard() {
+
+      try {
+
+        /*
+          STEP 1
+          Check current Supabase session
+        */
+
+        const {
+          data: sessionData,
+          error: sessionError
+        } = await supabaseClient.auth.getSession();
+
+
+        if (sessionError) {
+          throw sessionError;
+        }
+
+
+        const session =
+          sessionData.session;
+
+
+        /*
+          No login session
+        */
+
+        if (!session || !session.user) {
+
+          window.location.href =
+            "support-login.html";
+
+          return;
+        }
+
+
+        const authUser =
+          session.user;
+
+
+        /*
+          STEP 2
+          Get ORACLIME app user
+        */
+
+        const {
+          data: appUser,
+          error: profileError
+        } = await supabaseClient
+          .from("app_users")
+          .select(
+            "id, full_name, email, role, status"
+          )
+          .eq("id", authUser.id)
+          .single();
+
+
+        if (profileError || !appUser) {
+
+          await supabaseClient.auth.signOut();
+
+          throw new Error(
+            "Your ORACLIME support profile could not be found."
+          );
+        }
+
+
+        /*
+          STEP 3
+          Check role
+        */
+
+        if (appUser.role !== "SUPPORT") {
+
+          await supabaseClient.auth.signOut();
+
+          throw new Error(
+            "Access denied. This account is not a Support account."
+          );
+        }
+
+
+        /*
+          STEP 4
+          Check status
+        */
+
+        if (appUser.status !== "ACTIVE") {
+
+          await supabaseClient.auth.signOut();
+
+          throw new Error(
+            "This Support account is inactive."
+          );
+        }
+
+
+        /*
+          STEP 5
+          Get support member details
+        */
+
+        const {
+          data: supportMember,
+          error: supportError
+        } = await supabaseClient
+          .from("support_members")
+          .select(
+            "support_code, designation"
+          )
+          .eq("id", appUser.id)
+          .maybeSingle();
+
+
+        /*
+          STEP 6
+          Display account
+        */
+
+        const fullName =
+          appUser.full_name ||
+          "ORACLIME Support";
+
+        const email =
+          appUser.email ||
+          authUser.email ||
+          "—";
+
+        const supportCode =
+          supportMember?.support_code ||
+          "SUPPORT";
+
+        const designation =
+          supportMember?.designation ||
+          "Operations Support";
+
+
+        welcomeText.textContent =
+          "Welcome, " +
+          fullName +
+          ". " +
+          designation +
+          ".";
+
+
+        accountInfo.innerHTML =
+          "<strong>" +
+          supportCode +
+          "</strong><br>" +
+          email;
+
+
+        supportBadge.textContent =
+          supportCode;
+
+
+        document.getElementById(
+          "accountName"
+        ).textContent =
+          fullName;
+
+
+        document.getElementById(
+          "accountEmail"
+        ).textContent =
+          email;
+
+
+        document.getElementById(
+          "accountCode"
+        ).textContent =
+          supportCode;
+
+
+        document.getElementById(
+          "accountRole"
+        ).textContent =
+          appUser.role;
+
+
+        document.getElementById(
+          "accountStatus"
+        ).textContent =
+          appUser.status;
+
+
+        /*
+          STEP 7
+          Load lead statistics
+        */
+
+        await loadLeadStatistics();
+
+
+        /*
+          If support_members query failed,
+          do not block dashboard.
+        */
+
+        if (supportError) {
+
+          console.warn(
+            "Support member details unavailable:",
+            supportError
+          );
+
+        }
+
+      } catch (error) {
+
+        console.error(
+          "Dashboard loading error:",
+          error
+        );
+
+
+        showMessage(
+          error.message ||
+          "Unable to load Support Dashboard.",
+          "error"
+        );
+
+      }
+
+    }
+
+
+    /*
+      ============================================
+      LEAD STATISTICS
+      ============================================
+    */
+
+    async function loadLeadStatistics() {
+
+      try {
+
+        /*
+          Total leads
+        */
+
+        const {
+          count: totalCount,
+          error: totalError
+        } = await supabaseClient
+          .from("leads")
+          .select(
+            "id",
+            {
+              count: "exact",
+              head: true
+            }
+          );
+
+
+        if (totalError) {
+          throw totalError;
+        }
+
+
+        document.getElementById(
+          "totalLeads"
+        ).textContent =
+          totalCount ?? 0;
+
+
+        /*
+          NEW
+        */
+
+        const {
+          count: newCount
+        } = await supabaseClient
+          .from("leads")
+          .select(
+            "id",
+            {
+              count: "exact",
+              head: true
+            }
+          )
+          .eq(
+            "status",
+            "NEW"
+          );
+
+
+        document.getElementById(
+          "newLeads"
+        ).textContent =
+          newCount ?? 0;
+
+
+        /*
+          ASSIGNED
+        */
+
+        const {
+          count: assignedCount
+        } = await supabaseClient
+          .from("leads")
+          .select(
+            "id",
+            {
+              count: "exact",
+              head: true
+            }
+          )
+          .eq(
+            "status",
+            "ASSIGNED"
+          );
+
+
+        document.getElementById(
+          "assignedLeads"
+        ).textContent =
+          assignedCount ?? 0;
+
+
+        /*
+          COMPLETED
+        */
+
+        const {
+          count: completedCount
+        } = await supabaseClient
+          .from("leads")
+          .select(
+            "id",
+            {
+              count: "exact",
+              head: true
+            }
+          )
+          .eq(
+            "status",
+            "COMPLETED"
+          );
+
+
+        document.getElementById(
+          "completedLeads"
+        ).textContent =
+          completedCount ?? 0;
+
+
+        /*
+          UNASSIGNED
+        */
+
+        const {
+          count: unassignedCount
+        } = await supabaseClient
+          .from("leads")
+          .select(
+            "id",
+            {
+              count: "exact",
+              head: true
+            }
+          )
+          .is(
+            "assigned_technician_id",
+            null
+          );
+
+
+        document.getElementById(
+          "unassignedLeads"
+        ).textContent =
+          unassignedCount ?? 0;
+
+
+        /*
+          ACCEPTED
+        */
+
+        const {
+          count: acceptedCount
+        } = await supabaseClient
+          .from("leads")
+          .select(
+            "id",
+            {
+              count: "exact",
+              head: true
+            }
+          )
+          .eq(
+            "status",
+            "ACCEPTED"
+          );
+
+
+        document.getElementById(
+          "acceptedLeads"
+        ).textContent =
+          acceptedCount ?? 0;
+
+
+        /*
+          IN PROGRESS
+        */
+
+        const {
+          count: inProgressCount
+        } = await supabaseClient
+          .from("leads")
+          .select(
+            "id",
+            {
+              count: "exact",
+              head: true
+            }
+          )
+          .eq(
+            "status",
+            "IN_PROGRESS"
+          );
+
+
+        document.getElementById(
+          "inProgressLeads"
+        ).textContent =
+          inProgressCount ?? 0;
+
+
+        /*
+          COMPLETION SUBMITTED
+        */
+
+        const {
+          count: completionCount
+        } = await supabaseClient
+          .from("leads")
+          .select(
+            "id",
+            {
+              count: "exact",
+              head: true
+            }
+          )
+          .eq(
+            "status",
+            "COMPLETION_SUBMITTED"
+          );
+
+
+        document.getElementById(
+          "completionSubmittedLeads"
+        ).textContent =
+          completionCount ?? 0;
+
+
+      } catch (error) {
+
+        console.warn(
+          "Lead statistics could not be loaded:",
+          error
+        );
+
+
+        /*
+          Dashboard should still open
+          even if lead statistics are
+          not available yet.
+        */
+
+        document.getElementById(
+          "totalLeads"
+        ).textContent = "—";
+
+        document.getElementById(
+          "newLeads"
+        ).textContent = "—";
+
+        document.getElementById(
+          "assignedLeads"
+        ).textContent = "—";
+
+        document.getElementById(
+          "completedLeads"
+        ).textContent = "—";
+
+        document.getElementById(
+          "unassignedLeads"
+        ).textContent = "—";
+
+        document.getElementById(
+          "acceptedLeads"
+        ).textContent = "—";
+
+        document.getElementById(
+          "inProgressLeads"
+        ).textContent = "—";
+
+        document.getElementById(
+          "completionSubmittedLeads"
+        ).textContent = "—";
+
+      }
+
+    }
+
+
+    /*
+      ============================================
+      LOGOUT
+      ============================================
+    */
+
+    logoutButton.addEventListener(
+      "click",
+      async function() {
+
+        logoutButton.disabled = true;
+
+        logoutButton.textContent =
+          "Logging out...";
+
+
+        try {
+
+          await supabaseClient.auth.signOut();
+
+          window.location.href =
+            "support-login.html";
+
+        } catch (error) {
+
+          console.error(
+            "Logout error:",
+            error
+          );
+
+          logoutButton.disabled = false;
+
+          logoutButton.textContent =
+            "Logout";
+
+        }
+
+      }
+    );
+
+
+    /*
+      ============================================
+      AUTH STATE LISTENER
+      ============================================
+    */
+
+    supabaseClient.auth.onAuthStateChange(
+      function(event, session) {
+
+        if (
+          event === "SIGNED_OUT" ||
+          !session
+        ) {
+
+          window.location.href =
+            "support-login.html";
+
+        }
+
+      }
+    );
+
+
+    /*
+      ============================================
+      START DASHBOARD
+      ============================================
+    */
+
+    loadSupportDashboard();
+
+  </script>
+
+</body>
+</html>
