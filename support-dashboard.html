@@ -976,6 +976,13 @@
 .leads-table td:last-child .table-action {
   min-width: 126px;
 }
+
+.leads-visibility-note {
+  margin: 6px 0 14px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
 </style>
 </head>
 
@@ -1846,6 +1853,11 @@
           <h2>
             Service Leads
           </h2>
+<div class="leads-visibility-note">
+  Completed leads are automatically hidden from this list after their service date.
+  Records remain available in Reports and the database.
+</div>
+
 
           <span
             class="small"
@@ -3639,6 +3651,8 @@ async function loadLeads(force = false) {
    ===================================================== */
 
 function applyLeadFilters() {
+  const leadsForDisplay = getVisibleLeadsForList(allLeads);
+
 
   const searchInput =
     document.getElementById(
@@ -3666,7 +3680,7 @@ function applyLeadFilters() {
 
 
   filteredLeads =
-    allLeads.filter(function(lead) {
+    leadsForDisplay.filter(function(lead) {
 
       const matchesSearch =
         !search ||
@@ -6940,6 +6954,43 @@ function normalizeLeadCompletionActions() {
     };
 
 })();
+
+
+
+/* =====================================================
+   LEADS DATE VISIBILITY FILTER
+   ===================================================== */
+
+function getLeadServiceDateForVisibility(lead) {
+  if (!lead || !lead.preferred_date) return null;
+
+  const parsed = new Date(
+    String(lead.preferred_date) + "T23:59:59+05:30"
+  );
+
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function shouldShowLeadInLeadsList(lead) {
+  if (!lead) return false;
+
+  /* Only completed leads are hidden after their service date. */
+  if (lead.status !== "COMPLETED") return true;
+
+  const serviceDate = getLeadServiceDateForVisibility(lead);
+
+  /* Missing date = keep visible; never hide data accidentally. */
+  if (!serviceDate) return true;
+
+  /* Visible through the service date; hidden from the next day. */
+  return Date.now() <= serviceDate.getTime();
+}
+
+function getVisibleLeadsForList(leads) {
+  return Array.isArray(leads)
+    ? leads.filter(shouldShowLeadInLeadsList)
+    : [];
+}
 
 
 /* =====================================================
