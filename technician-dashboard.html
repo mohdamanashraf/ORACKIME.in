@@ -370,6 +370,180 @@
 .completion-error,.completion-success{display:none;margin-bottom:14px;padding:12px 14px;border-radius:10px}.completion-error{background:#45212a;color:#ffd7dc}.completion-success{background:#12392f;color:#baf5e3}
 @media(max-width:700px){.completion-summary,.completion-grid{grid-template-columns:1fr}.completion-body,.completion-head{padding:16px}.completion-actions{display:grid;grid-template-columns:1fr 1fr}.completion-actions button{width:100%}}
 
+
+/* =====================================================
+   TODAY'S JOBS + DATE-WISE HISTORY
+   Non-destructive UI addition
+   ===================================================== */
+.jobs-head-actions{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.history-btn{
+  border:1px solid rgba(99,169,255,.28);
+  background:#10263a;
+  color:#fff;
+  border-radius:10px;
+  padding:10px 15px;
+  cursor:pointer;
+  font-weight:800;
+}
+
+.history-btn:hover{
+  border-color:rgba(53,209,170,.55);
+  transform:translateY(-1px);
+}
+
+.history-modal{
+  position:fixed;
+  inset:0;
+  z-index:10000;
+  display:none;
+  align-items:flex-start;
+  justify-content:center;
+  padding:24px 12px;
+  overflow:auto;
+  background:rgba(2,8,14,.82);
+  backdrop-filter:blur(8px);
+}
+
+.history-modal.open{display:flex}
+
+.history-panel{
+  width:min(1050px,100%);
+  background:#0c1b2d;
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:20px;
+  box-shadow:0 22px 70px rgba(0,0,0,.45);
+  overflow:hidden;
+}
+
+.history-head{
+  display:flex;
+  justify-content:space-between;
+  gap:18px;
+  align-items:flex-start;
+  padding:22px;
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+
+.history-head h2{margin:0 0 5px}
+.history-head p{margin:0;opacity:.65;font-size:14px}
+
+.close-history{
+  border:1px solid rgba(255,255,255,.12);
+  background:#10263a;
+  color:#fff;
+  width:40px;
+  height:40px;
+  border-radius:10px;
+  cursor:pointer;
+  font-size:22px;
+}
+
+.history-body{padding:22px}
+
+.history-controls{
+  display:grid;
+  grid-template-columns:minmax(180px,260px) auto;
+  gap:10px;
+  align-items:end;
+  margin-bottom:18px;
+}
+
+.history-field label{
+  display:block;
+  margin-bottom:7px;
+  font-size:12px;
+  opacity:.7;
+}
+
+.history-field input{
+  width:100%;
+  box-sizing:border-box;
+  border:1px solid rgba(255,255,255,.12);
+  background:#06101d;
+  color:#fff;
+  border-radius:10px;
+  padding:11px 12px;
+}
+
+.history-search{
+  border:0;
+  border-radius:10px;
+  padding:11px 17px;
+  cursor:pointer;
+  font-weight:900;
+  background:#35d1aa;
+  color:#04131e;
+}
+
+.history-result-count{
+  font-size:13px;
+  opacity:.65;
+  margin-bottom:12px;
+}
+
+.history-list{
+  display:grid;
+  gap:10px;
+}
+
+.history-item{
+  border:1px solid rgba(255,255,255,.08);
+  background:#10263a;
+  border-radius:12px;
+  padding:14px;
+}
+
+.history-item-top{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  align-items:flex-start;
+}
+
+.history-lead-number{
+  color:#63a9ff;
+  font-weight:900;
+  margin-bottom:4px;
+}
+
+.history-customer{font-weight:800}
+.history-meta{
+  margin-top:9px;
+  font-size:13px;
+  opacity:.72;
+  line-height:1.6;
+}
+
+.history-status{
+  white-space:nowrap;
+  border:1px solid rgba(99,169,255,.20);
+  border-radius:999px;
+  padding:5px 9px;
+  font-size:11px;
+  font-weight:800;
+}
+
+.history-empty{
+  padding:25px;
+  text-align:center;
+  border:1px dashed rgba(255,255,255,.12);
+  border-radius:12px;
+  opacity:.72;
+}
+
+@media(max-width:700px){
+  .jobs-head-actions{width:100%}
+  .jobs-head-actions button{flex:1}
+  .history-controls{grid-template-columns:1fr}
+  .history-item-top{flex-direction:column}
+}
+
 </style>
 </head>
 
@@ -466,9 +640,15 @@
 
     <h2>My Jobs</h2>
 
-    <button class="refresh-btn" id="refreshBtn">
-      Refresh
-    </button>
+    <div class="jobs-head-actions">
+      <button class="history-btn" type="button" id="historyBtn">
+        History
+      </button>
+
+      <button class="refresh-btn" id="refreshBtn">
+        Refresh
+      </button>
+    </div>
 
   </div>
 
@@ -484,6 +664,41 @@
 </main>
 
 
+
+
+
+<!-- =====================================================
+     DATE-WISE HISTORY MODAL
+     ===================================================== -->
+<div class="history-modal" id="historyModal" aria-hidden="true">
+  <div class="history-panel">
+    <div class="history-head">
+      <div>
+        <h2>Service History</h2>
+        <p>View your previous jobs date-wise, including completed jobs.</p>
+      </div>
+      <button class="close-history" type="button" onclick="closeHistory()">×</button>
+    </div>
+
+    <div class="history-body">
+      <div class="history-controls">
+        <div class="history-field">
+          <label for="historyDate">Select Date</label>
+          <input id="historyDate" type="date">
+        </div>
+
+        <div>
+          <button class="history-search" type="button" onclick="loadHistoryForSelectedDate()">
+            View History
+          </button>
+        </div>
+      </div>
+
+      <div id="historyResultCount" class="history-result-count"></div>
+      <div id="historyList" class="history-list"></div>
+    </div>
+  </div>
+</div>
 
 
 <div class="profile-modal" id="profileModal" aria-hidden="true">
@@ -1144,18 +1359,199 @@ async function loadTechnician(){
 }
 
 
+
+/* =====================================================
+   TODAY / HISTORY HELPERS
+   ===================================================== */
+
+function getIndiaTodayString(){
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone:"Asia/Kolkata",
+    year:"numeric",
+    month:"2-digit",
+    day:"2-digit"
+  }).formatToParts(new Date());
+
+  const map = {};
+  parts.forEach(p => {
+    if(p.type !== "literal") map[p.type] = p.value;
+  });
+
+  return `${map.year}-${map.month}-${map.day}`;
+}
+
+function isTodayLead(lead){
+  return !!lead &&
+    !!lead.preferred_date &&
+    String(lead.preferred_date) === getIndiaTodayString();
+}
+
+function isCurrentDashboardJob(lead){
+  /*
+    Main dashboard intentionally shows only today's work.
+    Completed jobs are moved out immediately after completion.
+    They remain available in date-wise History.
+  */
+  return isTodayLead(lead) && lead.status !== "COMPLETED";
+}
+
+function getHistoryStatusLabel(status){
+  if(typeof statusLabel === "function"){
+    return statusLabel(status);
+  }
+  return status || "Unknown";
+}
+
+function openHistory(){
+  const modal = document.getElementById("historyModal");
+  const dateInput = document.getElementById("historyDate");
+
+  if(!modal || !dateInput) return;
+
+  /*
+    Default to yesterday so opening History naturally shows
+    the most recent previous day, while the user can choose any date.
+  */
+  if(!dateInput.value){
+    const d = new Date();
+    d.setDate(d.getDate() - 1);
+    const y = d.getFullYear();
+    const m = String(d.getMonth()+1).padStart(2,"0");
+    const day = String(d.getDate()).padStart(2,"0");
+    dateInput.value = `${y}-${m}-${day}`;
+  }
+
+  modal.classList.add("open");
+  modal.setAttribute("aria-hidden","false");
+
+  loadHistoryForSelectedDate();
+}
+
+function closeHistory(){
+  const modal = document.getElementById("historyModal");
+  if(!modal) return;
+
+  modal.classList.remove("open");
+  modal.setAttribute("aria-hidden","true");
+}
+
+async function loadHistoryForSelectedDate(){
+  if(!currentTechnician) return;
+
+  const date = document.getElementById("historyDate").value;
+  const list = document.getElementById("historyList");
+  const count = document.getElementById("historyResultCount");
+
+  if(!date){
+    count.textContent = "";
+    list.innerHTML = '<div class="history-empty">Please select a date.</div>';
+    return;
+  }
+
+  count.textContent = "Loading history...";
+  list.innerHTML = "";
+
+  const { data, error } = await supabaseClient
+    .from("leads")
+    .select(`
+      id,
+      lead_number,
+      customer_name,
+      mobile,
+      address,
+      city,
+      state,
+      pincode,
+      service_type,
+      preferred_date,
+      preferred_time,
+      notes,
+      status,
+      assigned_technician_id,
+      created_at
+    `)
+    .eq("assigned_technician_id", currentTechnician.id)
+    .eq("preferred_date", date)
+    .order("created_at", {ascending:false});
+
+  if(error){
+    console.error("History error:", error);
+    count.textContent = "";
+    list.innerHTML = `
+      <div class="history-empty">
+        Unable to load history. ${escapeHtml(error.message || "Please try again.")}
+      </div>
+    `;
+    return;
+  }
+
+  const rows = data || [];
+
+  count.textContent =
+    `${rows.length} job${rows.length === 1 ? "" : "s"} on ${formatDate(date)}`;
+
+  if(!rows.length){
+    list.innerHTML = `
+      <div class="history-empty">
+        No service jobs found for this date.
+      </div>
+    `;
+    return;
+  }
+
+  list.innerHTML = rows.map(job => `
+    <article class="history-item">
+      <div class="history-item-top">
+        <div>
+          <div class="history-lead-number">
+            ${escapeHtml(job.lead_number)}
+          </div>
+          <div class="history-customer">
+            ${escapeHtml(job.customer_name)}
+          </div>
+        </div>
+
+        <div class="history-status">
+          ${escapeHtml(getHistoryStatusLabel(job.status))}
+        </div>
+      </div>
+
+      <div class="history-meta">
+        <strong>Service:</strong>
+        ${escapeHtml(formatService(job.service_type))}
+        &nbsp; • &nbsp;
+        <strong>Time:</strong>
+        ${escapeHtml(job.preferred_time || "Not specified")}
+        <br>
+        <strong>Mobile:</strong>
+        ${escapeHtml(job.mobile || "—")}
+        <br>
+        <strong>Address:</strong>
+        ${escapeHtml(job.address || "—")}
+        ${job.city ? ", " + escapeHtml(job.city) : ""}
+        ${job.state ? ", " + escapeHtml(job.state) : ""}
+        ${job.pincode ? " - " + escapeHtml(job.pincode) : ""}
+      </div>
+    </article>
+  `).join("");
+}
+
+
 async function loadJobs(){
 
   if(!currentTechnician){
     return;
   }
 
-
   loading.style.display = "block";
   jobsContainer.innerHTML = "";
   hideError();
 
-
+  /*
+    Fetch all assigned leads so no existing workflow/data is lost.
+    The main dashboard then displays only today's non-completed jobs.
+    Historical jobs remain in Supabase and are available through History.
+  */
   const {
     data,
     error
@@ -1187,9 +1583,7 @@ async function loadJobs(){
       {ascending:true}
     );
 
-
   loading.style.display = "none";
-
 
   if(error){
 
@@ -1202,11 +1596,15 @@ async function loadJobs(){
     return;
   }
 
+  const allAssignedJobs = data || [];
 
-  currentJobs = data || [];
+  /*
+    Main screen = today's active work only.
+    COMPLETED jobs disappear from the main screen immediately.
+  */
+  currentJobs = allAssignedJobs.filter(isCurrentDashboardJob);
 
   updateStats(currentJobs);
-
   renderJobs(currentJobs);
 
 }
@@ -2065,6 +2463,14 @@ const now =
     btn.textContent = "Submit Completion";
   }
 });
+
+
+document
+  .getElementById("historyBtn")
+  .addEventListener(
+    "click",
+    openHistory
+  );
 
 
 document
